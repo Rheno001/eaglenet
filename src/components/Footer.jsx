@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "../assets/eaglenet-logo.jpg";
+import Logo from "../assets/eaglenet-logo-removebg-preview.png";
 
 function Footer() {
   return (
