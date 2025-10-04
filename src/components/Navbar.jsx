@@ -22,11 +22,11 @@ export default function Navbar() {
             <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
               Home
             </Link>
+             <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium">
+              About
+            </Link>
             <Link to="/services" className="text-gray-600 hover:text-gray-900 font-medium">
               Services
-            </Link>
-            <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium">
-              About
             </Link>
             <Link to="/contact" className="text-gray-600 hover:text-gray-900 font-medium">
               Contact
@@ -59,11 +59,11 @@ export default function Navbar() {
             <Link to="/" onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900 font-medium">
               Home
             </Link>
-            <Link to="/services" onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900 font-medium">
-              Services
-            </Link>
             <Link to="/about" onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900 font-medium">
               About
+            </Link>
+            <Link to="/services" onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900 font-medium">
+              Services
             </Link>
             <Link to="/contact" onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900 font-medium">
               Contact
