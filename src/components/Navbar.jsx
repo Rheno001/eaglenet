@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../assets/eaglenet-logo-removebg-preview.png";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/login");
+  };
 
   return (
     <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md z-50 border-b py-2 border-gray-200">
@@ -22,7 +35,7 @@ export default function Navbar() {
             <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
               Home
             </Link>
-             <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium">
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 font-medium">
               About
             </Link>
             <Link to="/services" className="text-gray-600 hover:text-gray-900 font-medium">
@@ -31,16 +44,34 @@ export default function Navbar() {
             <Link to="/contact" className="text-gray-600 hover:text-gray-900 font-medium">
               Contact
             </Link>
-            <Link to="/quote" onClick={() => setIsOpen(false)}>
+            <Link to="/quote">
               <button className="bg-white border border-gray-900 text-gray-900 px-6 py-2.5 rounded-lg hover:bg-gray-800 hover:text-white transition-all font-medium">
                 Get Quote
               </button>
             </Link>
-            <Link to="/login" onClick={() => setIsOpen(false)}>
-              <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
-                SignIn/SignUp
-              </button>
-            </Link>
+
+            {/* Auth / Dashboard Buttons */}
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
+                    Dashboard
+                  </button>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login">
+                <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
+                  SignIn/SignUp
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -49,7 +80,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Menu with Smooth Transition */}
+        {/* Mobile Menu */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
@@ -73,11 +104,31 @@ export default function Navbar() {
                 Get Quote
               </button>
             </Link>
-            <Link to="/login" onClick={() => setIsOpen(false)}>
-              <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
-                SignIn/SignUp
-              </button>
-            </Link>
+
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                  <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
+                    Dashboard
+                  </button>
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="text-gray-600 hover:text-gray-900 transition-colors font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <button className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all font-medium">
+                  SignIn/SignUp
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
