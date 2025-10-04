@@ -64,7 +64,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen mt-20 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
+    <div className="min-h-screen mt-10 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
       <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
         <div className="text-center mb-8">
           {isLogin ? (

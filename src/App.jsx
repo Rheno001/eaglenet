@@ -7,33 +7,38 @@ import Services from "./pages/Services";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import Quote from "./pages/Quote/QuoteForm";
-import Auth from "./pages/Auth/Dashboard"; // Login/Signup page
+import Auth from "./pages/Auth"; // login/signup page
 
-// Dashboard components
-import Dashboard from "./pages/Auth/Dashboard";
-import Overview from "./pages/Auth/Dashboard/pages/Overview";
-import Requests from "./pages/Auth/Dashboard/pages/Requests";
-import ManageAdmins from "./pages/Auth/Dashboard/pages/ManageAdmins";
+// Dashboard layout & subpages
+import DashboardLayout from "./pages/Dashboard"; // layout with sidebar/topbar
+import Overview from "./pages/Dashboard/pages/Overview";
+import Requests from "./pages/Dashboard/pages/Requests";
+import ManageAdmins from "./pages/Dashboard/pages/ManageAdmins";
 
 // --- Protected Route Component ---
-function ProtectedRoute({ element: Component, allowedRoles }) {
+function ProtectedRoute({ children, allowedRoles }) {
   const user = JSON.parse(localStorage.getItem("user"));
-  
-  // Not logged in
-  if (!user) return <Navigate to="/login" replace />;
-  
-  // Not authorized
-  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
-  
-  return Component;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isDashboard = window.location.pathname.startsWith("/dashboard");
+
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
-        {/* Navbar only for public pages */}
-        <Navbar />
+        {/* Only show Navbar/Footer on public pages */}
+        {!isDashboard && <Navbar />}
 
         <main className="flex-1">
           <Routes>
@@ -49,10 +54,9 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute
-                  element={<Dashboard />}
-                  allowedRoles={["user", "admin", "super-admin"]}
-                />
+                <ProtectedRoute allowedRoles={["user", "admin", "super-admin"]}>
+                  <DashboardLayout />
+                </ProtectedRoute>
               }
             >
               <Route index element={<Overview />} />
@@ -60,18 +64,17 @@ function App() {
               <Route
                 path="manage-admins"
                 element={
-                  <ProtectedRoute
-                    element={<ManageAdmins />}
-                    allowedRoles={["super-admin"]}
-                  />
+                  <ProtectedRoute allowedRoles={["super-admin"]}>
+                    <ManageAdmins />
+                  </ProtectedRoute>
                 }
               />
             </Route>
           </Routes>
         </main>
 
-        {/* Footer only for public pages */}
-        <Footer />
+        {/* Footer hidden on dashboard */}
+        {!isDashboard && <Footer />}
       </div>
     </Router>
   );
