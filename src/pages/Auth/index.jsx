@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, UserPlus } from "lucide-react";
+import axios from "axios";
+import Swal from "sweetalert2";
+
+
 
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(true); // true = Login, false = Sign Up
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,47 +24,79 @@ export default function Auth() {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setError("");
-    setFormData({
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    });
+    setFormData({ fullName: "", email: "", password: "" });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      if (isLogin) {
-        // 🔹 LOGIN: Call your backend API here
-        console.log("Logging in with", formData);
-        // const res = await axios.post("/api/login", { email, password });
-        // localStorage.setItem("token", res.data.token);
-        // navigate("/dashboard");
-      } else {
-        // 🔹 SIGNUP: Validate and call your backend API
-        if (formData.password !== formData.confirmPassword) {
-          setError("Passwords do not match.");
-          setLoading(false);
-          return;
-        }
+  const endpoint = isLogin
+    ? "http://localhost/backend/login.php"
+    : "http://localhost/backend/reg.php";
 
-        console.log("Signing up with", formData);
-        // const res = await axios.post("/api/signup", { ...formData, role: "user" });
-        // localStorage.setItem("token", res.data.token);
-        // navigate("/dashboard");
+  // Prepare payload based on form type
+  const payload = isLogin
+    ? {
+        email: formData.email,
+        password: formData.password,
       }
-      setLoading(false);
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      setError("An error occurred. Please try again.");
-      setLoading(false);
+    : {
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      };
+
+  try {
+    const response = await axios.post(endpoint, payload, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = response.data;
+
+    if (result.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: result.message || (isLogin ? "Login successful" : "Registration successful"),
+        showConfirmButton: true,
+      });
+
+      // Reset form
+      setFormData({ fullName: "", email: "", password: "" });
+
+      // Save user info in localStorage
+      const userData = {
+        email: formData.email,
+        fullName:
+          result.user?.fullName || // if backend provides it
+          formData.fullName || // from form input
+          "User", // fallback
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirect to dashboard after login
+      if (isLogin) {
+        navigate("/pages/dashboard");
+      }
+    } else {
+      // Show backend error or fallback
+      setError(result.message || (isLogin ? "Login failed" : "Registration failed"));
     }
-  };
+  } catch (err) {
+    console.error("Server or network error:", err);
+    if (err.response && err.response.data) {
+      setError(err.response.data.message || "Server error occurred");
+    } else {
+      setError("Cannot connect to server. Please check your connection.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen mt-10 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
@@ -77,7 +112,7 @@ export default function Auth() {
           </h1>
           <p className="text-gray-500 mt-2">
             {isLogin
-              ? "Sign in to continue to EagleNet Logistics"
+              ? "Sign in to continue"
               : "Join us today to manage your logistics easily"}
           </p>
         </div>
@@ -120,20 +155,6 @@ export default function Auth() {
               className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
             />
           </div>
-
-          {!isLogin && (
-            <div>
-              <label className="text-sm font-medium">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-              />
-            </div>
-          )}
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
 
