@@ -1,0 +1,115 @@
+[06-Oct-2025 17:24:50 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:74
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(74): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 74
+[06-Oct-2025 17:27:02 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:41:01 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:46:00 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:48:21 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:48:22 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:48:46 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:51:02 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:92
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(92): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 92
+[06-Oct-2025 17:54:45 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:00 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:46 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:53 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:54 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:54 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:55 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:57:56 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:58:08 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:58:08 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:58:09 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:58:09 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
+[06-Oct-2025 17:58:09 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'full_name' in 'field list' in C:\xampp\htdocs\backend\reg.php:99
+Stack trace:
+#0 C:\xampp\htdocs\backend\reg.php(99): mysqli->prepare('INSERT INTO use...')
+#1 {main}
+  thrown in C:\xampp\htdocs\backend\reg.php on line 99
