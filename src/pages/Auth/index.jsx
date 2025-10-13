@@ -68,18 +68,21 @@ export default function Auth() {
 
       // Save user info in localStorage
       const userData = {
-        email: formData.email,
-        fullName:
-          result.user?.fullName || // if backend provides it
-          formData.fullName || // from form input
-          "User", // fallback
-      };
+  email: formData.email,
+  fullName:
+    result.user?.fullName ||
+    formData.fullName ||
+    "User",
+  role: result.user?.role || "user"  // ✅ Add this
+};
+
 
       localStorage.setItem("user", JSON.stringify(userData));
 
       // Redirect to dashboard after login
       if (isLogin) {
-        navigate("/pages/dashboard");
+        navigate("/dashboard"); 
+
       }
     } else {
       // Show backend error or fallback

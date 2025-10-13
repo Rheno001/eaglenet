@@ -14,6 +14,7 @@ import Auth from "./pages/Auth"; // login/signup page
 import DashboardLayout from "./pages/Dashboard"; // layout with sidebar/topbar
 import Overview from "./pages/Dashboard/pages/Overview";
 import Requests from "./pages/Dashboard/pages/Requests";
+import Shipments from "./pages/Dashboard/Shipments";
 import ManageAdmins from "./pages/Dashboard/pages/ManageAdmins";
 
 // --- Protected Route Component ---

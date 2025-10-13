@@ -1,24 +1,54 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ROLES } from "../../utils/roles";
-import { LayoutDashboard, Package, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  Bell,
+  Truck,
+  CreditCard,
+  Settings,
+  ClipboardList,
+  UserCog,
+  FileText,
+} from "lucide-react";
 
 export default function Sidebar({ role, isOpen, setIsOpen }) {
   const location = useLocation();
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const links = [
     { name: "Overview", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Shipments", path: "/dashboard/shipments", icon: <Truck size={18} /> },
+    { name: "Track Shipment", path: "/dashboard/track", icon: <ClipboardList size={18} /> },
+    { name: "Payments", path: "/dashboard/payments", icon: <CreditCard size={18} /> },
+    { name: "Customers", path: "/dashboard/customers", icon: <Users size={18} /> },
+    { name: "Reports", path: "/dashboard/reports", icon: <FileText size={18} /> },
+
     ...(role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN
       ? [{ name: "Requests", path: "/dashboard/requests", icon: <Package size={18} /> }]
       : []),
+
+    { name: "Fleet Management", path: "/dashboard/fleet", icon: <Truck size={18} /> },
+    { name: "Drivers", path: "/dashboard/drivers", icon: <UserCog size={18} /> },
+
     ...(role === ROLES.SUPER_ADMIN
       ? [{ name: "Manage Admins", path: "/dashboard/manage-admins", icon: <Users size={18} /> }]
       : []),
+
+    { name: "Settings", path: "/dashboard/settings", icon: <Settings size={18} /> },
+  ];
+
+  const notifications = [
+    "Shipment #234 is out for delivery",
+    "Promo: 10% discount on bulk delivery",
+    "Payment pending for Order #101",
+    "New delivery alert: Order #445",
   ];
 
   return (
     <>
-      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -32,12 +62,36 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
       >
         <div className="px-6 py-4 border-b border-gray-700 flex items-center justify-between">
           <h1 className="text-2xl font-bold">EagleNet</h1>
-          <button
-            className="md:hidden text-gray-300"
-            onClick={() => setIsOpen(false)}
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="text-gray-300 hover:text-white"
+              >
+                <Bell size={20} />
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-md shadow-lg z-50">
+                  <ul className="py-2 text-sm text-gray-200">
+                    {notifications.map((note, index) => (
+                      <li
+                        key={index}
+                        className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+                      >
+                        {note}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <button
+              className="md:hidden text-gray-300"
+              onClick={() => setIsOpen(false)}
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <nav className="flex flex-col mt-6 space-y-1">

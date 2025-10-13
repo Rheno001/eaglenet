@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Shipments from "./Shipments";
 import { ROLES } from "../../utils/roles";
 
 export default function DashboardLayout() {
@@ -22,6 +23,7 @@ export default function DashboardLayout() {
       {/* Main Content */}
       <div className="flex flex-col flex-1">
         <Topbar user={user} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        
         <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
