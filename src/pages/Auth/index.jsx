@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-
-
 export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true); // true = Login, false = Sign Up
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -22,84 +22,86 @@ export default function Auth() {
   };
 
   const toggleForm = () => {
-    setIsLogin(!isLogin);
-    setError("");
-    setFormData({ fullName: "", email: "", password: "" });
+  setIsLogin(!isLogin);
+  setError("");
+  setFormData({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+  });
+};
+
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  const endpoint = isLogin
-    ? "http://localhost/backend/login.php"
-    : "http://localhost/backend/reg.php";
+    const endpoint = isLogin
+      ? "http://localhost/backend/login.php"
+      : "http://localhost/backend/reg.php";
 
-  // Prepare payload based on form type
-  const payload = isLogin
-    ? {
-        email: formData.email,
-        password: formData.password,
-      }
-    : {
-        fullName: formData.fullName,
+    const payload = isLogin
+      ? { email: formData.email, password: formData.password }
+      : {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
       };
 
-  try {
-    const response = await axios.post(endpoint, payload, {
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const result = response.data;
-
-    if (result.success) {
-      Swal.fire({
-        icon: "success",
-        title: "Success!",
-        text: result.message || (isLogin ? "Login successful" : "Registration successful"),
-        showConfirmButton: true,
+    try {
+      const response = await axios.post(endpoint, payload, {
+        headers: { "Content-Type": "application/json" },
       });
 
-      // Reset form
-      setFormData({ fullName: "", email: "", password: "" });
+      const result = response.data;
 
-      // Save user info in localStorage
-      const userData = {
-  email: formData.email,
-  fullName:
-    result.user?.fullName ||
-    formData.fullName ||
-    "User",
-  role: result.user?.role || "user"  // ✅ Add this
-};
+      if (result.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text:
+            result.message ||
+            (isLogin ? "Login successful" : "Registration successful"),
+          showConfirmButton: true,
+          
+        });
+
+        setFormData({ firstName: "", lastName: "", email: "", password: "" });
+
+        const userData = {
+          email: formData.email,
+          firstName: result.user?.firstName || formData.firstName || "User",
+          lastName: result.user?.lastName || formData.lastName || "",
+          role: result.user?.role || "user",
+        };
 
 
-      localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("user", JSON.stringify(userData));
 
-      // Redirect to dashboard after login
-      if (isLogin) {
-        navigate("/dashboard"); 
-
+        if (isLogin) {
+          navigate("/dashboard");
+        }
+      } else {
+        setError(result.message || (isLogin ? "Login failed" : "Registration failed"));
       }
-    } else {
-      // Show backend error or fallback
-      setError(result.message || (isLogin ? "Login failed" : "Registration failed"));
+    } catch (err) {
+      console.error("Server or network error:", err);
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || "Server error occurred");
+      } else {
+        setError("Cannot connect to server. Please check your connection.");
+      }
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Server or network error:", err);
-    if (err.response && err.response.data) {
-      setError(err.response.data.message || "Server error occurred");
-    } else {
-      setError("Cannot connect to server. Please check your connection.");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <div className="min-h-screen mt-10 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
@@ -123,11 +125,20 @@ export default function Auth() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="text-sm font-medium">Full Name</label>
+              <label className="text-sm font-medium">First Name</label>
               <input
                 type="text"
-                name="fullName"
-                value={formData.fullName}
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+              />
+              <label className="text-sm font-medium">Last Name</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
                 onChange={handleChange}
                 required
                 className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
@@ -147,16 +158,24 @@ export default function Auth() {
             />
           </div>
 
-          <div>
+          {/* Password Field with Toggle */}
+          <div className="relative">
             <label className="text-sm font-medium">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
-              className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+              className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 pr-10 focus:border-gray-900 outline-none"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -169,8 +188,8 @@ export default function Auth() {
             {loading
               ? "Please wait..."
               : isLogin
-              ? "Sign In"
-              : "Create Account"}
+                ? "Sign In"
+                : "Create Account"}
           </button>
         </form>
 
