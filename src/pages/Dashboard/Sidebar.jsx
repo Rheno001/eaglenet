@@ -20,18 +20,19 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
 
   const links = [
     { name: "Overview", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
+    { name: "Booking", path: "/dashboard/Booking", icon: <Users size={18} /> },
     { name: "Shipments", path: "/dashboard/shipments", icon: <Truck size={18} /> },
     { name: "Track Shipment", path: "/dashboard/track", icon: <ClipboardList size={18} /> },
     { name: "Payments", path: "/dashboard/payments", icon: <CreditCard size={18} /> },
-    { name: "Customers", path: "/dashboard/customers", icon: <Users size={18} /> },
-    { name: "Reports", path: "/dashboard/reports", icon: <FileText size={18} /> },
+    
+    // { name: "Reports", path: "/dashboard/reports", icon: <FileText size={18} /> },
 
     ...(role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN
       ? [{ name: "Requests", path: "/dashboard/requests", icon: <Package size={18} /> }]
       : []),
 
-    { name: "Fleet Management", path: "/dashboard/fleet", icon: <Truck size={18} /> },
-    { name: "Drivers", path: "/dashboard/drivers", icon: <UserCog size={18} /> },
+    // { name: "Fleet Management", path: "/dashboard/fleet", icon: <Truck size={18} /> },
+    // { name: "Drivers", path: "/dashboard/drivers", icon: <UserCog size={18} /> },
 
     ...(role === ROLES.SUPER_ADMIN
       ? [{ name: "Manage Admins", path: "/dashboard/manage-admins", icon: <Users size={18} /> }]

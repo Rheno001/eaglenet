@@ -16,7 +16,8 @@ import DashboardLayout from "./pages/Dashboard"; // layout with sidebar/topbar
 import Overview from "./pages/Dashboard/pages/Overview";
 import Requests from "./pages/Dashboard/pages/Requests";
 import Shipments from "./pages/Dashboard/Shipments";
-
+import Booking from "./pages/Dashboard/Booking";
+import Track from "./pages/Dashboard/track";
 import ManageAdmins from "./pages/Dashboard/pages/ManageAdmins";
 
 // --- Protected Route Component ---
@@ -66,6 +67,8 @@ function App() {
               <Route index element={<Overview />} />
               <Route path="requests" element={<Requests />} />
               <Route path="shipments" element={<Shipments />} />
+              <Route path="booking" element={<Booking />} />
+              <Route path="track" element={<Track />} />
               <Route
                 path="manage-admins"
                 element={

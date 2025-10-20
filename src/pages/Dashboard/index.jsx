@@ -3,6 +3,7 @@ import { Outlet, Navigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Shipments from "./Shipments";
+import Booking from "./Booking";
 import { ROLES } from "../../utils/roles";
 
 export default function DashboardLayout() {
