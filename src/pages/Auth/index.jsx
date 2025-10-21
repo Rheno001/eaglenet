@@ -78,7 +78,7 @@ export default function Auth() {
         const userData = {
           email: formData.email,
           firstName: result.user?.firstName || formData.firstName || "User",
-          lastName: result.user?.lastName || formData.lastName || "",
+          lastName: result.user?.lastName || formData.lastName || "user",
           role: result.user?.role || "user",
         };
 
@@ -92,11 +92,19 @@ export default function Auth() {
         setError(result.message || (isLogin ? "Login failed" : "Registration failed"));
       }
     } catch (err) {
+      // Log full error for debugging
       console.error("Server or network error:", err);
+
+      // Axios network vs server error handling
       if (err.response && err.response.data) {
+        // Server responded with non-2xx
         setError(err.response.data.message || "Server error occurred");
+      } else if (err.request) {
+        // Request was made but no response received
+        setError("No response from server. Is the backend running at http://localhost/backend/?");
       } else {
-        setError("Cannot connect to server. Please check your connection.");
+        // Something happened setting up the request
+        setError(err.message || "Cannot connect to server. Please check your connection.");
       }
     } finally {
       setLoading(false);

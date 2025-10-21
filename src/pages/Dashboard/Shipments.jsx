@@ -242,6 +242,7 @@ export default function Shipment() {
                 <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">ID</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Tracking ID</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Email</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Phone</th>
@@ -256,6 +257,7 @@ export default function Shipment() {
                   {filteredShipments.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50 transition">
                       <td className="px-6 py-4 text-sm font-mono text-blue-600 font-semibold">{item.id}</td>
+                      <td className="px-6 py-4 text-sm font-mono text-gray-800">{item.trackingId || item.tracking_id || item.tracking || '-'}</td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.customerName}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{item.email}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{item.phone}</td>
@@ -296,7 +298,7 @@ export default function Shipment() {
         )}
 
         {/* Detail Modal */}
-        {selectedShipment && (
+                  {selectedShipment && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-96 overflow-y-auto">
               <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b">
@@ -314,6 +316,10 @@ export default function Shipment() {
                   <div>
                     <p className="text-gray-600 text-sm">Shipment ID</p>
                     <p className="text-gray-900 font-semibold">{selectedShipment.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600 text-sm">Tracking ID</p>
+                    <p className="text-gray-900 font-semibold">{selectedShipment.trackingId || selectedShipment.tracking_id || selectedShipment.tracking || '-'}</p>
                   </div>
                   <div>
                     <p className="text-gray-600 text-sm">Status</p>
