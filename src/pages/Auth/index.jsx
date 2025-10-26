@@ -1,19 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { LogIn, UserPlus, Eye, EyeOff } from "lucide-react";
-import axios from "axios";
-import Swal from "sweetalert2";
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { AuthContext } from '../../context/AuthContext';
+import { ROLES } from '../../utils/roles';
 
 export default function Auth() {
+  const { login } = useContext(AuthContext);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -22,16 +25,15 @@ export default function Auth() {
   };
 
   const toggleForm = () => {
-  setIsLogin(!isLogin);
-  setError("");
-  setFormData({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
-};
-
+    setIsLogin(!isLogin);
+    setError('');
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+    });
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -39,12 +41,30 @@ export default function Auth() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
+    const userData = {
+      email: formData.email,
+      firstName: result.user?.firstName || formData.firstName || 'User',
+      lastName: result.user?.lastName || formData.lastName || '',
+      role: result.user?.role || ROLES.USER, // Default to USER role
+    };
+
+    if (isLogin) {
+      login(userData, result.token);
+      if (userData.role === ROLES.USER) {
+        navigate('/dashboard');
+      } else if (userData.role === ROLES.ADMIN) {
+        navigate('/dashboard/requests');
+      } else if (userData.role === ROLES.SUPER_ADMIN) {
+        navigate('/dashboard/manage-admins');
+      }
+    }
+
     const endpoint = isLogin
-      ? "http://localhost/backend/login.php"
-      : "http://localhost/backend/reg.php";
+      ? 'http://localhost/backend/login.php'
+      : 'http://localhost/backend/reg.php';
 
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
@@ -57,54 +77,52 @@ export default function Auth() {
 
     try {
       const response = await axios.post(endpoint, payload, {
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       const result = response.data;
 
       if (result.success) {
         Swal.fire({
-          icon: "success",
-          title: "Success!",
-          text:
-            result.message ||
-            (isLogin ? "Login successful" : "Registration successful"),
+          icon: 'success',
+          title: 'Success!',
+          text: result.message || (isLogin ? 'Login successful' : 'Registration successful'),
           showConfirmButton: true,
-          
         });
-
-        setFormData({ firstName: "", lastName: "", email: "", password: "" });
 
         const userData = {
           email: formData.email,
-          firstName: result.user?.firstName || formData.firstName || "User",
-          lastName: result.user?.lastName || formData.lastName || "user",
-          role: result.user?.role || "user",
+          firstName: result.user?.firstName || formData.firstName || 'User',
+          lastName: result.user?.lastName || formData.lastName || 'user',
+          role: result.user?.role || 'user',
         };
 
-
-        localStorage.setItem("user", JSON.stringify(userData));
-
         if (isLogin) {
-          navigate("/dashboard");
+          // Store token and user data
+          login(userData, result.token); // Pass token from backend response
+          if (userData.role === 'user') {
+            navigate('/dashboard');
+          } else if (userData.role === 'admin') {
+            navigate('/eaglenet/auth/admin');
+          } else if (userData.role === 'superadmin') {
+            navigate('/eaglenet/auth/superadmin');
+          }
+        } else {
+          toggleForm(); // Switch to login form after successful signup
         }
+
+        setFormData({ firstName: '', lastName: '', email: '', password: '' });
       } else {
-        setError(result.message || (isLogin ? "Login failed" : "Registration failed"));
+        setError(result.message || (isLogin ? 'Login failed' : 'Registration failed'));
       }
     } catch (err) {
-      // Log full error for debugging
-      console.error("Server or network error:", err);
-
-      // Axios network vs server error handling
+      console.error('Server or network error:', err);
       if (err.response && err.response.data) {
-        // Server responded with non-2xx
-        setError(err.response.data.message || "Server error occurred");
+        setError(err.response.data.message || 'Server error occurred');
       } else if (err.request) {
-        // Request was made but no response received
-        setError("No response from server. Is the backend running at http://localhost/backend/?");
+        setError('No response from server. Is the backend running at http://localhost/backend/?');
       } else {
-        // Something happened setting up the request
-        setError(err.message || "Cannot connect to server. Please check your connection.");
+        setError(err.message || 'Cannot connect to server. Please check your connection.');
       }
     } finally {
       setLoading(false);
@@ -121,12 +139,12 @@ export default function Auth() {
             <UserPlus className="mx-auto h-10 w-10 text-gray-900" />
           )}
           <h1 className="text-3xl font-bold mt-3">
-            {isLogin ? "Welcome Back" : "Create Your Account"}
+            {isLogin ? 'Welcome Back' : 'Create Your Account'}
           </h1>
           <p className="text-gray-500 mt-2">
             {isLogin
-              ? "Sign in to continue"
-              : "Join us today to manage your logistics easily"}
+              ? 'Sign in to continue'
+              : 'Join us today to manage your logistics easily'}
           </p>
         </div>
 
@@ -166,11 +184,10 @@ export default function Auth() {
             />
           </div>
 
-          {/* Password Field with Toggle */}
           <div className="relative">
             <label className="text-sm font-medium">Password</label>
             <input
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -193,23 +210,19 @@ export default function Auth() {
             disabled={loading}
             className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
           >
-            {loading
-              ? "Please wait..."
-              : isLogin
-                ? "Sign In"
-                : "Create Account"}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         <div className="text-center mt-6">
           <p className="text-gray-600 text-sm">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
             <button
               type="button"
               onClick={toggleForm}
               className="text-gray-900 font-medium hover:underline"
             >
-              {isLogin ? "Sign Up" : "Sign In"}
+              {isLogin ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
         </div>

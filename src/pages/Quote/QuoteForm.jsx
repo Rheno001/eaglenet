@@ -5,7 +5,7 @@ import { useJsApiLoader } from "@react-google-maps/api";
 
 // Google Maps API configuration
 const googleMapsConfig = {
-  googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY, // Replace with your API key environment variable
+  googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY, 
   libraries: ["places"], // Include required libraries (e.g., places for DistanceMatrixService)
 };
 

@@ -8,7 +8,6 @@ import {
   Bell,
   Truck,
   CreditCard,
-  Settings,
   ClipboardList,
   UserCog,
   FileText,
@@ -17,13 +16,13 @@ import {
 export default function Sidebar({ role, isOpen, setIsOpen }) {
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
+  
 
   const links = [
     { name: "Overview", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
     { name: "Booking", path: "/dashboard/Booking", icon: <Users size={18} /> },
     { name: "Shipments", path: "/dashboard/shipments", icon: <Truck size={18} /> },
     { name: "Track Shipment", path: "/dashboard/track", icon: <ClipboardList size={18} /> },
-    { name: "Payments", path: "/dashboard/payments", icon: <CreditCard size={18} /> },
     
     // { name: "Reports", path: "/dashboard/reports", icon: <FileText size={18} /> },
 
@@ -38,7 +37,7 @@ export default function Sidebar({ role, isOpen, setIsOpen }) {
       ? [{ name: "Manage Admins", path: "/dashboard/manage-admins", icon: <Users size={18} /> }]
       : []),
 
-    { name: "Settings", path: "/dashboard/settings", icon: <Settings size={18} /> },
+   // { name: "Settings", path: "/dashboard/settings", icon: <Settings size={18} /> },
   ];
 
   const notifications = [
