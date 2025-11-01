@@ -67,28 +67,10 @@
           setShowPassword(!showPassword);
         };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const userData = {
-      email: formData.email,
-      firstName: result.user?.firstName || formData.firstName || 'User',
-      lastName: result.user?.lastName || formData.lastName || '',
-      role: result.user?.role || ROLES.USER, // Default to USER role
-    };
-
-    if (isLogin) {
-      login(userData, result.token);
-      if (userData.role === ROLES.USER) {
-        navigate('/dashboard');
-      } else if (userData.role === ROLES.ADMIN) {
-        navigate('/dashboard/requests');
-      } else if (userData.role === ROLES.SUPER_ADMIN) {
-        navigate('/dashboard/manage-admins');
-      }
-    }
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          setError('');
+          setLoading(true);
 
           const endpoint = isLogin
             ? 'http://localhost:8000/login.php'
