@@ -1,100 +1,91 @@
-import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
+import { ROLES } from "../utils/roles";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        try {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL}/verify-token.php`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.data.success && response.data.user) {
-            setUser(response.data.user);
-            localStorage.setItem('user', JSON.stringify(response.data.user));
-          } else {
-            await refreshToken();
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          await refreshToken();
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-    verifyToken();
+  const endpoints = {
+    verify: `${API_BASE_URL}/verify-token.php`,
+    refresh: `${API_BASE_URL}/refresh-token.php`,
+  };
 
-    // Set up periodic token refresh (e.g., every 15 minutes)
-    const interval = setInterval(refreshToken, 15 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // ✅ Log in user + persist data
+  const login = (userData, token) => {
+    setUser(userData);
+    localStorage.setItem("jwt", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
 
+  // ✅ Log out user + clear storage
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("jwt");
+    localStorage.removeItem("user");
+  };
+
+  // ✅ Optional refresh (if needed)
   const refreshToken = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/refresh-token.php`, {}, {
-        withCredentials: true,
-      });
-      if (response.data.success && response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      const res = await axios.post(endpoints.refresh, {}, { withCredentials: true });
+      if (res.data.success) {
+        const { user, token } = res.data;
+        login(user, token);
+        return token;
       } else {
         logout();
+        return null;
       }
-    } catch (error) {
-      console.error('Token refresh failed:', error);
+    } catch (err) {
+      console.error("Token refresh failed:", err);
       logout();
+      return null;
     }
   };
 
-  const login = (userData, token) => {
-    setUser(userData);
-    localStorage.setItem('authToken', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
+  // ✅ Verify token silently in background
+ useEffect(() => {
+  const token = localStorage.getItem("jwt");
+  const storedUser = localStorage.getItem("user");
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-  };
+  // Instantly show user if already logged in
+  if (token && storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
 
-  // Add axios interceptor to handle token expiration
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      response => response,
-      async error => {
-        if (error.response?.status === 401 && error.config && !error.config.__isRetryRequest) {
-          error.config.__isRetryRequest = true;
-          try {
-            await refreshToken();
-            const token = localStorage.getItem('authToken');
-            error.config.headers.Authorization = `Bearer ${token}`;
-            return axios(error.config);
-          } catch (refreshError) {
-            logout();
-            window.location.href = '/login';
-            return Promise.reject(refreshError);
-          }
-        }
-        return Promise.reject(error);
+  // Silent token verification (non-blocking)
+  (async () => {
+    if (!token) return;
+
+    try {
+      const res = await axios.post(
+        endpoints.verify,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        login(res.data.user, token);
+      } else {
+        await refreshToken();
       }
-    );
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
+    } catch {
+      await refreshToken();
+    }
+  })();
+
+  setLoading(false); // Don’t block UI
+}, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, refreshToken }}>
+    <AuthContext.Provider value={{ user, login, logout, refreshToken, loading }}>
       {children}
     </AuthContext.Provider>
   );
