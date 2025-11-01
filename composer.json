@@ -1,0 +1,19 @@
+{
+    "name": "joel/backend",
+    "autoload": {
+        "psr-4": {
+            "Joel\\Backend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Light of the world",
+            "email": "joelbarnabas589@gmail.com"
+        }
+    ],
+    "require": {
+        "firebase/php-jwt": "^6.11",
+        "phpmailer/phpmailer": "^7.0",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

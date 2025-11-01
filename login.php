@@ -1,85 +1,81 @@
 <?php
-// Enable error reporting (for development only)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Allow CORS (adjust the origin if needed)
-header("Access-Control-Allow-Origin: http://localhost:5173");
+// login.php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Accept");
-header('Content-Type: application/json');
+header("Content-Type: application/json; charset=UTF-8");
 
-// Handle preflight OPTIONS request
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/dp.php'; // Database connection
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+$JWT_SECRET = "your_super_secret_key_here"; // ⚠️ Must match reg.php secret
+
+// Handle preflight OPTIONS requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
-    exit();
-}
-
-// Helper function to send JSON responses
-function sendResponse($success, $message) {
-    echo json_encode(['success' => $success, 'message' => $message]);
     exit;
 }
 
-// Read raw JSON input
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
+// Get JSON body
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!$data) {
-    sendResponse(false, 'Invalid JSON input');
+if (!$data || empty($data['email']) || empty($data['password'])) {
+    echo json_encode(["success" => false, "message" => "Email and password are required"]);
+    exit;
 }
 
-// Extract and sanitize form data
-$email = trim($data['email'] ?? '');
-$password = trim($data['password'] ?? '');
+$email = trim($data['email']);
+$password = trim($data['password']);
 
-// Validate fields
-if (!$email || !$password) {
-    sendResponse(false, 'Email and password are required');
-}
-
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    sendResponse(false, 'Invalid email address');
-}
-
-// Database connection
-$servername = "localhost";
-$username = "root";
-$passwordDB = ""; // Your DB password if any
-$dbname = "eaglenet";
-
-$conn = new mysqli($servername, $username, $passwordDB, $dbname);
-
-if ($conn->connect_error) {
-    sendResponse(false, 'Database connection failed: ' . $conn->connect_error);
-}
-
-// Check if user exists
-$stmt = $conn->prepare("SELECT id, full_name, password FROM users WHERE email = ?");
+// ✅ Check if user exists
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
-$stmt->store_result();
+$result = $stmt->get_result();
 
-if ($stmt->num_rows === 0) {
-    $stmt->close();
-    $conn->close();
-    sendResponse(false, 'Email not registered');
+if ($result->num_rows === 0) {
+    echo json_encode(["success" => false, "message" => "Invalid email or password"]);
+    exit;
 }
 
-$stmt->bind_result($id, $fullName, $hashedPassword);
-$stmt->fetch();
+$user = $result->fetch_assoc();
 
-// Verify password
-if (!password_verify($password, $hashedPassword)) {
-    $stmt->close();
-    $conn->close();
-    sendResponse(false, 'Incorrect password');
+// ✅ Verify password
+if (!password_verify($password, $user['password'])) {
+    echo json_encode(["success" => false, "message" => "Invalid email or password"]);
+    exit;
 }
 
-$stmt->close();
-$conn->close();
+// ✅ Generate JWT token
+$payload = [
+    "iss" => "localhost",
+    "aud" => "localhost",
+    "iat" => time(),
+    "exp" => time() + (60 * 60 * 24), // 1 day
+    "user" => [
+        "id" => $user['id'],
+        "email" => $user['email'],
+        "firstName" => $user['first_name'],
+        "lastName" => $user['last_name'],
+        "role" => $user['role']
+    ]
+];
 
-// Login successful
-sendResponse(true, 'Login successful');
+$token = JWT::encode($payload, $JWT_SECRET, 'HS256');
+
+echo json_encode([
+    "success" => true,
+    "message" => "Login successful",
+    "token" => $token,
+    "user" => [
+        "id" => $user['id'],
+        "email" => $user['email'],
+        "firstName" => $user['first_name'],
+        "lastName" => $user['last_name'],
+        "role" => $user['role']
+    ]
+]);
 ?>

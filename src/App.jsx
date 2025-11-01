@@ -1,4 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -18,25 +20,30 @@ import ManageAdmins from "./pages/Dashboard/pages/ManageAdmins";
 
 // --- Protected Route Component ---
 function ProtectedRoute({ children, allowedRoles }) {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a spinner component
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    // Redirect to a more appropriate page, e.g., dashboard home
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
 }
 
 function App() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const isDashboard = window.location.pathname.startsWith("/dashboard");
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith("/dashboard");
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <div className="min-h-screen flex flex-col">
         {/* Only show Navbar/Footer on public pages */}
@@ -56,17 +63,21 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute allowedRoles={["user", "admin", "super-admin"]}>
+                <ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPER_ADMIN"]}>
                   <DashboardLayout />
                 </ProtectedRoute>
               }
             >
               <Route index element={<Overview />} />
-              <Route path="requests" element={<Requests />} />
+              <Route path="requests" element={
+                <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
+                  <Requests />
+                </ProtectedRoute>
+              } />
               <Route
                 path="manage-admins"
                 element={
-                  <ProtectedRoute allowedRoles={["super-admin"]}>
+                  <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
                     <ManageAdmins />
                   </ProtectedRoute>
                 }
@@ -78,7 +89,7 @@ function App() {
         {/* Footer hidden on dashboard */}
         {!isDashboard && <Footer />}
       </div>
-    </Router>
+    </>
   );
 }
 
