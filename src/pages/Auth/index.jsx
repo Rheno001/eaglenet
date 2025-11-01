@@ -46,7 +46,7 @@ export default function Auth() {
 
     const userData = {
       email: formData.email,
-      firstName: result.user?.firstName || formData.firstName || 'User',
+      firstName: result.user?.firstName || formData.firstName || '',
       lastName: result.user?.lastName || formData.lastName || '',
       role: result.user?.role || ROLES.USER, // Default to USER role
     };
