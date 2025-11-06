@@ -39,8 +39,6 @@ import AdminSettings from "./pages/admin/Settings";
 
 function App() {
   const location = useLocation();
-  const { user } = useContext(AuthContext);
-
   // ✅ Determine if the current page is a dashboard or auth route
   const isDashboard =
     location.pathname.startsWith("/dashboard") ||

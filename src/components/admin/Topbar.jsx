@@ -3,7 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 
 export default function Topbar() {
-  const { user, logout } = useContext(AuthContext);
+  const { user} = useContext(AuthContext);
 
   return (
     <header className="flex items-center justify-between bg-white shadow px-6 py-3">

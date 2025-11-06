@@ -4,7 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
 
 export default function Sidebar() {
-  const { user, logout } = useContext(AuthContext);
+  const { logout } = useContext(AuthContext);
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
