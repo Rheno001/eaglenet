@@ -5,12 +5,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function Topbar({ toggleSidebar, className }) {
-  const { user, logout } = useContext(AuthContext);
-
-  const handleLogout = () => {
-    logout(); // Use AuthContext logout to clear user state and localStorage
-    window.location.href = "/login";
-  };
+  const { user} = useContext(AuthContext);
 
   return (
     <header className={`bg-white shadow-sm px-6 py-4 flex justify-between items-center ${className}`}>
@@ -24,15 +19,12 @@ export default function Topbar({ toggleSidebar, className }) {
 
       {/* Right - User info */}
       <div className="flex items-center gap-4">
+         <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+            {user?.firstName?.[0]?.toUpperCase()}
+          </div>
         <span className="text-gray-700 font-medium">
-          {user?.firstName || "User"}
+          {user?.firstName.toUpperCase() || "User"}
         </span>
-        <button
-          onClick={handleLogout}
-          className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800"
-        >
-          Logout
-        </button>
       </div>
     </header>
   );

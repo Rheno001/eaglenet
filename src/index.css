@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "flowbite/dist/flowbite.css";
+
 
 @keyframes marquee-left {
   0% { transform: translateX(0); }

@@ -73,8 +73,9 @@
           setLoading(true);
 
           const endpoint = isLogin
-            ? 'http://localhost:8000/login.php'
-            : 'http://localhost:8000/reg.php';
+  ? 'http://localhost/backend/login.php'
+  : 'http://localhost/backend/reg.php';
+
 
           const payload = isLogin
             ? { email: formData.email, password: formData.password }
@@ -128,7 +129,7 @@
             if (err.response && err.response.data) {
               setError(err.response.data.message || 'Server error occurred');
             } else if (err.request) {
-              setError('No response from server. Is the backend running at http://localhost/backend/?');
+              setError('No response from server. Is the backend running at http://localhost:8000?');
             } else {
               setError(err.message || 'Cannot connect to server. Please check your connection.');
             }

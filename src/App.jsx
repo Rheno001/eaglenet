@@ -28,6 +28,14 @@ import ManageAdmins from "./pages/Dashboard/pages/ManageAdmins";
 // Admin and Super Admin Dashboards
 import AdminDashboard from "./pages/admin";
 import SuperAdminDashboard from "./pages/superAdmin";
+// Admin pages
+import AdminLayout from "./pages/admin/Layout";
+import AdminOrders from "./pages/admin/Orders";
+import AdminUsers from "./pages/admin/Users";
+import AdminReports from "./pages/admin/Reports";
+import AdminNotifications from "./pages/admin/Notifications";
+import AdminSettings from "./pages/admin/Settings";
+
 
 function App() {
   const location = useLocation();
@@ -86,10 +94,18 @@ function App() {
             </Route>
           </Route>
 
-          {/* Admin Dashboard Route */}
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-            <Route path="/eaglenet/auth/admin" element={<AdminDashboard />} />
+          {/* Admin Dashboard Routes */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
+            <Route path="/eaglenet/auth/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} /> {/* Overview page */}
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
           </Route>
+
 
           {/* Super Admin Dashboard Route */}
           <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
