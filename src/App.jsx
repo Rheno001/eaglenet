@@ -1,10 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useContext } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthContext } from "./context/AuthContext";
 
 // Public pages
 import Home from "./pages/Home";
