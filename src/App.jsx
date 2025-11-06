@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useContext } from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthContext } from "./context/AuthContext";
 
 // Public pages
 import Home from "./pages/Home";
@@ -37,6 +39,8 @@ import AdminSettings from "./pages/admin/Settings";
 
 function App() {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
+
   // ✅ Determine if the current page is a dashboard or auth route
   const isDashboard =
     location.pathname.startsWith("/dashboard") ||
