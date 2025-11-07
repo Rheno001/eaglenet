@@ -17,7 +17,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between">
       {/* Top Section */}
       <div>
-        <h1 className="text-2xl font-bold text-center py-5 border-b text-gray-900">
+        <h1 className="text-2xl font-bold text-center py-5 text-gray-900">
           EagleNet Admin
         </h1>
         <nav className="p-4 space-y-2">

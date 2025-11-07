@@ -52,37 +52,42 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Verify token silently in background
- useEffect(() => {
-  const token = localStorage.getItem("jwt");
-  const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    const storedUser = localStorage.getItem("user");
 
-  // Instantly show user if already logged in
-  if (token && storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
-
-  // Silent token verification (non-blocking)
-  (async () => {
-    if (!token) return;
-
-    try {
-      const res = await axios.post(
-        endpoints.verify,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        login(res.data.user, token);
-      } else {
-        await refreshToken();
-      }
-    } catch {
-      await refreshToken();
+    // Instantly show user if already logged in
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
     }
-  })();
 
-  setLoading(false); // Don’t block UI
-}, []);
+    // Silent token verification (non-blocking)
+    (async () => {
+      if (!token) {
+        setLoading(false); // ✅ No token = stop loading
+        return;
+      }
+
+      try {
+        const res = await axios.post(
+          endpoints.verify,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data.success) {
+          login(res.data.user, token);
+        } else {
+          await refreshToken();
+        }
+      } catch {
+        await refreshToken();
+      } finally {
+        setLoading(false); // ✅ Always stop loading after verification
+      }
+    })();
+
+    // ❌ REMOVED: setLoading(false); - This was the bug!
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, refreshToken, loading }}>

@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 export default function Orders() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  // Dummy data (replace later with API)
+  // Dummy data — will be replaced with API later
   const [orders, setOrders] = useState([
     { id: 2341, customer: "John Doe", status: "Delivered", date: "Nov 15, 2025" },
     { id: 2339, customer: "Blessing Paul", status: "In Transit", date: "Nov 14, 2025" },
     { id: 2332, customer: "Uche O.", status: "Delayed", date: "Nov 13, 2025" },
     { id: 2325, customer: "Kelechi", status: "Delivered", date: "Nov 12, 2025" },
-    { id: 2322, customer: "Grace A.", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2362, customer: "Mr Bate", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2312, customer: "Nicki Minaj", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2352, customer: "Grace A.", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2322, customer: "jack Hoff", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2422, customer: "Mary Jane.", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2325, customer: "John Bellion.", status: "Pending", date: "Nov 11, 2025" },
+    { id: 2302, customer: "Mike Oxlong", status: "Pending", date: "Nov 11, 2025" },
   ]);
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Filter Logic
   const filteredOrders = orders.filter((order) => {
@@ -38,6 +47,20 @@ export default function Orders() {
       default:
         return "bg-gray-100 text-gray-600";
     }
+  };
+
+  const saveStatus = () => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === selectedOrder.id ? selectedOrder : o
+      )
+    );
+
+    // Close modal
+    setShowModal(false);
+
+    // Later: Add API call here to update status in backend
+    // axios.post('/update_order_status.php', { id: selectedOrder.id, status: selectedOrder.status })
   };
 
   return (
@@ -99,7 +122,13 @@ export default function Orders() {
                     </td>
                     <td className="p-3">{order.date}</td>
                     <td className="p-3 text-center">
-                      <button className="px-4 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition">
+                      <button
+                        className="px-4 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setShowModal(true);
+                        }}
+                      >
                         View
                       </button>
                     </td>
@@ -116,6 +145,48 @@ export default function Orders() {
           </table>
         </div>
       </div>
+
+      {/* ✅ Modal */}
+      {showModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-semibold mb-3">Order #{selectedOrder.id}</h3>
+
+            <p><strong>Customer:</strong> {selectedOrder.customer}</p>
+            <p><strong>Date:</strong> {selectedOrder.date}</p>
+
+            <label className="block mt-4 text-sm font-medium">Update Status</label>
+            <select
+              value={selectedOrder.status}
+              onChange={(e) =>
+                setSelectedOrder({ ...selectedOrder, status: e.target.value })
+              }
+              className="border w-full p-2 rounded mt-1"
+            >
+              <option>Pending</option>
+              <option>In Transit</option>
+              <option>Delayed</option>
+              <option>Delivered</option>
+            </select>
+
+            <div className="flex justify-end mt-5 gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Close
+              </button>
+
+              <button
+                onClick={saveStatus}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
