@@ -51,7 +51,7 @@ export default function DashboardLayout() {
       />
 
       {/* ✅ Main Content */}
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 w-[50%]">
         <Topbar 
           toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
         />

@@ -9,6 +9,7 @@ export default defineConfig({
     host: true, // Listen on all addresses
     port: 5173,
     strictPort: true, // fail if 5173 is already in use
+    allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.io'],
     hmr: {
       protocol: 'ws',
       host: 'localhost',
