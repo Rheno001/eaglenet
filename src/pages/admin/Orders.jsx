@@ -1,192 +1,307 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { 
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye 
+} from "lucide-react";
 
 export default function Orders() {
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
-
-  // Dummy data — will be replaced with API later
-  const [orders, setOrders] = useState([
-    { id: 2341, customer: "John Doe", status: "Delivered", date: "Nov 15, 2025" },
-    { id: 2339, customer: "Blessing Paul", status: "In Transit", date: "Nov 14, 2025" },
-    { id: 2332, customer: "Uche O.", status: "Delayed", date: "Nov 13, 2025" },
-    { id: 2325, customer: "Kelechi", status: "Delivered", date: "Nov 12, 2025" },
-    { id: 2362, customer: "Mr Bate", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2312, customer: "Nicki Minaj", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2352, customer: "Grace A.", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2322, customer: "jack Hoff", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2422, customer: "Mary Jane.", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2325, customer: "John Bellion.", status: "Pending", date: "Nov 11, 2025" },
-    { id: 2302, customer: "Mike Oxlong", status: "Pending", date: "Nov 11, 2025" },
-  ]);
-
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  // Filter Logic
-  const filteredOrders = orders.filter((order) => {
-    const matchSearch =
-      order.customer.toLowerCase().includes(search.toLowerCase()) ||
-      String(order.id).includes(search);
+  useEffect(() => {
+    fetchBookings();
+  }, []);
 
-    const matchStatus =
-      filterStatus === "All" || order.status === filterStatus;
+  useEffect(() => {
+    applyFilters();
+  }, [orders, searchTerm, filterStatus]);
 
-    return matchSearch && matchStatus;
-  });
-
-  const statusColor = (status) => {
-    switch (status) {
-      case "Delivered":
-        return "bg-green-100 text-green-700";
-      case "In Transit":
-        return "bg-yellow-100 text-yellow-700";
-      case "Delayed":
-        return "bg-red-100 text-red-700";
-      case "Pending":
-        return "bg-gray-200 text-gray-600";
-      default:
-        return "bg-gray-100 text-gray-600";
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://localhost/backend/get-bookings.php");
+      const data = await response.json();
+      if (data && data.bookings) {
+        setOrders(data.bookings);
+      } else {
+        setOrders([]);
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveStatus = () => {
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === selectedOrder.id ? selectedOrder : o
-      )
-    );
+  const applyFilters = () => {
+    let filtered = [...orders];
 
-    // Close modal
-    setShowModal(false);
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.customerName?.toLowerCase().includes(search) ||
+        order.trackingId?.toLowerCase().includes(search) ||
+        order.email?.toLowerCase().includes(search)
+      );
+    }
 
-    // Later: Add API call here to update status in backend
-    // axios.post('/update_order_status.php', { id: selectedOrder.id, status: selectedOrder.status })
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(order => order.status === filterStatus);
+    }
+
+    setFilteredOrders(filtered);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Page Title */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Orders</h2>
+  const confirmDelivered = async (trackingId) => {
+    try {
+      const response = await fetch("http://localhost/backend/update-booking-status.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackingId, status: "Delivered" }),
+      });
+      const result = await response.json();
+      if (result.success) fetchBookings();
+    } catch (err) {
+      console.error("Error updating delivery:", err);
+      setOrders(prev =>
+        prev.map(o => o.trackingId === trackingId ? { ...o, status: "Delivered" } : o)
+      );
+    }
+  };
 
-      {/* Search + Filter Bar */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search by Order ID or Customer"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded-lg px-4 py-2 w-full sm:w-72 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+  const updateStatus = async (newStatus) => {
+    try {
+      const response = await fetch("http://localhost/backend/update-booking-status.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackingId: selectedOrder.trackingId, status: newStatus }),
+      });
+      const result = await response.json();
+      if (result.success) {
+        setOrders(prev =>
+          prev.map(o => o.trackingId === selectedOrder.trackingId ? { ...o, status: newStatus } : o)
+        );
+      }
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setOrders(prev =>
+        prev.map(o => o.trackingId === selectedOrder.trackingId ? { ...o, status: newStatus } : o)
+      );
+    } finally {
+      setShowModal(false);
+    }
+  };
 
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="border rounded-lg px-4 py-2 w-full sm:w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option>All</option>
-          <option>Delivered</option>
-          <option>In Transit</option>
-          <option>Delayed</option>
-          <option>Pending</option>
-        </select>
+  const statusConfig = {
+    Delivered: { color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle },
+    "In Transit": { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck },
+    Delayed: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle },
+    Pending: { color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock },
+  };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-gray-600 font-semibold">Loading orders...</p>
       </div>
+    </div>
+  );
 
-      {/* Orders Table */}
-      <div className="bg-white p-6 rounded-xl shadow border">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-gray-600 text-left">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order Management</h2>
+        <p className="text-gray-600 mb-6">Manage and track all shipment orders</p>
+
+        {/* Search & Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Search Orders</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by customer, tracking ID, email..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Status</label>
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="In Transit">In Transit</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Delayed">Delayed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Orders Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-slate-50 border-b border-gray-200">
               <tr>
-                <th className="p-3">Order ID</th>
-                <th className="p-3">Customer</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Date</th>
-                <th className="p-3 text-center">Action</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Tracking ID</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Customer</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Route</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
               </tr>
             </thead>
-
-            <tbody>
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-b">
-                    <td className="p-3">#{order.id}</td>
-                    <td className="p-3">{order.customer}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded text-xs font-medium ${statusColor(
-                          order.status
-                        )}`}
-                      >
+            <tbody className="divide-y divide-gray-200">
+              {filteredOrders.map(order => {
+                const StatusIcon = statusConfig[order.status]?.icon || Clock;
+                return (
+                  <tr key={order.trackingId} className="hover:bg-slate-50 transition">
+                    <td className="px-6 py-4 text-blue-600 font-mono font-semibold">{order.trackingId}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="font-medium text-gray-900">{order.customerName}</div>
+                      <div className="text-gray-500 text-xs">{order.email}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {order.pickupCity} → {order.destinationCity}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1 ${statusConfig[order.status]?.color}`}>
+                        <StatusIcon className="w-4 h-4" />
                         {order.status}
                       </span>
                     </td>
-                    <td className="p-3">{order.date}</td>
-                    <td className="p-3 text-center">
+                    <td className="px-6 py-4 text-sm text-gray-600">{order.date}</td>
+                    <td className="px-6 py-4 text-sm flex justify-center gap-2">
                       <button
-                        className="px-4 py-1 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition"
                         onClick={() => {
                           setSelectedOrder(order);
                           setShowModal(true);
                         }}
+                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-gray-700"
                       >
-                        View
+                        <Eye className="w-4 h-4" /> View
                       </button>
+                      {order.status !== "Delivered" && (
+                        <button
+                          onClick={() => confirmDelivered(order.trackingId)}
+                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-1"
+                        >
+                          <CheckCircle className="w-4 h-4" /> Deliver
+                        </button>
+                      )}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="p-6 text-center text-gray-500">
-                    No matching orders found.
-                  </td>
-                </tr>
-              )}
+                )
+              })}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* ✅ Modal */}
-      {showModal && selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold mb-3">Order #{selectedOrder.id}</h3>
+        {/* Detail Modal */}
+        {showModal && selectedOrder && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b">
+                <h2 className="text-xl font-bold text-white">Order Details</h2>
+                <button onClick={() => setShowModal(false)} className="text-white hover:text-gray-200 text-2xl font-bold">✕</button>
+              </div>
 
-            <p><strong>Customer:</strong> {selectedOrder.customer}</p>
-            <p><strong>Date:</strong> {selectedOrder.date}</p>
+              <div className="p-6 space-y-6">
+                {/* Tracking Info */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm">Tracking ID</p>
+                    <p className="text-xl font-bold text-blue-600">{selectedOrder.trackingId}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-600 text-sm">Order Date</p>
+                    <p className="text-gray-900 font-semibold">{selectedOrder.date}</p>
+                  </div>
+                </div>
 
-            <label className="block mt-4 text-sm font-medium">Update Status</label>
-            <select
-              value={selectedOrder.status}
-              onChange={(e) =>
-                setSelectedOrder({ ...selectedOrder, status: e.target.value })
-              }
-              className="border w-full p-2 rounded mt-1"
-            >
-              <option>Pending</option>
-              <option>In Transit</option>
-              <option>Delayed</option>
-              <option>Delivered</option>
-            </select>
+                {/* Customer Info */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><User className="w-5 h-5 text-blue-600"/> Customer Information</h3>
+                  <p className="text-gray-600">Name</p>
+                  <p className="text-gray-900 font-medium">{selectedOrder.customerName || "—"}</p>
+                  <p className="text-gray-600 mt-1">Email</p>
+                  <p className="text-gray-900 font-medium">{selectedOrder.email || "—"}</p>
+                  <p className="text-gray-600 mt-1">Phone</p>
+                  <p className="text-gray-900 font-medium">{selectedOrder.phone || "—"}</p>
+                </div>
 
-            <div className="flex justify-end mt-5 gap-2">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Close
-              </button>
+                {/* Shipment Route */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><MapPin className="w-5 h-5 text-blue-600"/> Shipment Route</h3>
+                  <p className="text-gray-600">Pickup</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedOrder.pickupAddress || "—"}, {selectedOrder.pickupCity || "—"}
+                  </p>
+                  <p className="text-gray-600 mt-1">Destination</p>
+                  <p className="text-gray-900 font-medium">
+                    {selectedOrder.destination || "—"}, {selectedOrder.destinationCity || "—"}
+                  </p>
+                </div>
 
-              <button
-                onClick={saveStatus}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Save
-              </button>
+                {/* Package Info */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><Package className="w-5 h-5 text-blue-600"/> Package Information</h3>
+                  <p className="text-gray-600">Type</p>
+                  <p className="text-gray-900 font-medium">{selectedOrder.packageType || "—"}</p>
+                  <p className="text-gray-600 mt-1">Weight</p>
+                  <p className="text-gray-900 font-medium">{selectedOrder.packageWeight || "—"}</p>
+                  {selectedOrder.packageDetails && (
+                    <>
+                      <p className="text-gray-600 mt-1">Details</p>
+                      <p className="text-gray-900 font-medium">{selectedOrder.packageDetails}</p>
+                    </>
+                  )}
+                </div>
+
+                {/* Status Update */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Update Status</label>
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => updateStatus(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Delayed">Delayed</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+                </div>
+
+                {/* Close */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition"
+                  >
+                    Close
+                  </button>
+                </div>
+
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

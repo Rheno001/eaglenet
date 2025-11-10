@@ -33,6 +33,9 @@ export default function Sidebar() {
           <NavLink to="/eaglenet/auth/admin/reports" className={linkClass}>
             <BarChart2 size={18} /> Reports
           </NavLink>
+          <NavLink to="/eaglenet/auth/admin/payment" className={linkClass}>
+            <BarChart2 size={18} /> Payment
+          </NavLink>
           <NavLink to="/eaglenet/auth/admin/notifications" className={linkClass}>
             <Bell size={18} /> Notifications
           </NavLink>

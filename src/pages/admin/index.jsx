@@ -40,7 +40,6 @@ export default function Overview() {
       .catch((err) => console.error("Error fetching stats:", err));
   }, []);
 
-  // ======== PIE CHART (Shipment Status Breakdown) ========
   const pieData = {
     labels: ["Pending", "Delivered", "In Transit"],
     datasets: [
@@ -51,12 +50,11 @@ export default function Overview() {
           stats.delivered_shipments,
           stats.in_transit_shipments,
         ],
-        backgroundColor: ["#facc15", "#22c55e", "#3b82f6"], // yellow, green, blue
+        backgroundColor: ["#facc15", "#22c55e", "#3b82f6"],
       },
     ],
   };
 
-  // ======== BAR CHART (Shipment Status Comparison) ========
   const barData = {
     labels: ["Pending", "Delivered", "In Transit"],
     datasets: [
@@ -84,7 +82,6 @@ export default function Overview() {
     <div className="bg-gray-50 p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
 
-      {/* ====== STAT CARDS ====== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-5 rounded-xl shadow border">
           <p className="text-gray-500 text-sm">Total Users</p>
@@ -108,12 +105,13 @@ export default function Overview() {
         </div>
 
         <div className="bg-white p-5 rounded-xl shadow border">
-          <p className="text-gray-500 text-sm">Total Revenue</p>
-          <h3 className="text-3xl font-bold text-purple-600 mt-1">₦2.4M</h3>
+          <p className="text-gray-500 text-sm">Delivered Shipments</p>
+          <h3 className="text-3xl font-bold text-green-600 mt-1">
+            {stats.delivered_shipments}
+          </h3>
         </div>
       </div>
 
-      {/* ====== CHARTS ====== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-white p-6 rounded-xl shadow border h-[60vh]">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">
