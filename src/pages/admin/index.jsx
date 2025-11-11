@@ -115,14 +115,14 @@ export default function Overview() {
 
       {/* ====== CHARTS ====== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white p-6 rounded-xl shadow border h-[60vh]">
+        <div className="bg-white p-6 rounded-xl shadow border h-[65vh]">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">
             Shipment Status (Pie Chart)
           </h3>
           <Pie data={pieData} options={chartOptions} />
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow border">
+        <div className="bg-white p-6 rounded-xl shadow border h-[65vh]">
           <h3 className="text-lg font-semibold text-gray-700 mb-3">
             Shipment Status Comparison (Bar Chart)
           </h3>
