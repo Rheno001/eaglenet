@@ -52,7 +52,6 @@ export default function Booking() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -117,7 +116,6 @@ export default function Booking() {
     setLoading(true);
 
     try {
-      // generate tracking id and include in payload
       const trackingId = generateTrackingId();
       const payload = { ...formData, trackingId };
 
@@ -129,9 +127,10 @@ export default function Booking() {
         },
         body: JSON.stringify(payload),
       });
-      // Read raw text and log status for debugging server 500 / empty responses
+
       const text = await response.text();
       console.log('Booking.php HTTP status:', response.status, 'raw response length:', text ? text.length : 0);
+
       if (!text) {
         console.warn('Booking.php returned empty response body (null).');
         setErrors({ form: `Server returned empty response (status ${response.status}). Check server logs.` });
@@ -153,21 +152,19 @@ export default function Booking() {
 
       if (response.ok && result && result.status === "success") {
         const estimatedCost = (parseFloat(formData.packageWeight) * 150).toFixed(2);
-
-        // bookingId already sent to backend and generated before sending
-        // but keep state for UI
         setBookingId(result.trackingId || trackingId || '');
 
-        // SweetAlert confirmation
         const MySwal = withReactContent(Swal);
         await MySwal.fire({
-          title: 'Booking successful',
+          title: 'Booking Successful',
           html: `<p class="text-left">Tracking ID: <strong>${trackingId}</strong><br/>Estimated Cost: <strong>₦${estimatedCost}</strong></p>`,
           icon: 'success',
           confirmButtonText: 'OK',
+          customClass: {
+            confirmButton: 'bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700',
+          },
         });
 
-        // reset the form after user confirms
         setFormData({
           customerName: "",
           email: "",
@@ -183,7 +180,7 @@ export default function Booking() {
           preferredTime: "",
           specialRequirements: "",
         });
-
+        setSuccessMessage(`Booking successful! Tracking ID: ${trackingId}`);
       } else {
         const msg = result && result.message ? result.message : `Server responded with status ${response.status}`;
         setErrors({ form: msg });
@@ -217,114 +214,121 @@ export default function Booking() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4 md:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-teal-50 to-orange-50 py-12 px-4 md:px-8">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center">
-              <Truck className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 rounded-full bg-[#1e3a8a] flex items-center justify-center shadow-lg">
+              <Truck className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">Book a Shipment</h1>
+            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+              Book a Shipment
+            </h1>
           </div>
-          <p className="text-gray-600 text-lg">Quick and easy shipping booking with EagleNet Nigeria Logistics</p>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Seamlessly book your shipment with EagleNet Nigeria Logistics
+          </p>
         </div>
 
         {/* Success Message */}
         {successMessage && (
-          <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-6 flex items-start gap-3 animate-slide-in">
-            <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-4 mb-8 flex items-start gap-3 animate-fade-in">
+            <CheckCircle className="w-6 h-6 text-teal-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-green-700 font-semibold whitespace-pre-line">{successMessage}</p>
+              <p className="text-teal-700 font-semibold">{successMessage}</p>
             </div>
           </div>
         )}
 
         {/* Form Error */}
         {errors.form && (
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-8 flex items-start gap-3 animate-fade-in">
             <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
             <p className="text-red-700 font-semibold">{errors.form}</p>
           </div>
         )}
 
         {/* Main Form */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
-          <div className="space-y-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10">
+          <form onSubmit={handleSubmit} className="space-y-10">
             {/* Section 1: Sender Information */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <User className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Sender Information</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <User className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Sender Information</h2>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="customerName">
                     Full Name *
                   </label>
                   <input
                     type="text"
+                    id="customerName"
                     name="customerName"
                     placeholder="Your full name"
                     value={formData.customerName}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.customerName
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.customerName ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.customerName}
+                    aria-describedby={errors.customerName ? "customerName-error" : undefined}
                   />
                   {errors.customerName && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="customerName-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.customerName}
                     </p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="email">
                     Email Address *
                   </label>
                   <input
                     type="email"
+                    id="email"
                     name="email"
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.email
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
                   />
                   {errors.email && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="email-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.email}
                     </p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="phone">
                     Phone Number *
                   </label>
                   <input
                     type="tel"
+                    id="phone"
                     name="phone"
                     placeholder="+234 801 234 5678"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.phone
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.phone}
+                    aria-describedby={errors.phone ? "phone-error" : undefined}
                   />
                   {errors.phone && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="phone-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.phone}
                     </p>
@@ -335,57 +339,59 @@ export default function Booking() {
 
             {/* Section 2: Pickup Details */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Pickup Details</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <MapPin className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Pickup Details</h2>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="pickupAddress">
                     Pickup Address *
                   </label>
                   <textarea
+                    id="pickupAddress"
                     name="pickupAddress"
                     placeholder="Enter full pickup address"
                     value={formData.pickupAddress}
                     onChange={handleChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.pickupAddress
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.pickupAddress ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.pickupAddress}
+                    aria-describedby={errors.pickupAddress ? "pickupAddress-error" : undefined}
                   />
                   {errors.pickupAddress && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="pickupAddress-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.pickupAddress}
                     </p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="pickupCity">
                     Pickup City *
                   </label>
                   <select
+                    id="pickupCity"
                     name="pickupCity"
                     value={formData.pickupCity}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.pickupCity
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.pickupCity ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900`}
+                    aria-required="true"
+                    aria-invalid={!!errors.pickupCity}
+                    aria-describedby={errors.pickupCity ? "pickupCity-error" : undefined}
                   >
                     <option value="">Select pickup city</option>
-                    {nigerianCities.map(city => (
+                    {nigerianCities.map((city) => (
                       <option key={city} value={city}>{city}</option>
                     ))}
                   </select>
                   {errors.pickupCity && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="pickupCity-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.pickupCity}
                     </p>
@@ -396,57 +402,59 @@ export default function Booking() {
 
             {/* Section 3: Delivery Details */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <Truck className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Delivery Details</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <Truck className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Delivery Details</h2>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="destination">
                     Delivery Address *
                   </label>
                   <textarea
+                    id="destination"
                     name="destination"
                     placeholder="Enter full delivery address"
                     value={formData.destination}
                     onChange={handleChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.destination
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.destination ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.destination}
+                    aria-describedby={errors.destination ? "destination-error" : undefined}
                   />
                   {errors.destination && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="destination-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.destination}
                     </p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="destinationCity">
                     Destination City *
                   </label>
                   <select
+                    id="destinationCity"
                     name="destinationCity"
                     value={formData.destinationCity}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.destinationCity
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.destinationCity ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900`}
+                    aria-required="true"
+                    aria-invalid={!!errors.destinationCity}
+                    aria-describedby={errors.destinationCity ? "destinationCity-error" : undefined}
                   >
                     <option value="">Select destination city</option>
-                    {nigerianCities.map(city => (
+                    {nigerianCities.map((city) => (
                       <option key={city} value={city}>{city}</option>
                     ))}
                   </select>
                   {errors.destinationCity && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="destinationCity-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.destinationCity}
                     </p>
@@ -457,73 +465,76 @@ export default function Booking() {
 
             {/* Section 4: Package Details */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <Package className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Package Details</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <Package className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Package Details</h2>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageType">
                     Package Type *
                   </label>
                   <select
+                    id="packageType"
                     name="packageType"
                     value={formData.packageType}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900"
+                    aria-required="true"
                   >
-                    {packageTypes.map(type => (
+                    {packageTypes.map((type) => (
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageWeight">
                     Package Weight (kg) *
                   </label>
                   <input
                     type="number"
+                    id="packageWeight"
                     name="packageWeight"
                     placeholder="0.00"
                     min="0.1"
                     step="0.1"
                     value={formData.packageWeight}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.packageWeight
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.packageWeight ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                    aria-required="true"
+                    aria-invalid={!!errors.packageWeight}
+                    aria-describedby={errors.packageWeight ? "packageWeight-error" : undefined}
                   />
                   {errors.packageWeight && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="packageWeight-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.packageWeight}
                     </p>
                   )}
                 </div>
               </div>
-
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageDetails">
                   Package Description *
-                </label>
+                  </label>
                 <textarea
+                  id="packageDetails"
                   name="packageDetails"
                   placeholder="Describe what you're shipping..."
                   value={formData.packageDetails}
                   onChange={handleChange}
                   rows="4"
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                    errors.packageDetails
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300"
-                  }`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                    errors.packageDetails ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                  } bg-gray-50 text-gray-900 placeholder-gray-400`}
+                  aria-required="true"
+                  aria-invalid={!!errors.packageDetails}
+                  aria-describedby={errors.packageDetails ? "packageDetails-error" : undefined}
                 />
                 {errors.packageDetails && (
-                  <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                  <p id="packageDetails-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.packageDetails}
                   </p>
@@ -533,44 +544,45 @@ export default function Booking() {
 
             {/* Section 5: Scheduling */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <Calendar className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Scheduling</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <Calendar className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Scheduling</h2>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="date">
                     Preferred Pickup Date *
                   </label>
                   <input
                     type="date"
+                    id="date"
                     name="date"
                     value={formData.date}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.date
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                      errors.date ? "border-red-500 focus:ring-red-500" : "border-gray-200"
+                    } bg-gray-50 text-gray-900`}
+                    aria-required="true"
+                    aria-invalid={!!errors.date}
+                    aria-describedby={errors.date ? "date-error" : undefined}
                   />
                   {errors.date && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                    <p id="date-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3" />
                       {errors.date}
                     </p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="preferredTime">
                     Preferred Pickup Time
                   </label>
                   <select
+                    id="preferredTime"
                     name="preferredTime"
                     value={formData.preferredTime}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900"
                   >
                     <option value="">Anytime</option>
                     <option value="morning">Morning (7:00 AM - 12:00 PM)</option>
@@ -581,47 +593,49 @@ export default function Booking() {
               </div>
             </div>
 
-            {/* Section 6: Additional Info */}
+            {/* Section 6: Additional Information */}
             <div>
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b-2 border-blue-600">
-                <FileText className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-bold text-gray-900">Additional Information</h2>
+              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
+                <FileText className="w-6 h-6 text-[#1e3a8a]" />
+                <h2 className="text-2xl font-bold text-gray-900">Additional Information</h2>
               </div>
-
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="specialRequirements">
                   Special Requirements (Optional)
                 </label>
                 <textarea
+                  id="specialRequirements"
                   name="specialRequirements"
                   placeholder="Any special handling instructions?"
                   value={formData.specialRequirements}
                   onChange={handleChange}
                   rows="3"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400"
                 />
               </div>
             </div>
 
             {/* Pricing Info */}
             {formData.packageWeight && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700 font-semibold">Estimated Shipping Cost:</span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-2xl font-bold text-orange-600">
                     ₦{(parseFloat(formData.packageWeight) * 150).toFixed(2)}
                   </span>
                 </div>
-                <p className="text-gray-600 text-xs mt-2">*Pricing is ₦150 per kg. Final cost may vary based on distance and additional services.</p>
+                <p className="text-gray-600 text-xs mt-2">
+                  *Pricing is ₦150 per kg. Final cost may vary based on distance and additional services.
+                </p>
               </div>
             )}
 
-            {/* Submit Button */}
+            {/* Form Actions */}
             <div className="flex gap-4 pt-6 border-t border-gray-200">
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-[#1e3a8a] hover:bg-[#1e40af] text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
               >
                 {loading ? (
                   <>
@@ -636,30 +650,31 @@ export default function Booking() {
                 )}
               </button>
               <button
+                type="button"
                 onClick={handleReset}
                 disabled={loading}
-                className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+                className="px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 shadow-sm"
               >
                 Clear Form
               </button>
             </div>
-          </div>
+          </form>
         </div>
 
         {/* Help Section */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Need Help?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-gray-600 font-semibold mb-2">📞 Call Us</p>
+        <div className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Need Help?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="p-4 bg-teal-50 rounded-lg">
+              <p className="text-teal-600 font-semibold mb-2">📞 Call Us</p>
               <p className="text-gray-700">+234 (0) 700 123 4567</p>
             </div>
-            <div>
-              <p className="text-gray-600 font-semibold mb-2">📧 Email Us</p>
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <p className="text-purple-600 font-semibold mb-2">📧 Email Us</p>
               <p className="text-gray-700">support@eaglenet.com</p>
             </div>
-            <div>
-              <p className="text-gray-600 font-semibold mb-2">💬 Chat Support</p>
+            <div className="p-4 bg-orange-50 rounded-lg">
+              <p className="text-orange-600 font-semibold mb-2">💬 Chat Support</p>
               <p className="text-gray-700">Available 8 AM - 8 PM</p>
             </div>
           </div>

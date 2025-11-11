@@ -1,56 +1,112 @@
-import { NavLink } from "react-router-dom";
-import { LogOut, LayoutDashboard, Users, Package, Bell, BarChart2, Settings } from "lucide-react";
-import { AuthContext } from "../../context/AuthContext";
 import { useContext } from "react";
+import { NavLink } from "react-router-dom";
+import { LogOut, LayoutDashboard, Users, Package, Bell, BarChart2, Settings, Menu, X } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
 
-export default function Sidebar() {
+export default function Sidebar({ isCollapsed, toggleSidebar }) {
   const { logout } = useContext(AuthContext);
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
+    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium ${
       isActive
-        ? "bg-gray-900 text-white shadow"
-        : "text-gray-700 hover:bg-blue-100 hover:text-blue-700"
-    }`;
+        ? "bg-teal-500 text-white shadow-md"
+        : "text-gray-200 hover:bg-teal-600 hover:text-white"
+    } ${isCollapsed ? "justify-center px-2" : ""}`;
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between">
-      {/* Top Section */}
+    <aside
+      className={`${
+        isCollapsed ? "w-16" : "w-64"
+      } bg-[#1e3a8a] text-white flex flex-col justify-between min-h-screen transition-all duration-300 shadow-lg`}
+    >
       <div>
-        <h1 className="text-2xl font-bold text-center py-5 text-gray-900">
-          EagleNet Admin
-        </h1>
-        <nav className="p-4 space-y-2">
-          <NavLink to="/eaglenet/auth/admin" end className={linkClass}>
-            <LayoutDashboard size={18} /> Overview
+        <div className="p-4 flex items-center justify-between border-b border-gray-700">
+          {!isCollapsed && (
+            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="text-orange-400">🦅</span> EagleNet
+            </h1>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-full hover:bg-teal-600 text-white transition-all duration-200"
+            aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isCollapsed ? <Menu size={20} /> : <X size={20} />}
+          </button>
+        </div>
+        <nav className="p-4 space-y-1">
+          <NavLink
+            to="/eaglenet/auth/admin"
+            end
+            className={linkClass}
+            aria-label="Overview"
+          >
+            <LayoutDashboard size={18} />
+            {!isCollapsed && <span>Overview</span>}
           </NavLink>
-          <NavLink to="/eaglenet/auth/admin/orders" className={linkClass}>
-            <Package size={18} /> Orders
+          <NavLink
+            to="/eaglenet/auth/admin/orders"
+            className={linkClass}
+            aria-label="Orders"
+          >
+            <Package size={18} />
+            {!isCollapsed && <span>Orders</span>}
           </NavLink>
-          <NavLink to="/eaglenet/auth/admin/users" className={linkClass}>
-            <Users size={18} /> Users
+          <NavLink
+            to="/eaglenet/auth/admin/users"
+            className={linkClass}
+            aria-label="Users"
+          >
+            <Users size={18} />
+            {!isCollapsed && <span>Users</span>}
           </NavLink>
-          <NavLink to="/eaglenet/auth/admin/reports" className={linkClass}>
-            <BarChart2 size={18} /> Reports
+          <NavLink
+            to="/eaglenet/auth/admin/reports"
+            className={linkClass}
+            aria-label="Reports"
+          >
+            <BarChart2 size={18} />
+            {!isCollapsed && <span>Reports</span>}
           </NavLink>
-          <NavLink to="/eaglenet/auth/admin/notifications" className={linkClass}>
-            <Bell size={18} /> Notifications
+          <NavLink
+            to="/eaglenet/auth/admin/payment"
+            className={linkClass}
+            aria-label="Payment"
+          >
+            <BarChart2 size={18} />
+            {!isCollapsed && <span>Payment</span>}
           </NavLink>
-          <NavLink to="/eaglenet/auth/admin/settings" className={linkClass}>
-            <Settings size={18} /> Settings
+          <NavLink
+            to="/eaglenet/auth/admin/notifications"
+            className={linkClass}
+            aria-label="Notifications"
+          >
+            <Bell size={18} />
+            {!isCollapsed && <span>Notifications</span>}
           </NavLink>
+          {/*
+          <NavLink
+            to="/eaglenet/auth/admin/settings"
+            className={linkClass}
+            aria-label="Settings"
+          >
+            <Settings size={18} />
+            {!isCollapsed && <span>Settings</span>}
+          </NavLink>
+          */}
+          <button
+            onClick={logout}
+            className={`flex ${
+              isCollapsed ? "justify-center" : "items-center"
+            } w-full gap-3 px-4 py-3 text-sm font-medium text-gray-200 hover:text-red-400 hover:bg-red-800/20 rounded-xl transition-all duration-200`}
+            aria-label="Logout"
+          >
+            <LogOut size={18} />
+            {!isCollapsed && <span>Logout</span>}
+          </button>
         </nav>
       </div>
-
-      {/* Bottom Section */}
-      <div className="p-4 border-t">
-        <button
-          onClick={logout}
-          className="flex items-center w-full gap-3 text-gray-600 hover:text-red-600 hover:cursor-pointer transition"
-        >
-          <LogOut size={18} /> Logout
-        </button>
-      </div>
+      <div className="p-4 border-t border-gray-700"></div>
     </aside>
   );
 }

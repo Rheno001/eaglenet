@@ -29,6 +29,7 @@ import AdminDashboard from "./pages/admin";
 import AdminOrders from "./pages/admin/Orders";
 import AdminUsers from "./pages/admin/Users";
 import AdminReports from "./pages/admin/Reports";
+import AdminPayment from "./pages/admin/Payment";
 import AdminNotifications from "./pages/admin/Notifications";
 import AdminSettings from "./pages/admin/Settings";
 
