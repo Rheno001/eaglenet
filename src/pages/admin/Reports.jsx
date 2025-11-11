@@ -66,13 +66,13 @@ export default function MonthlyReport() {
             Monthly Activity Report
           </h2>
           <div className="flex gap-4 mt-4 sm:mt-0">
-            <button
+            {/* <button
               onClick={() => exportReport('excel')}
               className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 shadow-sm"
             >
               <Download className="w-5 h-5" />
               Excel
-            </button>
+            </button> */}
             <button
               onClick={() => exportReport('word')}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm"
