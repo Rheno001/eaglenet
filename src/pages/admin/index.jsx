@@ -229,7 +229,6 @@ export default function Overview() {
           <h3 className="text-lg font-semibold text-gray-700 mb-3">
             Shipment Status Comparison (Bar Chart)
           </h3>
-          <Bar data={barData} options={chartOptions} />
         </div>
       </div>
     </div>

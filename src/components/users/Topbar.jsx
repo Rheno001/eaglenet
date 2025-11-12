@@ -3,7 +3,7 @@ import { Menu } from "lucide-react";
 import PropTypes from 'prop-types';
 import { AuthContext } from "../../context/AuthContext";
 
-export default function Topbar({ toggleSidebar, className = "" }) {
+export default function Topbar({ className = "" }) {
   const { user } = useContext(AuthContext);
 
   return (
@@ -17,13 +17,6 @@ export default function Topbar({ toggleSidebar, className = "" }) {
     >
       {/* Left - Toggle for mobile + Title */}
       <div className="flex items-center gap-4">
-        <button 
-          className="lg:hidden text-gray-700 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition" 
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          <Menu size={24} />
-        </button>
         <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
       </div>
 

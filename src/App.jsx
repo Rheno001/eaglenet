@@ -20,8 +20,7 @@ import DashboardLayout from "./pages/Dashboard/Layout";
 import Overview from "./pages/Dashboard/index";
 import Shipments from "./pages/Dashboard/Shipments";
 import Booking from "./pages/Dashboard/Booking";
-import Payments from "./pages/Dashboard/Payments";
-import Track from "./pages/Dashboard/track";
+import Payments from "./pages/Dashboard/Payment";
 
 // ADMIN Dashboard pages
 import AdminLayout from "./pages/admin/Layout";
@@ -76,8 +75,7 @@ function App() {
               <Route index element={<Overview />} />
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
-              <Route path="payments" element={<Payments />} />
-              <Route path="track" element={<Track />} />
+              <Route path="payment" element={<Payments />} />
             </Route>
           </Route>
 
@@ -88,6 +86,7 @@ function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="reports" element={<AdminReports />} />
+              <Route path="payment" element={<AdminPayment />} />
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
