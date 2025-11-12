@@ -219,7 +219,7 @@ export default function Booking() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-full bg-[#1e3a8a] flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center shadow-lg">
               <Truck className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
@@ -635,7 +635,7 @@ export default function Booking() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[#1e3a8a] hover:bg-[#1e40af] text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+                className="flex-1 bg-gray-900 hover:bg-[#1e40af] text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
               >
                 {loading ? (
                   <>

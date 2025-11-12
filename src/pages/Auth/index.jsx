@@ -1,17 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../../context/AuthContext';
-// import jwt_decode from 'jwt-decode';  
 import { ROLES } from '../../utils/roles';
 
 export default function Auth() {
   const { login } = useContext(AuthContext);
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
   const [formData, setFormData] = useState({
-    firstName: '', // Changed from firstName and lastName
+    firstName: '',
     lastName: '',
     email: '',
     password: '',
@@ -21,52 +22,75 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Silent token verification on mount
+  // ✅ Silent token verification
   useEffect(() => {
     const verifyToken = async () => {
       const token = localStorage.getItem('jwt');
       if (!token) return;
-
       try {
         const res = await axios.post(
           'http://localhost/backend/verify-token.php',
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-
         if (res.data.success) {
           const userData = res.data.user;
           login(userData, token);
-          // Redirect based on role
           if (userData.role === ROLES.USER) navigate('/dashboard');
           else if (userData.role === ROLES.ADMIN) navigate('/dashboard/requests');
           else if (userData.role === ROLES.SUPER_ADMIN) navigate('/dashboard/manage-admins');
         } else {
-          localStorage.removeItem('jwt'); // invalid token, clear it
+          localStorage.removeItem('jwt');
         }
       } catch (err) {
         console.error('Token verification error:', err);
         localStorage.removeItem('jwt');
       }
     };
-
     verifyToken();
   }, [login, navigate]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setError('');
     setFormData({ firstName: '', lastName: '', email: '', password: '' });
   };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  // ✅ Forgot password submission
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail) return setError('Please enter your email address');
+    setLoading(true);
+    setError('');
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/forgot-password.php`,
+        { email: forgotEmail },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      const result = response.data;
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Email Sent!',
+          text: result.message || 'Password reset link has been sent to your email.',
+        });
+        setForgotEmail('');
+        setShowForgot(false);
+      } else {
+        setError(result.message || 'Failed to send reset email.');
+      }
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setError('Could not connect to server. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // ✅ Login/Signup submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -79,17 +103,16 @@ export default function Auth() {
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-      };
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        };
 
     try {
       const response = await axios.post(endpoint, payload, {
         headers: { 'Content-Type': 'application/json' },
       });
-
       const result = response.data;
 
       if (result.success) {
@@ -108,15 +131,13 @@ export default function Auth() {
         };
 
         if (isLogin) {
-          // ✅ Store token persistently
           login(userData, result.token);
           localStorage.setItem('jwt', result.token);
-
           if (userData.role === ROLES.USER) navigate('/dashboard');
           else if (userData.role === ROLES.ADMIN) navigate('/dashboard/requests');
           else if (userData.role === ROLES.SUPER_ADMIN) navigate('/dashboard/manage-admins');
         } else {
-          toggleForm(); // Switch to login form after signup
+          toggleForm();
         }
 
         setFormData({ firstName: '', lastName: '', email: '', password: '' });
@@ -124,14 +145,8 @@ export default function Auth() {
         setError(result.message || (isLogin ? 'Login failed' : 'Registration failed'));
       }
     } catch (err) {
-      console.error('Server or network error:', err);
-      if (err.response && err.response.data) {
-        setError(err.response.data.message || 'Server error occurred');
-      } else if (err.request) {
-        setError('No response from server. Is the backend running at http://localhost:8000?');
-      } else {
-        setError(err.message || 'Cannot connect to server. Please check your connection.');
-      }
+      console.error('Server error:', err);
+      setError('Unable to connect to the server.');
     } finally {
       setLoading(false);
     }
@@ -140,6 +155,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen mt-10 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
       <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
+        {/* Header */}
         <div className="text-center mb-8">
           {isLogin ? (
             <LogIn className="mx-auto h-10 w-10 text-gray-900" />
@@ -156,84 +172,131 @@ export default function Auth() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+        {/* Forgot Password Form */}
+        {showForgot ? (
+          <form onSubmit={handleForgotPassword} className="space-y-4">
             <div>
-              <label className="text-sm font-medium">First Name</label>
+              <label className="text-sm font-medium">Email Address</label>
               <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-                className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-              />
-              <label className="text-sm font-medium">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
                 required
                 className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
               />
             </div>
-          )}
-
-          <div>
-            <label className="text-sm font-medium">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-            />
-          </div>
-
-          <div className="relative">
-            <label className="text-sm font-medium">Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 pr-10 focus:border-gray-900 outline-none"
-            />
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+            >
+              {loading ? 'Sending...' : 'Send Reset Link'}
+            </button>
             <button
               type="button"
-              onClick={togglePasswordVisibility}
-              className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+              onClick={() => setShowForgot(false)}
+              className="w-full mt-2 text-gray-700 hover:underline"
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              Back to Login
             </button>
-          </div>
+          </form>
+        ) : (
+          <>
+            {/* Login/Signup Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <label className="text-sm font-medium">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                  />
+                  <label className="text-sm font-medium">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                    className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                  />
+                </div>
+              )}
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+              <div>
+                <label className="text-sm font-medium">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
-          >
-            {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
+              <div className="relative">
+                <label className="text-sm font-medium">Password</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 pr-10 focus:border-gray-900 outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
 
-        <div className="text-center mt-6">
-          <p className="text-gray-600 text-sm">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-            <button
-              type="button"
-              onClick={toggleForm}
-              className="text-gray-900 font-medium hover:underline"
-            >
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </button>
-          </p>
-        </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+              >
+                {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+
+            {/* Forgot Password Link */}
+            {isLogin && (
+              <div className="text-center mt-3">
+                <button
+                  onClick={() => setShowForgot(true)}
+                  className="text-sm text-gray-700 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
+            {/* Toggle Login/Signup */}
+            <div className="text-center mt-6">
+              <p className="text-gray-600 text-sm">
+                {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+                <button
+                  type="button"
+                  onClick={toggleForm}
+                  className="text-gray-900 font-medium hover:underline"
+                >
+                  {isLogin ? 'Sign Up' : 'Sign In'}
+                </button>
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
