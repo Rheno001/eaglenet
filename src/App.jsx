@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthContext } from "./context/AuthContext";
+import ResetPassword from "./components/RestPassword";
 
 // Public pages
 import Home from "./pages/Home";
@@ -47,7 +48,7 @@ function App() {
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // ✅ If logged in and tries to visit login/signup, redirect
+  // ✅ Redirect logged-in users away from login/signup
   if (parsedUser && (location.pathname === "/login" || location.pathname === "/signup")) {
     if (parsedUser.role === "superadmin") return <Navigate to="/eaglenet/auth/superadmin" replace />;
     if (parsedUser.role === "admin") return <Navigate to="/eaglenet/auth/admin" replace />;
@@ -68,8 +69,9 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/signup" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Moved here */}
 
-          {/* ✅ USER DASHBOARD — ONLY ROLE = user */}
+          {/* ✅ USER DASHBOARD */}
           <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
