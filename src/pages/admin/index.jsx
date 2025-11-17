@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
@@ -80,9 +81,9 @@ export default function Overview() {
       : shipmentDataAll.filter((d) => d.name === pieFilter);
 
   const barChartData = [
-    { status: "Pending", shipments: stats.pending_shipments },
-    { status: "Delivered", shipments: stats.delivered_shipments },
-    { status: "In Transit", shipments: stats.in_transit_shipments },
+    { status: "Pending", shipments: stats.pending_shipments, fill: "#facc15" },
+    { status: "Delivered", shipments: stats.delivered_shipments, fill: "#22c55e" },
+    { status: "In Transit", shipments: stats.in_transit_shipments, fill: "#3b82f6" },
   ];
 
   const StatCard = ({ icon: Icon, label, value, bgColor, textColor }) => (
@@ -102,7 +103,7 @@ export default function Overview() {
   // Optional: Function to update a booking status
   const updateBookingStatus = async (trackingId, status) => {
     try {
-      const res = await fetch("http://localhost/backend/update-booking.php", {
+      const res = await fetch("http://localhost/backend/update-booking-status.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingId, status }),
@@ -229,6 +230,15 @@ export default function Overview() {
           <h3 className="text-lg font-semibold text-gray-700 mb-3">
             Shipment Status Comparison (Bar Chart)
           </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={barChartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="status" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="shipments" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

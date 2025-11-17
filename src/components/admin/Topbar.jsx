@@ -1,10 +1,25 @@
 import { Bell, Search, User } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 
 export default function Topbar() {
   const { user, logout } = useContext(AuthContext);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  // Simulate fetching notifications when the component mounts
+  useEffect(() => {
+    const fetchNotifications = () => {
+      // In a real app, you would fetch this from your backend API
+      const demoNotifications = [
+        { id: 1, message: "New shipment #12345 has been created." },
+        { id: 2, message: "Shipment #67890 is now in transit." },
+        { id: 3, message: "A user has registered." },
+      ];
+      setNotifications(demoNotifications);
+    };
+    fetchNotifications();
+  }, []);
 
   // Toggle profile dropdown
   const toggleProfileDropdown = () => {
@@ -31,12 +46,14 @@ export default function Topbar() {
         {/* Notifications */}
         <button
           className="relative p-2 rounded-full hover:bg-teal-100 transition-all duration-200"
-          aria-label="Notifications (3 new)"
+          aria-label={`Notifications (${notifications.length} new)`}
         >
           <Bell size={20} className="text-gray-600 hover:text-teal-600" />
-          <span className="absolute top-0 right-0 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
-            3
-          </span>
+          {notifications.length > 0 && (
+            <span className="absolute top-0 right-0 bg-orange-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
+              {notifications.length}
+            </span>
+          )}
         </button>
 
         {/* User Info */}

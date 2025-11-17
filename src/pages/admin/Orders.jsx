@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { 
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye 
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight
 } from "lucide-react";
 
 export default function Orders() {
@@ -213,95 +213,159 @@ export default function Orders() {
 
         {/* Detail Modal */}
         {showModal && selectedOrder && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b">
-                <h2 className="text-xl font-bold text-white">Order Details</h2>
-                <button onClick={() => setShowModal(false)} className="text-white hover:text-gray-200 text-2xl font-bold">✕</button>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+            <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col animate-slideUp">
+              {/* Modal Header */}
+              <div className="bg-white px-6 py-5 flex items-center justify-between border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+                  <p className="text-gray-500 text-sm mt-1">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
+                </div>
+                <button 
+                  onClick={() => setShowModal(false)} 
+                  className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"
+                >
+                  <X size={24} />
+                </button>
               </div>
 
-              <div className="p-6 space-y-6">
-                {/* Tracking Info */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm">Tracking ID</p>
-                    <p className="text-xl font-bold text-blue-600">{selectedOrder.trackingId}</p>
+              {/* Modal Content */}
+              <div className="overflow-y-auto flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column (Details) */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Customer Information */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><User className="w-6 h-6 text-blue-600"/>Customer Details</h3>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">Name</dt>
+                        <dd className="mt-1 text-gray-900 font-semibold">{selectedOrder.customerName || "—"}</dd>
+                      </div>
+                      <div className="sm:col-span-1">
+                        <dt className="text-sm font-medium text-gray-500">Phone</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.phone || "—"}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">Email</dt>
+                        <dd className="mt-1 text-gray-900 break-all">{selectedOrder.email || "—"}</dd>
+                      </div>
+                    </dl>
                   </div>
-                  <div className="text-right">
-                    <p className="text-gray-600 text-sm">Order Date</p>
-                    <p className="text-gray-900 font-semibold">{selectedOrder.date}</p>
+
+                  {/* Package Information */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600"/>Package Details</h3>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Type</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.packageType || "—"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Weight</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.packageWeight || "—"}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="text-sm font-medium text-gray-500">Details</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.packageDetails || "—"}</dd>
+                      </div>
+                    </dl>
                   </div>
                 </div>
 
-                {/* Customer Info */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><User className="w-5 h-5 text-blue-600"/> Customer Information</h3>
-                  <p className="text-gray-600">Name</p>
-                  <p className="text-gray-900 font-medium">{selectedOrder.customerName || "—"}</p>
-                  <p className="text-gray-600 mt-1">Email</p>
-                  <p className="text-gray-900 font-medium">{selectedOrder.email || "—"}</p>
-                  <p className="text-gray-600 mt-1">Phone</p>
-                  <p className="text-gray-900 font-medium">{selectedOrder.phone || "—"}</p>
-                </div>
+                {/* Right Column (Status & Route) */}
+                <div className="lg:col-span-1 space-y-6">
+                  {/* Status Card */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Truck className="w-6 h-6 text-blue-600"/>Status</h3>
+                    <div className={`p-3 rounded-lg flex items-center gap-3 ${statusConfig[selectedOrder.status]?.color}`}>
+                      {React.createElement(statusConfig[selectedOrder.status]?.icon || Clock, { className: "w-6 h-6" })}
+                      <span className="font-bold text-lg">{selectedOrder.status}</span>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-500">Order Date</p>
+                      <p className="text-gray-900 font-semibold">{selectedOrder.date}</p>
+                    </div>
+                  </div>
 
-                {/* Shipment Route */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><MapPin className="w-5 h-5 text-blue-600"/> Shipment Route</h3>
-                  <p className="text-gray-600">Pickup</p>
-                  <p className="text-gray-900 font-medium">
-                    {selectedOrder.pickupAddress || "—"}, {selectedOrder.pickupCity || "—"}
-                  </p>
-                  <p className="text-gray-600 mt-1">Destination</p>
-                  <p className="text-gray-900 font-medium">
-                    {selectedOrder.destination || "—"}, {selectedOrder.destinationCity || "—"}
-                  </p>
-                </div>
+                  {/* Shipment Route Timeline */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><MapPin className="w-6 h-6 text-blue-600"/>Route</h3>
+                    <div className="relative border-l-2 border-dashed border-gray-300 ml-3">
+                      <div className="mb-8 pl-8 relative">
+                        <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-blue-500 rounded-full"></div>
+                        <p className="font-semibold text-blue-600">Origin</p>
+                        <p className="text-gray-800">{selectedOrder.pickupAddress || "—"}</p>
+                        <p className="text-sm text-gray-500">{selectedOrder.pickupCity || "—"}</p>
+                      </div>
+                      <div className="pl-8 relative">
+                        <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-green-500 rounded-full"></div>
+                        <p className="font-semibold text-green-600">Destination</p>
+                        <p className="text-gray-800">{selectedOrder.destination || "—"}</p>
+                        <p className="text-sm text-gray-500">{selectedOrder.destinationCity || "—"}</p>
+                      </div>
+                    </div>
+                  </div>
 
-                {/* Package Info */}
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2"><Package className="w-5 h-5 text-blue-600"/> Package Information</h3>
-                  <p className="text-gray-600">Type</p>
-                  <p className="text-gray-900 font-medium">{selectedOrder.packageType || "—"}</p>
-                  <p className="text-gray-600 mt-1">Weight</p>
-                  <p className="text-gray-900 font-medium">{selectedOrder.packageWeight || "—"}</p>
-                  {selectedOrder.packageDetails && (
-                    <>
-                      <p className="text-gray-600 mt-1">Details</p>
-                      <p className="text-gray-900 font-medium">{selectedOrder.packageDetails}</p>
-                    </>
-                  )}
+                  {/* Status Update */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-5">
+                    <label className="block text-sm font-bold text-gray-900 mb-3">Update Status</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["Pending", "In Transit", "Delayed", "Delivered"].map(status => (
+                        <button
+                          key={status}
+                          onClick={() => updateStatus(status)}
+                          disabled={selectedOrder.status === status}
+                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${
+                            selectedOrder.status === status
+                              ? `${statusConfig[status]?.color} cursor-not-allowed`
+                              : "bg-white border-gray-300 hover:border-blue-500 hover:text-blue-600"
+                          }`}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                {/* Status Update */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Update Status</label>
-                  <select
-                    value={selectedOrder.status}
-                    onChange={(e) => updateStatus(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="In Transit">In Transit</option>
-                    <option value="Delayed">Delayed</option>
-                    <option value="Delivered">Delivered</option>
-                  </select>
-                </div>
-
-                {/* Close */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium transition"
-                  >
-                    Close
-                  </button>
-                </div>
-
+              {/* Modal Footer */}
+              <div className="bg-white border-t border-gray-200 px-6 py-4 flex justify-end">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Keep animations for modal */}
+      <style>{` 
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+      `}</style> 
     </div>
   );
 }
