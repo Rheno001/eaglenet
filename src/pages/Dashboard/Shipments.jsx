@@ -36,17 +36,22 @@ export default function Shipment() {
   const fetchShipments = async () => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem("user"));
-      const email = user?.email;
+      const token = localStorage.getItem("jwt");
 
-      if (!email) {
-        setError("User email not found. Please login again.");
+      if (!token) {
+        setError("Authentication token not found. Please login again.");
         setShipments([]);
         setLoading(false);
         return;
       }
 
-      const response = await fetch(`http://localhost/backend/Shipments.php?email=${email}`);
+      const response = await fetch(`http://localhost/backend/Shipments.php`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
       const data = await response.json();

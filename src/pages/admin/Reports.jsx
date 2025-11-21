@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Package, User, CreditCard, Download } from "lucide-react";
+import { 
+  Package, 
+  User, 
+  CreditCard, 
+  Download, 
+  Calendar,
+  TrendingUp,
+  Users,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  DollarSign
+} from "lucide-react";
 
 export default function MonthlyReport() {
-  const [monthOffset, setMonthOffset] = useState(0); // 0 = current month
+  const [monthOffset, setMonthOffset] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -11,7 +23,7 @@ export default function MonthlyReport() {
   const getMonthRange = (offset) => {
     const now = new Date();
     now.setMonth(now.getMonth() - offset);
-    return [now.getMonth() + 1, now.getFullYear()]; // month (1-12), year
+    return [now.getMonth() + 1, now.getFullYear()];
   };
 
   const fetchData = async () => {
@@ -20,31 +32,44 @@ export default function MonthlyReport() {
 
     try {
       const [bookingsRes, usersRes, paymentsRes] = await Promise.all([
-        fetch(`http://localhost/backend/get-bookings.php?month=${month}&year=${year}`),
+        fetch(`http://localhost/backend/get-bookings-report.php?month=${month}&year=${year}`),
         fetch(`http://localhost/backend/get-users.php?month=${month}&year=${year}`),
         fetch(`http://localhost/backend/get-payments.php?month=${month}&year=${year}`)
       ]);
 
-      const bookingsData = await bookingsRes.json();
-      const usersData = await usersRes.json();
-      const paymentsData = await paymentsRes.json();
+      // Helper to process responses
+      const processResponse = async (res, name) => {
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Failed to fetch ${name}: ${res.status} ${res.statusText} - ${errorText}`);
+        }
+        return res.json();
+      };
+
+      const bookingsData = await processResponse(bookingsRes, 'bookings');
+      const usersData = await processResponse(usersRes, 'users');
+      const paymentsData = await processResponse(paymentsRes, 'payments');
 
       setBookings(bookingsData.bookings || []);
       setUsers(usersData.users || []);
       setPayments(paymentsData.payments || []);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Error fetching report data:", error);
+      // Clear data on error to avoid showing stale information
+      setBookings([]);
+      setUsers([]);
+      setPayments([]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchData();
   }, [monthOffset]);
 
-  const handlePrevMonth = () => setMonthOffset((prev) => prev + 1);
-  const handleNextMonth = () => setMonthOffset((prev) => Math.max(prev - 1, 0));
+  const handlePrevMonth = () => setMonthOffset(prev => prev + 1);
+  const handleNextMonth = () => setMonthOffset(prev => Math.max(prev - 1, 0));
 
   const formatMonth = (offset) => {
     const now = new Date();
@@ -52,104 +77,220 @@ export default function MonthlyReport() {
     return now.toLocaleString("default", { month: "long", year: "numeric" });
   };
 
-  // Server-side export
   const exportReport = (type) => {
     const [month, year] = getMonthRange(monthOffset);
     window.open(`http://localhost/backend/export-report.php?month=${month}&year=${year}&type=${type}`, "_blank");
   };
 
+  const totalRevenue = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-green-50 p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            Monthly Activity Report
-          </h2>
-          <div className="flex gap-4 mt-4 sm:mt-0">
-            {/* <button
-              onClick={() => exportReport('excel')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 shadow-sm"
-            >
-              <Download className="w-5 h-5" />
-              Excel
-            </button> */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-7xl mx-auto p-6 lg:p-10">
+
+        {/* Header */}
+        <div className="mb-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
+                Monthly Activity Report
+              </h1>
+              <p className="text-lg text-gray-600 mt-2">
+                Complete overview of bookings, users, and revenue
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => exportReport('word')}
+                className="group flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300"
+              >
+                <Download className="w-5 h-5 group-hover:translate-y-0.5 transition" />
+                Export to Word
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Month Navigation */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-10 border border-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <button
-              onClick={() => exportReport('word')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-sm"
+              onClick={handlePrevMonth}
+              className="flex items-center gap-3 px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 hover:shadow-md transition-all duration-200 font-medium"
             >
-              <Download className="w-5 h-5" />
-              Word
+              <ArrowLeft className="w-5 h-5" />
+              Previous Month
+            </button>
+
+            <div className="text-center">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-indigo-600" />
+                <h2 className="text-3xl font-bold text-gray-900">
+                  {formatMonth(monthOffset)}
+                </h2>
+              </div>
+              <p className="text-gray-500 mt-1">Performance Summary</p>
+            </div>
+
+            <button
+              onClick={handleNextMonth}
+              disabled={monthOffset === 0}
+              className="flex items-center gap-3 px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 hover:shadow-md transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next Month
+              <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <button
-            onClick={handlePrevMonth}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200"
-          >
-            Previous Month
-          </button>
-          <span className="text-lg font-semibold text-gray-800 my-2 sm:my-0">
-            {formatMonth(monthOffset)}
-          </span>
-          <button
-            onClick={handleNextMonth}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50"
-            disabled={monthOffset === 0}
-          >
-            Next Month
-          </button>
-        </div>
-
         {loading ? (
-          <div className="bg-white rounded-xl p-6 text-center border border-gray-200 shadow-sm">
-            <p className="text-gray-600 text-lg animate-pulse">Loading...</p>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-3xl shadow-xl p-10 animate-pulse">
+                <div className="h-8 bg-gray-200 rounded-xl w-32 mb-6"></div>
+                <div className="space-y-4">
+                  <div className="h-20 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-20 bg-gray-100 rounded-2xl"></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Bookings */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100 transition-all duration-300 hover:shadow-xl">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
-                <Package className="w-6 h-6 text-blue-600" />
-                Bookings ({bookings.length})
-              </h3>
-              {bookings.length > 0 ? bookings.map(b => (
-                <div key={b.id} className="p-3 mb-3 border border-blue-100 rounded-lg bg-blue-50 hover:bg-blue-100 transition-all duration-200">
-                  <p className="font-medium text-gray-800">{b.customerName}</p>
-                  <p className="text-sm text-gray-500">{new Date(b.date).toLocaleString()}</p>
-                </div>
-              )) : <p className="text-gray-500 text-sm">No bookings this month</p>}
+          <>
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Package className="w-12 h-12 mb-4 opacity-90" />
+                <p className="text-blue-100 text-sm font-medium">Total Bookings</p>
+                <p className="text-5xl font-extrabold mt-2">{bookings.length}</p>
+                <p className="text-blue-200 text-sm mt-3 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Active this month
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Users className="w-12 h-12 mb-4 opacity-90" />
+                <p className="text-emerald-100 text-sm font-medium">New Customers</p>
+                <p className="text-5xl font-extrabold mt-2">{users.length}</p>
+                <p className="text-emerald-200 text-sm mt-3">Joined this month</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <DollarSign className="w-12 h-12 mb-4 opacity-90" />
+                <p className="text-purple-100 text-sm font-medium">Total Revenue</p>
+                <p className="text-5xl font-extrabold mt-2">
+                  ₦{totalRevenue.toLocaleString()}
+                </p>
+                <p className="text-purple-200 text-sm mt-3">{payments.length} transactions</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <FileText className="w-12 h-12 mb-4 opacity-90" />
+                <p className="text-orange-100 text-sm font-medium">Report Ready</p>
+                <p className="text-4xl font-extrabold mt-2">100%</p>
+                <p className="text-orange-200 text-sm mt-3">Data complete</p>
+              </div>
             </div>
 
-            {/* Users */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-green-100 transition-all duration-300 hover:shadow-xl">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
-                <User className="w-6 h-6 text-green-600" />
-                New Users ({users.length})
-              </h3>
-              {users.length > 0 ? users.map(u => (
-                <div key={u.id} className="p-3 mb-3 border border-green-100 rounded-lg bg-green-50 hover:bg-green-100 transition-all duration-200">
-                  <p className="font-medium text-gray-800">{u.firstName} {u.lastName}</p>
-                  <p className="text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</p>
+            {/* Detailed Sections */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Bookings */}
+              <div className="bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+                  <h3 className="text-2xl font-bold flex items-center gap-3">
+                    <Package className="w-8 h-8" />
+                    Bookings ({bookings.length})
+                  </h3>
                 </div>
-              )) : <p className="text-gray-500 text-sm">No new users this month</p>}
-            </div>
+                <div className="p-6 max-h-96 overflow-y-auto">
+                  {bookings.length > 0 ? (
+                    <div className="space-y-4">
+                      {bookings.map(b => (
+                        <div key={b.id} className="group p-5 bg-blue-50 rounded-2xl border border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-300 cursor-pointer">
+                          <p className="font-semibold text-gray-900">{b.customerName}</p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {new Date(b.date).toLocaleDateString()} at {new Date(b.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </p>
+                          <p className="text-xs text-blue-600 mt-2 font-medium">Tracking: {b.trackingId || 'Pending'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-500 py-12">No bookings recorded</p>
+                  )}
+                </div>
+              </div>
 
-            {/* Payments */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-purple-100 transition-all duration-300 hover:shadow-xl">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
-                <CreditCard className="w-6 h-6 text-purple-600" />
-                Payments ({payments.length})
-              </h3>
-              {payments.length > 0 ? payments.map(p => (
-                <div key={p.id} className="p-3 mb-3 border border-purple-100 rounded-lg bg-purple-50 hover:bg-purple-100 transition-all duration-200">
-                  <p className="font-medium text-gray-800">₦{parseFloat(p.amount).toLocaleString()}</p>
-                  <p className="text-sm text-gray-500">{new Date(p.date).toLocaleString()}</p>
+              {/* New Users */}
+              <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6">
+                  <h3 className="text-2xl font-bold flex items-center gap-3">
+                    <User className="w-8 h-8" />
+                    New Customers ({users.length})
+                  </h3>
                 </div>
-              )) : <p className="text-gray-500 text-sm">No payments this month</p>}
+                <div className="p-6 max-h-96 overflow-y-auto">
+                  {users.length > 0 ? (
+                    <div className="space-y-4">
+                      {users.map(u => (
+                        <div key={u.id} className="group p-5 bg-emerald-50 rounded-2xl border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-400 transition-all duration-300">
+                          <p className="font-semibold text-gray-900">
+                            {u.firstName} {u.lastName}
+                          </p>
+                          <p className="text-sm text-gray-600">{u.email}</p>
+                          <p className="text-xs text-emerald-600 mt-2 font-medium">
+                            Joined {new Date(u.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-500 py-12">No new registrations</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Payments */}
+              <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
+                  <h3 className="text-2xl font-bold flex items-center gap-3">
+                    <CreditCard className="w-8 h-8" />
+                    Payments ({payments.length})
+                  </h3>
+                </div>
+                <div className="p-6 max-h-96 overflow-y-auto">
+                  {payments.length > 0 ? (
+                    <div className="space-y-4">
+                      {payments.map(p => (
+                        <div key={p.id} className="group p-5 bg-purple-50 rounded-2xl border border-purple-200 hover:bg-purple-100 hover:border-purple-400 transition-all duration-300">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-2xl font-bold text-purple-900">
+                                ₦{parseFloat(p.amount).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                Ref: {p.reference || p.id}
+                              </p>
+                            </div>
+                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                              Success
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-3">
+                            {new Date(p.date).toLocaleString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-gray-500 py-12">No payments recorded</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

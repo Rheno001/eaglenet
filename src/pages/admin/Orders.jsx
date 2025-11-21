@@ -58,19 +58,31 @@ export default function Orders() {
   };
 
   const confirmDelivered = async (trackingId) => {
+    // Store the original state for potential rollback on error
+    const originalOrders = [...orders];
+
+    // Optimistically update the UI
+    const updatedOrders = orders.map((o) =>
+      o.trackingId === trackingId ? { ...o, status: "Delivered" } : o
+    );
+    setOrders(updatedOrders);
+
     try {
       const response = await fetch("http://localhost/backend/update-booking-status.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingId, status: "Delivered" }),
       });
+
       const result = await response.json();
-      if (result.success) fetchBookings();
+      if (!result.success) {
+        throw new Error("Server failed to update status.");
+      }
     } catch (err) {
       console.error("Error updating delivery:", err);
-      setOrders(prev =>
-        prev.map(o => o.trackingId === trackingId ? { ...o, status: "Delivered" } : o)
-      );
+      // If the update fails, revert to the original state
+      setOrders(originalOrders);
+      // Optionally, you can set an error state here to notify the admin
     }
   };
 
@@ -300,7 +312,7 @@ export default function Orders() {
                       <div className="pl-8 relative">
                         <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-green-500 rounded-full"></div>
                         <p className="font-semibold text-green-600">Destination</p>
-                        <p className="text-gray-800">{selectedOrder.destination || "—"}</p>
+                        <p className="text-gray-800">{selectedOrder.destinationAddress || "—"}</p>
                         <p className="text-sm text-gray-500">{selectedOrder.destinationCity || "—"}</p>
                       </div>
                     </div>
