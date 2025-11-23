@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
   Search,
-  Filter,
-  Download,
   Eye,
   Loader,
   AlertCircle,
   CheckCircle,
   Package,
   MapPin,
-  Calendar,
+  Clock,
+  Truck,
+  User,
+  X,
+  ChevronRight
 } from "lucide-react";
 
 export default function Shipment() {
@@ -30,20 +32,32 @@ export default function Shipment() {
     applyFilters();
   }, [shipments, searchTerm, filterCity, sortBy]);
 
-  // ✅ Fetch shipments from backend
+  // Fetch shipments from backend filtered by user email
   const fetchShipments = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost/backend/Shipments.php");
+      const token = localStorage.getItem("jwt");
+
+      if (!token) {
+        setError("Authentication token not found. Please login again.");
+        setShipments([]);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`http://localhost/backend/Shipments.php`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
       const data = await response.json();
-      const shipmentData = Array.isArray(data)
-        ? data
-        : Array.isArray(data.data)
-        ? data.data
-        : [];
 
+      // The PHP backend returns shipments under data.shipments
+      const shipmentData = data.shipments || [];
       setShipments(shipmentData);
       setError(null);
     } catch (err) {
@@ -55,7 +69,6 @@ export default function Shipment() {
     }
   };
 
-  // ✅ Apply search, filter & sort
   const applyFilters = () => {
     let filtered = [...shipments];
 
@@ -78,7 +91,7 @@ export default function Shipment() {
 
     filtered.sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.created_at) - new Date(a.created_at);
+        return new Date(b.date) - new Date(a.date);
       } else if (sortBy === "name") {
         return (a.customerName || "").localeCompare(b.customerName || "");
       } else if (sortBy === "weight") {
@@ -97,7 +110,6 @@ export default function Shipment() {
     return Array.from(cities).sort();
   };
 
-  // ✅ Status badge color logic
   const getStatusBadge = (status) => {
     const base =
       "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1";
@@ -117,7 +129,7 @@ export default function Shipment() {
       case "in transit":
         return (
           <span className={`${base} bg-blue-100 text-blue-700`}>
-            <Calendar className="w-3 h-3" /> In Transit
+            <Truck className="w-3 h-3" /> In Transit
           </span>
         );
       default:
@@ -228,9 +240,6 @@ export default function Shipment() {
                 <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      ID
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Tracking ID
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
@@ -252,10 +261,7 @@ export default function Shipment() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredShipments.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition">
-                      <td className="px-6 py-4 text-sm font-mono text-blue-600 font-semibold">
-                        {item.id}
-                      </td>
+                    <tr key={item.trackingId} className="hover:bg-slate-50 transition">
                       <td className="px-6 py-4 text-sm font-mono text-gray-800">
                         {item.trackingId}
                       </td>
@@ -274,13 +280,15 @@ export default function Shipment() {
                         <button
                           onClick={() =>
                             setSelectedShipment(
-                              selectedShipment?.id === item.id ? null : item
+                              selectedShipment?.trackingId === item.trackingId
+                                ? null
+                                : item
                             )
                           }
                           className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition font-medium"
                         >
                           <Eye className="w-4 h-4" />
-                          {selectedShipment?.id === item.id ? "Hide" : "View"}
+                          {selectedShipment?.trackingId === item.trackingId ? "Hide" : "View"}
                         </button>
                       </td>
                     </tr>
@@ -298,67 +306,113 @@ export default function Shipment() {
           </div>
         )}
 
-        {/* ✅ Detail Modal */}
+        {/* Modal */}
         {selectedShipment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between border-b">
-                <h2 className="text-xl font-bold text-white">Shipment Details</h2>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 animate-fade-in"
+            role="dialog"
+            aria-labelledby="modal-title"
+            aria-modal="true"
+          >
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal content (same as your original code) */}
+              <div className="sticky top-0 bg-[#1e3a8a] text-white px-8 py-5 flex items-center justify-between border-b border-teal-500">
+                <div className="flex items-center gap-3">
+                  <Package className="w-7 h-7 text-teal-300" />
+                  <h2 id="modal-title" className="text-2xl font-bold">
+                    Shipment Details
+                  </h2>
+                </div>
                 <button
                   onClick={() => setSelectedShipment(null)}
-                  className="text-white hover:text-gray-200 text-2xl font-bold"
+                  className="p-2 rounded-full hover:bg-teal-600 transition-colors duration-200"
+                  aria-label="Close modal"
                 >
-                  ✕
+                  <X className="w-6 h-6" />
                 </button>
               </div>
-
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              {/* Modal body remains the same */}
+              <div className="p-8 space-y-8">
+                {/* Overview */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-lg shadow-sm">
                   <div>
-                    <p className="text-gray-600 text-sm">Shipment ID</p>
-                    <p className="text-gray-900 font-semibold">
-                      {selectedShipment.id}
+                    <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-teal-500" /> Tracking ID
                     </p>
+                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.trackingId}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm">Tracking ID</p>
-                    <p className="text-gray-900 font-semibold">
-                      {selectedShipment.trackingId}
+                    <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-purple-500" /> Status
                     </p>
+                    <div className="mt-2">{getStatusBadge(selectedShipment.status)}</div>
                   </div>
                   <div>
-                    <p className="text-gray-600 text-sm">Status</p>
-                    {getStatusBadge(selectedShipment.status)}
+                    <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-orange-500" /> Customer
+                    </p>
+                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.customerName}</p>
                   </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <h3 className="font-bold text-gray-900 mb-3">Sender Information</h3>
-                  <p className="text-gray-900 font-medium">
-                    {selectedShipment.customerName} ({selectedShipment.email})
-                  </p>
-                  <p className="text-gray-600">{selectedShipment.phone}</p>
+                {/* Sender Info */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                    <User className="w-6 h-6 text-teal-500" /> Sender Information
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Email</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Phone</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.phone}</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <h3 className="font-bold text-gray-900 mb-3">Route</h3>
-                  <p className="text-gray-900 font-medium">
+                {/* Route Info */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                    <MapPin className="w-6 h-6 text-orange-500" /> Route
+                  </h3>
+                  <p className="text-lg text-gray-900 font-medium flex items-center gap-3">
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
                     {selectedShipment.pickupCity} → {selectedShipment.destinationCity}
                   </p>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <h3 className="font-bold text-gray-900 mb-3">Package Info</h3>
-                  <p>
-                    <strong>Type:</strong> {selectedShipment.packageType}
-                  </p>
-                  <p>
-                    <strong>Weight:</strong> {selectedShipment.packageWeight} kg
-                  </p>
-                  <p>
-                    <strong>Details:</strong> {selectedShipment.packageDetails}
-                  </p>
+                {/* Package Info */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                    <Package className="w-6 h-6 text-purple-500" /> Package Information
+                  </h3>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Type</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.packageType}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 font-medium">Weight</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.packageWeight} kg</p>
+                    </div>
+                    <div className="lg:col-span-3">
+                      <p className="text-sm text-gray-600 font-medium">Details</p>
+                      <p className="text-lg text-gray-900 mt-2">{selectedShipment.packageDetails}</p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="border-t border-gray-200 p-8 flex justify-end gap-4">
+                <button
+                  onClick={() => setSelectedShipment(null)}
+                  className="px-6 py-2.5 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-200 font-semibold shadow-sm"
+                  aria-label="Close modal"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
