@@ -1,3 +1,6 @@
+//Everything in this file isn't being used at the moment because I removed the topbar and just left a single sidebar for better responsiveness
+
+
 import React, { useContext } from "react";
 import { Menu } from "lucide-react";
 import PropTypes from 'prop-types';
@@ -17,7 +20,6 @@ export default function Topbar({ className = "" }) {
     >
       {/* Left - Toggle for mobile + Title */}
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
       </div>
 
       {/* Right - User info */}

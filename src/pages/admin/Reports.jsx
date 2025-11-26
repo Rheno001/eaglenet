@@ -103,7 +103,7 @@ export default function MonthlyReport() {
             <div className="flex gap-4">
               <button
                 onClick={() => exportReport('word')}
-                className="group flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-4 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300"
               >
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition" />
                 Export to Word

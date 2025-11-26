@@ -53,7 +53,7 @@ export default function LogisticsWebsite() {
                                         value={trackingCode}
                                         onChange={(e) => setTrackingCode(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        className="flex-1 bg-transparent px-4 py-3 outline-none text-gray-900 placeholder-gray-400"
+                                        className="flex-1 bg-transparent px-4 py-3 border-none text-gray-900 placeholder-gray-400"
                                     />
                                     <button
                                         onClick={handleTrackSubmit}
@@ -68,7 +68,7 @@ export default function LogisticsWebsite() {
                             <div className="flex items-center space-x-8 text-sm text-gray-500">
                                 <div className="flex items-center space-x-2">
                                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                                    <span>Real-time tracking</span>
+                                    <span>Package tracking</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <div className="h-2 w-2 bg-green-500 rounded-full"></div>

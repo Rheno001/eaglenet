@@ -92,7 +92,7 @@ export default function AdminPayments() {
             <div>
               <h1 className="text-4xl font-extrabold text-gray-900 flex items-center gap-4">
                 <CreditCard className="w-12 h-12 text-indigo-600" />
-                Payments Dashboard
+                Payments
               </h1>
               <p className="text-lg text-gray-600 mt-2">
                 Manage and track all customer payments
@@ -102,7 +102,7 @@ export default function AdminPayments() {
             <div className="flex gap-3">
               <button
                 onClick={() => exportPayments('word')}
-                className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                className="flex items-center gap-3 px-6 py-4 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
               >
                 <Download className="w-5 h-5" />
                 Export to Word

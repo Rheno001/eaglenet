@@ -1,64 +1,43 @@
-import { useState, useContext, useEffect } from "react";
-import { Outlet, Navigate } from "react-router-dom";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/users/Sidebar";
-import Topbar from "../../components/users/Topbar";
-import { AuthContext } from "../../context/AuthContext";
 
-export default function DashboardLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, loading } = useContext(AuthContext);
+export default function Layout() {
+  const [isOpen, setIsOpen] = useState(false);        // mobile open/close
+  const [isCollapsed, setIsCollapsed] = useState(false); // desktop collapse
 
-  // ✅ Auto-open sidebar on desktop screens
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(true);
-      }
-    };
-
-    // Set initial state
-    handleResize();
-
-    // Listen for window resize
-    window.addEventListener('resize', handleResize);
-    
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // ✅ Show loading state while verifying auth
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="text-gray-700 font-semibold">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // ✅ Redirect if not logged in
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  const toggleSidebar = () => {
+    setIsOpen(true); 
+    setIsCollapsed((prev) => !prev);
+  };
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* ✅ Sidebar */}
+    <div className="flex min-h-screen bg-gray-100">
+
+      {/* SIDEBAR */}
       <Sidebar
-        isOpen={sidebarOpen}
-        setIsOpen={setSidebarOpen}
+        isOpen={isOpen}
+        isCollapsed={isCollapsed}
+        toggleSidebar={toggleSidebar}
       />
 
-      {/* ✅ Main Content */}
-      <div className="flex flex-col flex-1 w-[50%]">
-        <Topbar 
-          toggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
+      {/* MAIN CONTENT */}
+      <main
+        className={`
+          flex-1 p-6 transition-all duration-300
+          ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}
+        `}
+      >
+        <Outlet />
+      </main>
+
+      {/* MOBILE OVERLAY */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
         />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
-        </main>
-      </div>
+      )}
     </div>
   );
 }

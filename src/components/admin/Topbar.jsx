@@ -27,7 +27,7 @@ export default function Topbar() {
   };
 
   return (
-    <header className="bg-gray-200 text-gray-800 shadow-md px-4 md:px-6 py-4 flex items-center justify-between relative z-10">
+    <header className="bg-gray-200 top-0 text-gray-800 shadow-md px-4 md:px-6 py-4 flex items-center justify-between relative z-10">
       {/* Left: Search */}
       <div className="flex items-center gap-4">
         <div className="relative w-full max-w-xs">

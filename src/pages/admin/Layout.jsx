@@ -1,35 +1,41 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../../components/admin/Sidebar";
-import Topbar from "../../components/admin/Topbar";
 
 export default function AdminLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);        // mobile open/close
+  const [isCollapsed, setIsCollapsed] = useState(false); // desktop collapse
 
-  const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+  const toggleSidebar = () => {
+    setIsOpen(true); 
+    setIsCollapsed((prev) => !prev);
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-100 relative">
-      {/* Sidebar */}
-      <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+    <div className="flex min-h-screen bg-gray-100">
 
-      {/* Main content */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsed ? "ml-16" : "ml-64"
-        } lg:ml-0`}
+      {/* SIDEBAR */}
+      <Sidebar
+        isOpen={isOpen}
+        isCollapsed={isCollapsed}
+        toggleSidebar={toggleSidebar}
+      />
+
+      {/* MAIN CONTENT */}
+      <main
+        className={`
+          flex-1 p-6 transition-all duration-300
+          ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}
+        `}
       >
-        <Topbar toggleSidebar={toggleSidebar} />
-        <main className="p-6">
-          <Outlet />
-        </main>
-      </div>
+        <Outlet />
+      </main>
 
-      {/* Mobile overlay when sidebar is open */}
-      {!isCollapsed && (
+      {/* MOBILE OVERLAY */}
+      {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-          onClick={toggleSidebar}
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
         />
       )}
     </div>
