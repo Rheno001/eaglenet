@@ -55,7 +55,7 @@ export default function ResetPassword() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-[#1e3a8a] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center">
               <Lock className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -66,11 +66,10 @@ export default function ResetPassword() {
         {/* Message */}
         {message && (
           <div
-            className={`flex items-center gap-2 p-4 rounded-lg mb-6 animate-fade-in ${
-              message.includes("successful")
+            className={`flex items-center gap-2 p-4 rounded-lg mb-6 animate-fade-in ${message.includes("successful")
                 ? "bg-teal-50 border-l-4 border-teal-500"
                 : "bg-red-50 border-l-4 border-red-500"
-            }`}
+              }`}
           >
             {message.includes("successful") ? (
               <CheckCircle className="w-5 h-5 text-teal-600" />
@@ -78,9 +77,8 @@ export default function ResetPassword() {
               <AlertCircle className="w-5 h-5 text-red-600" />
             )}
             <p
-              className={`text-sm font-medium ${
-                message.includes("successful") ? "text-teal-700" : "text-red-700"
-              }`}
+              className={`text-sm font-medium ${message.includes("successful") ? "text-teal-700" : "text-red-700"
+                }`}
             >
               {message}
             </p>
@@ -103,7 +101,7 @@ export default function ResetPassword() {
                 placeholder="Enter new password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200"
                 aria-required="true"
                 aria-describedby={message && !message.includes("successful") ? "error-message" : undefined}
               />
@@ -124,7 +122,7 @@ export default function ResetPassword() {
                 placeholder="Confirm new password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200"
                 aria-required="true"
                 aria-describedby={message && !message.includes("successful") ? "error-message" : undefined}
               />
@@ -135,7 +133,7 @@ export default function ResetPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#1e3a8a] text-white py-3 rounded-lg font-semibold hover:bg-[#1e40af] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+            className="w-full bg-gray-900 text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
           >
             {loading ? (
               <>
@@ -153,7 +151,7 @@ export default function ResetPassword() {
           Remember your password?{" "}
           <a
             href="/"
-            className="text-teal-600 hover:text-teal-700 font-medium"
+            className="text-gray-900 hover:text-gray-700 font-medium"
           >
             Log in
           </a>

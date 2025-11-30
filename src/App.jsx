@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthContext } from "./context/AuthContext";
-import ResetPassword from "./components/RestPassword";
+import ResetPassword from "./components/ResetPassword";
 
 // Public pages
 import Home from "./pages/Home";
@@ -38,7 +38,6 @@ import SuperAdminDashboard from "./pages/superAdmin";
 
 function App() {
   const location = useLocation();
-  const { user } = useContext(AuthContext);
 
   const isDashboard =
     location.pathname.startsWith("/dashboard") ||
