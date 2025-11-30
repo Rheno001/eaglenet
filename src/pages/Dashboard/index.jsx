@@ -60,19 +60,19 @@ export default function CustomerDashboard() {
       case "delivered":
         return (
           <span className={`${base} bg-green-100 text-green-700`}>
-           
+
           </span>
         );
       case "pending":
         return (
           <span className={`${base} bg-yellow-100 text-yellow-700`}>
-           
+
           </span>
         );
       case "in transit":
         return (
           <span className={`${base} bg-blue-100 text-blue-700`}>
-            
+
           </span>
         );
       default:
@@ -83,12 +83,12 @@ export default function CustomerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <header className="bg-[#1e3a8a] text-white rounded-xl shadow-md p-6 mb-8">
+        <header className="bg-gray-900 text-white rounded-xl shadow-md p-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-teal-500 text-white flex items-center justify-center font-semibold text-xl">
+            <div className="w-12 h-12 rounded-full bg-gray-700 text-white flex items-center justify-center font-semibold text-xl">
               {user?.name?.[0]?.toUpperCase() || "J"}
             </div>
             <div>
@@ -102,38 +102,38 @@ export default function CustomerDashboard() {
         {/* Quick Actions */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Link
-            to="/create-shipment"
-            className="bg-teal-500 text-white p-4 rounded-lg hover:bg-teal-600 transition-all duration-200 shadow-md flex items-center gap-3"
+            to="booking"
+            className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg hover:border-gray-900 hover:shadow-md transition-all duration-200 flex items-center gap-3"
           >
-            <Package className="w-6 h-6" /> Create Shipment
+            <Package className="w-6 h-6 text-teal-600" /> Create Shipment
           </Link>
 
           <Link
-            to="/track"
-            className="bg-[#1e3a8a] text-white p-4 rounded-lg hover:bg-[#1e40af] transition-all duration-200 shadow-md flex items-center gap-3"
+            to="shipments"
+            className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg hover:border-gray-900 hover:shadow-md transition-all duration-200 flex items-center gap-3"
           >
-            <Search className="w-6 h-6" /> Track Shipment
+            <Search className="w-6 h-6 text-blue-600" /> Track Shipment
           </Link>
 
           <Link
             to="/quote"
-            className="bg-orange-500 text-white p-4 rounded-lg hover:bg-orange-600 transition-all duration-200 shadow-md flex items-center gap-3"
+            className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg hover:border-gray-900 hover:shadow-md transition-all duration-200 flex items-center gap-3"
           >
-            <MapPin className="w-6 h-6" /> Get Quote
+            <MapPin className="w-6 h-6 text-orange-600" /> Get Quote
           </Link>
 
           <Link
             to="/contact"
-            className="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600 transition-all duration-200 shadow-md flex items-center gap-3"
+            className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg hover:border-gray-900 hover:shadow-md transition-all duration-200 flex items-center gap-3"
           >
-            <User className="w-6 h-6" /> Contact Support
+            <User className="w-6 h-6 text-purple-600" /> Contact Support
           </Link>
         </section>
 
         {/* Shipment Table */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-           
+            Recent Shipments
           </h2>
 
           <div className="overflow-x-auto">
@@ -141,16 +141,16 @@ export default function CustomerDashboard() {
               {/* <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  
+                    Tracking ID
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                   
+                    Status
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                   
+                    Destination
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                 
+                    Date
                   </th>
                 </tr>
               </thead> */}
@@ -180,10 +180,10 @@ export default function CustomerDashboard() {
           </div>
 
           <Link
-            to="/shipments"
-            className="mt-4 inline-block text-teal-600 hover:text-teal-700 font-medium"
+            to="shipments"
+            className="mt-4 inline-block text-gray-900 hover:text-gray-700 font-medium underline decoration-gray-300 hover:decoration-gray-900 underline-offset-4"
           >
-          
+            View All Shipments
           </Link>
         </section>
 
@@ -216,30 +216,23 @@ export default function CustomerDashboard() {
               </p>
             </div>
           </div>
-
-          <Link
-            to="/profile"
-            className="mt-4 inline-block bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
-          >
-            Edit Profile
-          </Link>
         </section>
 
         {/* Footer */}
-        <footer className="bg-[#1e3a8a] text-white rounded-xl p-6 text-center">
+        <footer className="bg-gray-900 text-white rounded-xl p-6 text-center">
           <p className="text-sm mb-4">
             &copy; {new Date().getFullYear()} EagleNet Nigeria Logistics. All
             rights reserved.
           </p>
 
           <div className="flex justify-center gap-4">
-            <a href="/faq" className="text-teal-200 hover:text-teal-300">
+            <a href="/faq" className="text-gray-400 hover:text-white transition-colors">
               FAQ
             </a>
-            <a href="/terms" className="text-teal-200 hover:text-teal-300">
+            <a href="/terms" className="text-gray-400 hover:text-white transition-colors">
               Terms
             </a>
-            <a href="/contact" className="text-teal-200 hover:text-teal-300">
+            <a href="/contact" className="text-gray-400 hover:text-white transition-colors">
               Contact
             </a>
           </div>

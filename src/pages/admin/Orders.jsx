@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { 
+import {
   Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight
 } from "lucide-react";
 
@@ -169,12 +169,12 @@ export default function Orders() {
           <table className="w-full">
             <thead className="bg-slate-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Tracking ID</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Customer</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Route</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
-                <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Tracking ID</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Customer</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Route</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Status</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Date</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-center text-xs md:text-sm font-semibold">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -182,37 +182,37 @@ export default function Orders() {
                 const StatusIcon = statusConfig[order.status]?.icon || Clock;
                 return (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 text-blue-600 font-mono font-semibold">{order.trackingId}</td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">{order.trackingId}</td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden lg:table-cell">
                       <div className="font-medium text-gray-900">{order.customerName}</div>
                       <div className="text-gray-500 text-xs">{order.email}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-gray-600 hidden lg:table-cell">
                       {order.pickupCity} → {order.destinationCity}
                     </td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex items-center gap-1 ${statusConfig[order.status]?.color}`}>
-                        <StatusIcon className="w-4 h-4" />
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm">
+                      <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold border flex items-center gap-1 w-fit ${statusConfig[order.status]?.color}`}>
+                        <StatusIcon className="w-3 h-3 md:w-4 md:h-4" />
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{order.date}</td>
-                    <td className="px-6 py-4 text-sm flex justify-center gap-2">
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.date}</td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
                       <button
                         onClick={() => {
                           setSelectedOrder(order);
                           setShowModal(true);
                         }}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-gray-700"
+                        className="px-2 py-1 md:px-3 md:py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-gray-700"
                       >
-                        <Eye className="w-4 h-4" /> View
+                        <Eye className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">View</span>
                       </button>
                       {order.status !== "Delivered" && (
                         <button
                           onClick={() => confirmDelivered(order.trackingId)}
-                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-1"
+                          className="px-2 py-1 md:px-3 md:py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-1"
                         >
-                          <CheckCircle className="w-4 h-4" /> Deliver
+                          <CheckCircle className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Deliver</span>
                         </button>
                       )}
                     </td>
@@ -228,13 +228,13 @@ export default function Orders() {
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
             <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col animate-slideUp">
               {/* Modal Header */}
-              <div className="bg-white px-6 py-5 flex items-center justify-between border-b border-gray-200">
+              <div className="bg-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between border-b border-gray-200">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
                   <p className="text-gray-500 text-sm mt-1">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
                 </div>
-                <button 
-                  onClick={() => setShowModal(false)} 
+                <button
+                  onClick={() => setShowModal(false)}
                   className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"
                 >
                   <X size={24} />
@@ -242,12 +242,12 @@ export default function Orders() {
               </div>
 
               {/* Modal Content */}
-              <div className="overflow-y-auto flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="overflow-y-auto flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Column (Details) */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Customer Information */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><User className="w-6 h-6 text-blue-600"/>Customer Details</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><User className="w-6 h-6 text-blue-600" />Customer Details</h3>
                     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">Name</dt>
@@ -266,7 +266,7 @@ export default function Orders() {
 
                   {/* Package Information */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600"/>Package Details</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600" />Package Details</h3>
                     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Type</dt>
@@ -288,7 +288,7 @@ export default function Orders() {
                 <div className="lg:col-span-1 space-y-6">
                   {/* Status Card */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Truck className="w-6 h-6 text-blue-600"/>Status</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Truck className="w-6 h-6 text-blue-600" />Status</h3>
                     <div className={`p-3 rounded-lg flex items-center gap-3 ${statusConfig[selectedOrder.status]?.color}`}>
                       {React.createElement(statusConfig[selectedOrder.status]?.icon || Clock, { className: "w-6 h-6" })}
                       <span className="font-bold text-lg">{selectedOrder.status}</span>
@@ -301,7 +301,7 @@ export default function Orders() {
 
                   {/* Shipment Route Timeline */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><MapPin className="w-6 h-6 text-blue-600"/>Route</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><MapPin className="w-6 h-6 text-blue-600" />Route</h3>
                     <div className="relative border-l-2 border-dashed border-gray-300 ml-3">
                       <div className="mb-8 pl-8 relative">
                         <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-blue-500 rounded-full"></div>
@@ -327,11 +327,10 @@ export default function Orders() {
                           key={status}
                           onClick={() => updateStatus(status)}
                           disabled={selectedOrder.status === status}
-                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${
-                            selectedOrder.status === status
-                              ? `${statusConfig[status]?.color} cursor-not-allowed`
-                              : "bg-white border-gray-300 hover:border-blue-500 hover:text-blue-600"
-                          }`}
+                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${selectedOrder.status === status
+                            ? `${statusConfig[status]?.color} cursor-not-allowed`
+                            : "bg-white border-gray-300 hover:border-blue-500 hover:text-blue-600"
+                            }`}
                         >
                           {status}
                         </button>
@@ -377,7 +376,7 @@ export default function Orders() {
         .animate-slideUp {
           animation: slideUp 0.3s ease-out;
         }
-      `}</style> 
+      `}</style>
     </div>
   );
 }

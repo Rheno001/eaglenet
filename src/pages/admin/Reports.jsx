@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Package, 
-  User, 
-  CreditCard, 
-  Download, 
+import {
+  Package,
+  User,
+  CreditCard,
+  Download,
   Calendar,
   TrendingUp,
   Users,
@@ -85,14 +85,14 @@ export default function MonthlyReport() {
   const totalRevenue = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6 lg:p-10">
 
         {/* Header */}
         <div className="mb-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
                 Monthly Activity Report
               </h1>
               <p className="text-lg text-gray-600 mt-2">
@@ -103,7 +103,7 @@ export default function MonthlyReport() {
             <div className="flex gap-4">
               <button
                 onClick={() => exportReport('word')}
-                className="group flex items-center gap-3 px-6 py-4 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-1 transition-all duration-300"
+                className="group flex items-center gap-3 px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl shadow-sm hover:bg-gray-800 transition-all duration-200"
               >
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition" />
                 Export to Word
@@ -113,20 +113,20 @@ export default function MonthlyReport() {
         </div>
 
         {/* Month Navigation */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-10 border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-10 border border-gray-200">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <button
               onClick={handlePrevMonth}
-              className="flex items-center gap-3 px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 hover:shadow-md transition-all duration-200 font-medium"
+              className="flex items-center gap-3 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium"
             >
               <ArrowLeft className="w-5 h-5" />
               Previous Month
             </button>
 
             <div className="text-center">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-8 h-8 text-indigo-600" />
-                <h2 className="text-3xl font-bold text-gray-900">
+              <div className="flex items-center gap-3 justify-center">
+                <Calendar className="w-6 h-6 text-gray-900" />
+                <h2 className="text-2xl font-bold text-gray-900">
                   {formatMonth(monthOffset)}
                 </h2>
               </div>
@@ -136,7 +136,7 @@ export default function MonthlyReport() {
             <button
               onClick={handleNextMonth}
               disabled={monthOffset === 0}
-              className="flex items-center gap-3 px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 hover:shadow-md transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-3 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Month
               <ArrowRight className="w-5 h-5" />
@@ -147,11 +147,11 @@ export default function MonthlyReport() {
         {loading ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-3xl shadow-xl p-10 animate-pulse">
-                <div className="h-8 bg-gray-200 rounded-xl w-32 mb-6"></div>
+              <div key={i} className="bg-white rounded-xl shadow-sm p-8 animate-pulse border border-gray-200">
+                <div className="h-8 bg-gray-200 rounded-lg w-32 mb-6"></div>
                 <div className="space-y-4">
-                  <div className="h-20 bg-gray-100 rounded-2xl"></div>
-                  <div className="h-20 bg-gray-100 rounded-2xl"></div>
+                  <div className="h-20 bg-gray-100 rounded-xl"></div>
+                  <div className="h-20 bg-gray-100 rounded-xl"></div>
                 </div>
               </div>
             ))}
@@ -160,58 +160,74 @@ export default function MonthlyReport() {
           <>
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
-                <Package className="w-12 h-12 mb-4 opacity-90" />
-                <p className="text-blue-100 text-sm font-medium">Total Bookings</p>
-                <p className="text-5xl font-extrabold mt-2">{bookings.length}</p>
-                <p className="text-blue-200 text-sm mt-3 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5" />
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <Package className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <p className="text-gray-600 text-sm font-medium">Total Bookings</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{bookings.length}</p>
+                <p className="text-gray-500 text-sm mt-2 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-500" />
                   Active this month
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
-                <Users className="w-12 h-12 mb-4 opacity-90" />
-                <p className="text-emerald-100 text-sm font-medium">New Customers</p>
-                <p className="text-5xl font-extrabold mt-2">{users.length}</p>
-                <p className="text-emerald-200 text-sm mt-3">Joined this month</p>
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-emerald-50 rounded-lg">
+                    <Users className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <p className="text-gray-600 text-sm font-medium">New Customers</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{users.length}</p>
+                <p className="text-gray-500 text-sm mt-2">Joined this month</p>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
-                <DollarSign className="w-12 h-12 mb-4 opacity-90" />
-                <p className="text-purple-100 text-sm font-medium">Total Revenue</p>
-                <p className="text-5xl font-extrabold mt-2">
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <DollarSign className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
                   ₦{totalRevenue.toLocaleString()}
                 </p>
-                <p className="text-purple-200 text-sm mt-3">{payments.length} transactions</p>
+                <p className="text-gray-500 text-sm mt-2">{payments.length} transactions</p>
               </div>
 
-              <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-3xl p-8 shadow-xl transform hover:scale-105 transition-all duration-300">
-                <FileText className="w-12 h-12 mb-4 opacity-90" />
-                <p className="text-orange-100 text-sm font-medium">Report Ready</p>
-                <p className="text-4xl font-extrabold mt-2">100%</p>
-                <p className="text-orange-200 text-sm mt-3">Data complete</p>
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-orange-50 rounded-lg">
+                    <FileText className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <p className="text-gray-600 text-sm font-medium">Report Ready</p>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">100%</p>
+                <p className="text-gray-500 text-sm mt-2">Data complete</p>
               </div>
             </div>
 
             {/* Detailed Sections */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Bookings */}
-              <div className="bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <Package className="w-8 h-8" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 p-5">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Package className="w-5 h-5 text-gray-500" />
                     Bookings ({bookings.length})
                   </h3>
                 </div>
-                <div className="p-6 max-h-96 overflow-y-auto">
+                <div className="p-5 max-h-96 overflow-y-auto">
                   {bookings.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {bookings.map(b => (
-                        <div key={b.id} className="group p-5 bg-blue-50 rounded-2xl border border-blue-200 hover:bg-blue-100 hover:border-blue-400 transition-all duration-300 cursor-pointer">
+                        <div key={b.id} className="group p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200 cursor-pointer">
                           <p className="font-semibold text-gray-900">{b.customerName}</p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {new Date(b.date).toLocaleDateString()} at {new Date(b.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          <p className="text-sm text-gray-500 mt-1">
+                            {new Date(b.date).toLocaleDateString()} at {new Date(b.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                           <p className="text-xs text-blue-600 mt-2 font-medium">Tracking: {b.trackingId || 'Pending'}</p>
                         </div>
@@ -224,22 +240,22 @@ export default function MonthlyReport() {
               </div>
 
               {/* New Users */}
-              <div className="bg-white rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <User className="w-8 h-8" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 p-5">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <User className="w-5 h-5 text-gray-500" />
                     New Customers ({users.length})
                   </h3>
                 </div>
-                <div className="p-6 max-h-96 overflow-y-auto">
+                <div className="p-5 max-h-96 overflow-y-auto">
                   {users.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {users.map(u => (
-                        <div key={u.id} className="group p-5 bg-emerald-50 rounded-2xl border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-400 transition-all duration-300">
+                        <div key={u.id} className="group p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200">
                           <p className="font-semibold text-gray-900">
                             {u.firstName} {u.lastName}
                           </p>
-                          <p className="text-sm text-gray-600">{u.email}</p>
+                          <p className="text-sm text-gray-500">{u.email}</p>
                           <p className="text-xs text-emerald-600 mt-2 font-medium">
                             Joined {new Date(u.createdAt).toLocaleDateString()}
                           </p>
@@ -253,32 +269,32 @@ export default function MonthlyReport() {
               </div>
 
               {/* Payments */}
-              <div className="bg-white rounded-3xl shadow-2xl border border-purple-100 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-3">
-                    <CreditCard className="w-8 h-8" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 p-5">
+                  <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-gray-500" />
                     Payments ({payments.length})
                   </h3>
                 </div>
-                <div className="p-6 max-h-96 overflow-y-auto">
+                <div className="p-5 max-h-96 overflow-y-auto">
                   {payments.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {payments.map(p => (
-                        <div key={p.id} className="group p-5 bg-purple-50 rounded-2xl border border-purple-200 hover:bg-purple-100 hover:border-purple-400 transition-all duration-300">
+                        <div key={p.id} className="group p-4 bg-white rounded-lg border border-gray-200 hover:bg-gray-50 transition-all duration-200">
                           <div className="flex justify-between items-start">
                             <div>
-                              <p className="text-2xl font-bold text-purple-900">
+                              <p className="text-xl font-bold text-gray-900">
                                 ₦{parseFloat(p.amount).toLocaleString()}
                               </p>
-                              <p className="text-xs text-gray-600 mt-1">
+                              <p className="text-xs text-gray-500 mt-1">
                                 Ref: {p.reference || p.id}
                               </p>
                             </div>
-                            <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
+                            <span className="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
                               Success
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-3">
+                          <p className="text-sm text-gray-500 mt-3">
                             {new Date(p.date).toLocaleString()}
                           </p>
                         </div>

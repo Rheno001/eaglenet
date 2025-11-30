@@ -1,3 +1,6 @@
+//Everything in this file isn't being used at the moment because I removed the topbar and just left a single sidebar for better responsiveness
+
+
 import { Bell, Search, User } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext, useState, useEffect } from "react";

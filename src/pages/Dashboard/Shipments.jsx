@@ -143,9 +143,9 @@ export default function Shipment() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader className="w-12 h-12 text-blue-600 animate-spin" />
+          <Loader className="w-12 h-12 text-gray-900 animate-spin" />
           <p className="text-gray-700 font-semibold">
             Loading shipment records...
           </p>
@@ -155,11 +155,11 @@ export default function Shipment() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Shipment Records
           </h1>
           <p className="text-gray-600">
@@ -192,7 +192,7 @@ export default function Shipment() {
                   placeholder="Search by name, email, or tracking ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function Shipment() {
               <select
                 value={filterCity}
                 onChange={(e) => setFilterCity(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="all">All Cities</option>
                 {getCities().map((city) => (
@@ -222,10 +222,10 @@ export default function Shipment() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="date">Latest First</option>
-                <option value="name">Customer Name</option>
+                {/*<option value="name">Customer Name</option>*/}
                 <option value="weight">Weight</option>
               </select>
             </div>
@@ -237,18 +237,18 @@ export default function Shipment() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Tracking ID
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Customer
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Route
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Weight
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
@@ -261,18 +261,18 @@ export default function Shipment() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredShipments.map((item) => (
-                    <tr key={item.trackingId} className="hover:bg-slate-50 transition">
+                    <tr key={item.trackingId} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 text-sm font-mono text-gray-800">
                         {item.trackingId}
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
                         {item.customerName}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
                         <MapPin className="w-4 h-4 text-gray-400 inline mr-1" />
                         {item.pickupCity} → {item.destinationCity}
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
                         {item.packageWeight} kg
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
@@ -285,7 +285,7 @@ export default function Shipment() {
                                 : item
                             )
                           }
-                          className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition font-medium"
+                          className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
                         >
                           <Eye className="w-4 h-4" />
                           {selectedShipment?.trackingId === item.trackingId ? "Hide" : "View"}
@@ -315,41 +315,41 @@ export default function Shipment() {
             aria-modal="true"
           >
             <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              {/* Modal content (same as your original code) */}
-              <div className="sticky top-0 bg-[#1e3a8a] text-white px-8 py-5 flex items-center justify-between border-b border-teal-500">
+              {/* Modal content */}
+              <div className="sticky top-0 bg-gray-900 text-white px-6 py-4 md:px-8 md:py-5 flex items-center justify-between border-b border-gray-700">
                 <div className="flex items-center gap-3">
-                  <Package className="w-7 h-7 text-teal-300" />
-                  <h2 id="modal-title" className="text-2xl font-bold">
+                  <Package className="w-6 h-6 md:w-7 md:h-7 text-gray-300" />
+                  <h2 id="modal-title" className="text-xl md:text-2xl font-bold">
                     Shipment Details
                   </h2>
                 </div>
                 <button
                   onClick={() => setSelectedShipment(null)}
-                  className="p-2 rounded-full hover:bg-teal-600 transition-colors duration-200"
+                  className="p-2 rounded-full hover:bg-gray-700 transition-colors duration-200"
                   aria-label="Close modal"
                 >
                   <X className="w-6 h-6" />
                 </button>
               </div>
-              {/* Modal body remains the same */}
-              <div className="p-8 space-y-8">
+
+              <div className="p-6 md:p-8 space-y-8">
                 {/* Overview */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-lg shadow-sm">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-100">
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                      <Truck className="w-5 h-5 text-teal-500" /> Tracking ID
+                      <Truck className="w-5 h-5 text-gray-500" /> Tracking ID
                     </p>
                     <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.trackingId}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-purple-500" /> Status
+                      <CheckCircle className="w-5 h-5 text-gray-500" /> Status
                     </p>
                     <div className="mt-2">{getStatusBadge(selectedShipment.status)}</div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-orange-500" /> Customer
+                      <MapPin className="w-5 h-5 text-gray-500" /> Customer
                     </p>
                     <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.customerName}</p>
                   </div>
@@ -358,12 +358,12 @@ export default function Shipment() {
                 {/* Sender Info */}
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
-                    <User className="w-6 h-6 text-teal-500" /> Sender Information
+                    <User className="w-6 h-6 text-gray-500" /> Sender Information
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <p className="text-sm text-gray-600 font-medium">Email</p>
-                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.email}</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2 break-all">{selectedShipment.email}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-600 font-medium">Phone</p>
@@ -375,18 +375,18 @@ export default function Shipment() {
                 {/* Route Info */}
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
-                    <MapPin className="w-6 h-6 text-orange-500" /> Route
+                    <MapPin className="w-6 h-6 text-gray-500" /> Route
                   </h3>
-                  <p className="text-lg text-gray-900 font-medium flex items-center gap-3">
+                  <p className="text-lg text-gray-900 font-medium flex items-center gap-3 flex-wrap">
                     <ChevronRight className="w-5 h-5 text-gray-400" />
-                    {selectedShipment.pickupCity} → {selectedShipment.destinationCity}
+                    {selectedShipment.pickupCity} <span className="text-gray-400">→</span> {selectedShipment.destinationCity}
                   </p>
                 </div>
 
                 {/* Package Info */}
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
-                    <Package className="w-6 h-6 text-purple-500" /> Package Information
+                    <Package className="w-6 h-6 text-gray-500" /> Package Information
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div>
@@ -405,10 +405,10 @@ export default function Shipment() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 p-8 flex justify-end gap-4">
+              <div className="border-t border-gray-200 p-6 md:p-8 flex justify-end gap-4">
                 <button
                   onClick={() => setSelectedShipment(null)}
-                  className="px-6 py-2.5 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-200 font-semibold shadow-sm"
+                  className="px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-semibold shadow-sm"
                   aria-label="Close modal"
                 >
                   Close

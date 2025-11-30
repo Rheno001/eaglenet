@@ -48,7 +48,7 @@ export default function AdminPayments() {
 
   // Filter & Search
   const filteredPayments = payments.filter(p => {
-    const matchesSearch = 
+    const matchesSearch =
       p.reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.email?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -90,8 +90,8 @@ export default function AdminPayments() {
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-extrabold text-gray-900 flex items-center gap-4">
-                <CreditCard className="w-12 h-12 text-indigo-600" />
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 flex items-center gap-4">
+                <CreditCard className="w-10 h-10 text-gray-900" />
                 Payments
               </h1>
               <p className="text-lg text-gray-600 mt-2">
@@ -102,7 +102,7 @@ export default function AdminPayments() {
             <div className="flex gap-3">
               <button
                 onClick={() => exportPayments('word')}
-                className="flex items-center gap-3 px-6 py-4 bg-gray-900 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                className="flex items-center gap-3 px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl shadow-sm hover:bg-gray-800 transition-all duration-200"
               >
                 <Download className="w-5 h-5" />
                 Export to Word
@@ -113,67 +113,67 @@ export default function AdminPayments() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-2xl p-6 shadow-xl">
-            <DollarSign className="w-10 h-10 mb-3 opacity-90" />
-            <p className="text-green-100 text-sm font-medium">Total Revenue</p>
-            <p className="text-4xl font-extrabold mt-2">₦{totalRevenue.toLocaleString()}</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
+            <DollarSign className="w-10 h-10 mb-3 text-green-600" />
+            <p className="text-gray-600 text-sm font-medium">Total Revenue</p>
+            <p className="text-3xl font-bold text-gray-900 mt-2">₦{totalRevenue.toLocaleString()}</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Successful</p>
-                <p className="text-4xl font-bold text-green-600 mt-2">
+                <p className="text-gray-600 text-sm font-medium">Successful</p>
+                <p className="text-3xl font-bold text-green-600 mt-2">
                   {payments.filter(p => p.status === "success" || p.status === "completed").length}
                 </p>
               </div>
-              <CheckCircle className="w-12 h-12 text-green-500 opacity-20" />
+              <CheckCircle className="w-10 h-10 text-green-100" />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Pending</p>
-                <p className="text-4xl font-bold text-yellow-600 mt-2">
+                <p className="text-gray-600 text-sm font-medium">Pending</p>
+                <p className="text-3xl font-bold text-yellow-600 mt-2">
                   {payments.filter(p => p.status === "pending").length}
                 </p>
               </div>
-              <Clock className="w-12 h-12 text-yellow-500 opacity-20" />
+              <Clock className="w-10 h-10 text-yellow-100" />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-200">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Failed</p>
-                <p className="text-4xl font-bold text-red-600 mt-2">
+                <p className="text-gray-600 text-sm font-medium">Failed</p>
+                <p className="text-3xl font-bold text-red-600 mt-2">
                   {payments.filter(p => p.status === "failed").length}
                 </p>
               </div>
-              <XCircle className="w-12 h-12 text-red-500 opacity-20" />
+              <XCircle className="w-10 h-10 text-red-100" />
             </div>
           </div>
         </div>
 
         {/* Search & Filter */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-4 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by reference, name, or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 text-gray-800"
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-900"
               />
             </div>
 
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-6 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-100 font-medium"
+              className="px-6 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 font-medium text-gray-700"
             >
               <option value="all">All Status</option>
               <option value="success">Success</option>
@@ -185,57 +185,57 @@ export default function AdminPayments() {
         </div>
 
         {/* Payments Table */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
             <div className="p-20 text-center">
-              <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading payments...</p>
+              <div className="w-12 h-12 border-4 border-gray-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600 font-medium">Loading payments...</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-5 text-left text-sm font-semibold">Reference</th>
-                      <th className="px-6 py-5 text-left text-sm font-semibold">Customer</th>
-                      <th className="px-6 py-5 text-left text-sm font-semibold">Amount</th>
-                      <th className="px-6 py-5 text-left text-sm font-semibold">Date</th>
-                      <th className="px-6 py-5 text-left text-sm font-semibold">Status</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Reference</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Customer</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Amount</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Date</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-200">
                     {paginatedPayments.length > 0 ? (
                       paginatedPayments.map((p) => (
                         <tr key={p.id} className="hover:bg-gray-50 transition">
-                          <td className="px-6 py-5 font-mono text-indigo-600 font-bold">
+                          <td className="px-6 py-4 font-mono text-sm font-medium text-gray-900">
                             {p.reference || p.id}
                           </td>
-                          <td className="px-6 py-5">
+                          <td className="px-6 py-4">
                             <div>
-                              <p className="font-semibold text-gray-900">{p.customerName || "N/A"}</p>
+                              <p className="text-sm font-medium text-gray-900">{p.customerName || "N/A"}</p>
                               <p className="text-sm text-gray-500">{p.email}</p>
                             </div>
                           </td>
-                          <td className="px-6 py-5 font-bold text-gray-900">
+                          <td className="px-6 py-4 text-sm font-bold text-gray-900">
                             ₦{parseFloat(p.amount || 0).toLocaleString()}
                           </td>
-                          <td className="px-6 py-5 text-gray-600">
+                          <td className="px-6 py-4 text-sm text-gray-600">
                             {new Date(p.date).toLocaleDateString()} <br />
-                            <span className="text-xs text-gray-500">
-                              {new Date(p.date).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                            <span className="text-xs text-gray-400">
+                              {new Date(p.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </td>
-                          <td className="px-6 py-5">
+                          <td className="px-6 py-4">
                             {getStatusBadge(p.status)}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan="5" className="px-6 py-20 text-center text-gray-500">
-                          <CreditCard className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                          <p className="text-lg">No payments found</p>
+                        <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                          <CreditCard className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                          <p className="text-lg font-medium">No payments found</p>
                         </td>
                       </tr>
                     )}
@@ -245,7 +245,7 @@ export default function AdminPayments() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-6 py-5 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
                   <p className="text-sm text-gray-600">
                     Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredPayments.length)} of {filteredPayments.length} payments
                   </p>
@@ -253,16 +253,16 @@ export default function AdminPayments() {
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="p-3 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+                      className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition-colors"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-5 h-5 text-gray-600" />
                     </button>
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="p-3 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+                      className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition-colors"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-5 h-5 text-gray-600" />
                     </button>
                   </div>
                 </div>
