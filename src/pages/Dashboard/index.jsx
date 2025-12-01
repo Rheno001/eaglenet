@@ -89,11 +89,11 @@ export default function CustomerDashboard() {
         <header className="bg-gray-900 text-white rounded-xl shadow-md p-6 mb-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-gray-700 text-white flex items-center justify-center font-semibold text-xl">
-              {user?.name?.[0]?.toUpperCase() || "J"}
+              {user?.firstName?.[0]?.toUpperCase()}
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
-                Welcome, {user?.firstName || "Customer"}!
+                Welcome, {user?.firstName.toUpperCase || "Customer"}!
               </h1>
             </div>
           </div>
