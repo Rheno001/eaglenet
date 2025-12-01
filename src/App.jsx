@@ -38,6 +38,7 @@ import SuperAdminDashboard from "./pages/superAdmin";
 
 function App() {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
   const isDashboard =
     location.pathname.startsWith("/dashboard") ||
