@@ -2,6 +2,15 @@
 @import "flowbite/dist/flowbite.css";
 
 
+@layer utilities {
+  .font-sans {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .font-heading {
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+}
+
 @keyframes marquee-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
