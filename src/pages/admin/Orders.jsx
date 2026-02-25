@@ -173,6 +173,7 @@ export default function Orders() {
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Customer</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Route</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Status</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Amount</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Date</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-center text-xs md:text-sm font-semibold">Actions</th>
               </tr>
@@ -195,6 +196,9 @@ export default function Orders() {
                         <StatusIcon className="w-3 h-3 md:w-4 md:h-4" />
                         {order.status}
                       </span>
+                    </td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
+                      {order.amount_paid ? `₦${parseFloat(order.amount_paid).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.date}</td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
@@ -264,20 +268,26 @@ export default function Orders() {
                     </dl>
                   </div>
 
-                  {/* Package Information */}
+                  {/* Shipment Information */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600" />Package Details</h3>
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600" />Shipment Details</h3>
                     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">Type</dt>
+                        <dt className="text-sm font-medium text-gray-500">Package Type</dt>
                         <dd className="mt-1 text-gray-900">{selectedOrder.packageType || "—"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">Weight</dt>
+                        <dt className="text-sm font-medium text-gray-500">Total Weight</dt>
                         <dd className="mt-1 text-gray-900">{selectedOrder.packageWeight || "—"}</dd>
                       </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Amount Paid</dt>
+                        <dd className="mt-1 text-xl font-bold text-blue-600">
+                          {selectedOrder.amount_paid ? `₦${parseFloat(selectedOrder.amount_paid).toLocaleString()}` : "Not Paid"}
+                        </dd>
+                      </div>
                       <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Details</dt>
+                        <dt className="text-sm font-medium text-gray-500">Description</dt>
                         <dd className="mt-1 text-gray-900">{selectedOrder.packageDetails || "—"}</dd>
                       </div>
                     </dl>

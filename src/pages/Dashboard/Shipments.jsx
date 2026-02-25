@@ -375,12 +375,47 @@ export default function Shipment() {
                 {/* Route Info */}
                 <div className="border-t border-gray-200 pt-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
-                    <MapPin className="w-6 h-6 text-gray-500" /> Route
+                    <MapPin className="w-6 h-6 text-gray-500" /> Route Details
                   </h3>
-                  <p className="text-lg text-gray-900 font-medium flex items-center gap-3 flex-wrap">
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                    {selectedShipment.pickupCity} <span className="text-gray-400">→</span> {selectedShipment.destinationCity}
-                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Pickup From</p>
+                      <p className="text-lg text-gray-900 font-bold">{selectedShipment.pickupCity}</p>
+                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.pickupAddress}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Destination To</p>
+                      <p className="text-lg text-gray-900 font-bold">{selectedShipment.destinationCity}</p>
+                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.destination}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timing Info */}
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                    <Clock className="w-6 h-6 text-gray-500" /> Schedule Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <Clock className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Scheduled Date</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <Clock className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 font-medium">Preferred Time</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredTime || "Flexible"}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Package Info */}
@@ -388,19 +423,31 @@ export default function Shipment() {
                   <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-3">
                     <Package className="w-6 h-6 text-gray-500" /> Package Information
                   </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div>
-                      <p className="text-sm text-gray-600 font-medium">Type</p>
-                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.packageType}</p>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-sm text-gray-600 font-medium">Package Type</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600 font-medium">Weight</p>
-                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.packageWeight} kg</p>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-sm text-gray-600 font-medium">Total Weight</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageWeight} kg</p>
                     </div>
-                    <div className="lg:col-span-3">
-                      <p className="text-sm text-gray-600 font-medium">Details</p>
-                      <p className="text-lg text-gray-900 mt-2">{selectedShipment.packageDetails}</p>
+                    <div className="lg:col-span-2">
+                      <p className="text-sm text-gray-600 font-medium mb-2">Item Details</p>
+                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
+                        <p className="text-gray-700 leading-relaxed italic">
+                          {selectedShipment.packageDetails || "No specific details provided."}
+                        </p>
+                      </div>
                     </div>
+                    {selectedShipment.specialRequirements && (
+                      <div className="lg:col-span-2">
+                        <p className="text-sm text-gray-600 font-medium mb-2">Special Requirements</p>
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 text-red-800">
+                          <p className="font-medium">{selectedShipment.specialRequirements}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

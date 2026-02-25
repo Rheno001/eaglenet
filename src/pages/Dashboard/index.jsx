@@ -93,7 +93,7 @@ export default function CustomerDashboard() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
-                Welcome, {user?.firstName.toUpperCase || "Customer"}!
+                Welcome {user?.firstName.toUpperCase || "Customer"}
               </h1>
             </div>
           </div>

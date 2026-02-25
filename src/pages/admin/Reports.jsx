@@ -257,7 +257,7 @@ export default function MonthlyReport() {
                           </p>
                           <p className="text-sm text-gray-500">{u.email}</p>
                           <p className="text-xs text-emerald-600 mt-2 font-medium">
-                            Joined {new Date(u.createdAt).toLocaleDateString()}
+                            Joined {new Date(u.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       ))}

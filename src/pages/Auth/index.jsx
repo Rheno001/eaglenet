@@ -15,6 +15,7 @@ export default function Auth() {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -29,7 +30,7 @@ export default function Auth() {
       if (!token) return;
       try {
         const res = await axios.post(
-          'http://localhost/backend/verify-token.php',
+          `${import.meta.env.VITE_API_URL}/verify-token.php`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -54,7 +55,7 @@ export default function Auth() {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setError('');
-    setFormData({ firstName: '', lastName: '', email: '', password: '' });
+    setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
   };
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -103,11 +104,12 @@ export default function Auth() {
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-        };
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+      };
 
     try {
       const response = await axios.post(endpoint, payload, {
@@ -127,6 +129,7 @@ export default function Auth() {
           email: result.user?.email,
           firstName: result.user?.firstName || 'User',
           lastName: result.user?.lastName || '',
+          phone: result.user?.phone || '',
           role: result.user?.role || ROLES.USER,
         };
 
@@ -140,7 +143,7 @@ export default function Auth() {
           toggleForm();
         }
 
-        setFormData({ firstName: '', lastName: '', email: '', password: '' });
+        setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
       } else {
         setError(result.message || (isLogin ? 'Login failed' : 'Registration failed'));
       }
@@ -206,25 +209,43 @@ export default function Auth() {
             {/* Login/Signup Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div>
-                  <label className="text-sm font-medium">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-                  />
-                  <label className="text-sm font-medium">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium">First Name</label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Last Name</label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      placeholder="e.g. +234 800 000 0000"
+                      className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                    />
+                  </div>
                 </div>
               )}
 
