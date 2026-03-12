@@ -28,6 +28,7 @@ import AdminReports from "./pages/Dashboard/AdminReports";
 import AdminPayment from "./pages/Dashboard/AdminPayment";
 import AdminNotifications from "./pages/Dashboard/AdminNotifications";
 import AdminSettings from "./pages/Dashboard/AdminSettings";
+import AdminServices from "./pages/Dashboard/AdminServices";
 
 // SUPER ADMIN Dashboard
 import SuperAdminDashboard from "./pages/superAdmin/index";
@@ -85,6 +86,7 @@ function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="booking" element={<Booking />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="services" element={<AdminServices />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="payment" element={<AdminPayment />} />
               <Route path="notifications" element={<AdminNotifications />} />
