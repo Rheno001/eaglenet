@@ -45,7 +45,7 @@ export default function Shipment() {
         return;
       }
 
-      const response = await fetch(`http://localhost/backend/Shipments.php`, {
+      const response = await fetch(`https://eaglenet.onrender.com/api/shipments/mine`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -54,10 +54,10 @@ export default function Shipment() {
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-      const data = await response.json();
+      const result = await response.json();
 
-      // The PHP backend returns shipments under data.shipments
-      const shipmentData = data.shipments || [];
+      // The new API returns shipments under result.data
+      const shipmentData = result.data || [];
       setShipments(shipmentData);
       setError(null);
     } catch (err) {
@@ -76,9 +76,9 @@ export default function Shipment() {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (item) =>
-          item.customerName?.toLowerCase().includes(search) ||
+          item.fullName?.toLowerCase().includes(search) ||
           item.email?.toLowerCase().includes(search) ||
-          item.phone?.includes(search) ||
+          item.phoneNumber?.includes(search) ||
           item.trackingId?.toLowerCase().includes(search)
       );
     }
@@ -91,11 +91,11 @@ export default function Shipment() {
 
     filtered.sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.date) - new Date(a.date);
+        return new Date(b.preferredPickupDate || b.createdAt) - new Date(a.preferredPickupDate || a.createdAt);
       } else if (sortBy === "name") {
-        return (a.customerName || "").localeCompare(b.customerName || "");
+        return (a.fullName || "").localeCompare(b.fullName || "");
       } else if (sortBy === "weight") {
-        return parseFloat(b.packageWeight) - parseFloat(a.packageWeight);
+        return parseFloat(b.weight) - parseFloat(a.weight);
       }
       return 0;
     });
@@ -266,14 +266,14 @@ export default function Shipment() {
                         {item.trackingId}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        {item.customerName}
+                        {item.fullName}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
                         <MapPin className="w-4 h-4 text-gray-400 inline mr-1" />
                         {item.pickupCity} → {item.destinationCity}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        {item.packageWeight} kg
+                        {item.weight} kg
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
@@ -349,9 +349,9 @@ export default function Shipment() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-gray-500" /> Customer
+                       Customer
                     </p>
-                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.customerName}</p>
+                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.fullName}</p>
                   </div>
                 </div>
 
@@ -367,7 +367,7 @@ export default function Shipment() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600 font-medium">Phone</p>
-                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.phone}</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.phoneNumber}</p>
                     </div>
                   </div>
                 </div>
@@ -386,7 +386,7 @@ export default function Shipment() {
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Destination To</p>
                       <p className="text-lg text-gray-900 font-bold">{selectedShipment.destinationCity}</p>
-                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.destination}</p>
+                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.deliveryAddress}</p>
                     </div>
                   </div>
                 </div>
@@ -403,7 +403,7 @@ export default function Shipment() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Scheduled Date</p>
-                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.date}</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredPickupDate?.split('T')[0] || selectedShipment.preferredPickupDate}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
@@ -412,7 +412,7 @@ export default function Shipment() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Preferred Time</p>
-                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredTime || "Flexible"}</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredPickupTime || "Flexible"}</p>
                       </div>
                     </div>
                   </div>
@@ -426,11 +426,11 @@ export default function Shipment() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-sm text-gray-600 font-medium">Package Type</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType}</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-sm text-gray-600 font-medium">Total Weight</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageWeight} kg</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight} kg</p>
                     </div>
                     <div className="lg:col-span-2">
                       <p className="text-sm text-gray-600 font-medium mb-2">Item Details</p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Package, Truck, Globe, Clock, Shield, ArrowRight, CheckCircle2, Play } from 'lucide-react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useSpring } from 'framer-motion';
 
 const CountingNumber = ({ value, duration = 2 }) => {
@@ -39,6 +39,7 @@ const FadeInWhenVisible = ({ children, delay = 0 }) => {
 
 export default function LogisticsWebsite() {
     const [trackingCode, setTrackingCode] = useState('');
+    const navigate = useNavigate();
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
@@ -48,7 +49,7 @@ export default function LogisticsWebsite() {
 
     const handleTrackSubmit = () => {
         if (trackingCode.trim()) {
-            alert(`Tracking order: ${trackingCode}`);
+            navigate(`/track/${trackingCode.trim()}`);
         }
     };
 

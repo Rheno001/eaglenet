@@ -52,37 +52,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Verify token silently in background
- useEffect(() => {
-  const token = localStorage.getItem("jwt");
-  const storedUser = localStorage.getItem("user");
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    const storedUser = localStorage.getItem("user");
 
-  // Instantly show user if already logged in
-  if (token && storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
+    // Instantly show user if already logged in
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
 
-  // Silent token verification (non-blocking)
-  (async () => {
-    if (!token) return;
+    // Silent token verification (non-blocking)
+    (async () => {
+      if (!token) return;
 
-    try {
-      const res = await axios.post(
-        endpoints.verify,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        login(res.data.user, token);
-      } else {
+      try {
+        const res = await axios.post(
+          endpoints.verify,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.data.success) {
+          login(res.data.user, token);
+        } else {
+          await refreshToken();
+        }
+      } catch {
         await refreshToken();
       }
-    } catch {
-      await refreshToken();
-    }
-  })();
+    })();
 
-  setLoading(false); // Don’t block UI
-}, []);
+    setLoading(false); // Don’t block UI
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, refreshToken, loading }}>

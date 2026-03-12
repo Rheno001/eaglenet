@@ -8,6 +8,7 @@ import {
   CreditCard,
   Menu,
   X,
+  Search,
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -27,6 +28,7 @@ export default function Sidebar({ isOpen, toggleSidebar, isCollapsed }) {
     { path: "/dashboard", icon: LayoutDashboard, label: "Overview" },
     { path: "/dashboard/booking", icon: Package, label: "Booking" },
     { path: "/dashboard/shipments", icon: Package, label: "Shipments" },
+    { path: "/dashboard/track", icon: Search, label: "Track Shipment" },
     { path: "/dashboard/payment", icon: CreditCard, label: "Payment" },
   ];
 

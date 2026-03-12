@@ -22,15 +22,27 @@ export default function CustomerDashboard() {
   // Fetch shipments
   const fetchShipments = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost/backend/user.php", // Assuming this is the correct endpoint
-        { email: user?.email }, // Use user email from context
-        { headers: { "Content-Type": "application/json" } }
+      setLoading(true);
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        setShipments([]);
+        setLoading(false);
+        return;
+      }
+
+      const res = await axios.get(
+        "https://eaglenet.onrender.com/api/shipments/mine",
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          } 
+        }
       );
 
-      const data = res.data;
-      if (data.success) {
-        setShipments(data.shipments || []);
+      // The new API returns shipments under res.data.data
+      if (res.data && res.data.status === "success") {
+        setShipments(res.data.data || []);
       } else {
         setShipments([]);
       }
@@ -93,7 +105,7 @@ export default function CustomerDashboard() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">
-                Welcome {user?.firstName.toUpperCase || "Customer"}
+                Welcome {user?.firstName?.toUpperCase() || "Customer"}
               </h1>
             </div>
           </div>
@@ -109,7 +121,7 @@ export default function CustomerDashboard() {
           </Link>
 
           <Link
-            to="shipments"
+            to="track"
             className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg hover:border-gray-900 hover:shadow-md transition-all duration-200 flex items-center gap-3"
           >
             <Search className="w-6 h-6 text-blue-600" /> Track Shipment
@@ -171,7 +183,7 @@ export default function CustomerDashboard() {
                     </td>
 
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {shipment.date || shipment.created_at}
+                      {shipment.preferredPickupDate?.split('T')[0] || shipment.createdAt?.split('T')[0]}
                     </td>
                   </tr>
                 ))}

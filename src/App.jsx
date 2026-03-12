@@ -15,6 +15,7 @@ import Contact from "./pages/Contact";
 import Quote from "./pages/Quote/QuoteForm";
 import Auth from "./pages/Auth";
 import Unauthorized from "./pages/Unauthorized";
+import Track from "./pages/Track";
 
 // USER Dashboard pages
 import DashboardLayout from "./pages/Dashboard/Layout";
@@ -70,6 +71,7 @@ function App() {
           <Route path="/signup" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Moved here */}
+          <Route path="/track/:trackingId?" element={<Track />} />
 
           {/* ✅ USER DASHBOARD */}
           <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
@@ -78,6 +80,7 @@ function App() {
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
               <Route path="payment" element={<Payments />} />
+              <Route path="track/:trackingId?" element={<Track />} />
             </Route>
           </Route>
 

@@ -98,8 +98,8 @@ export default function Auth() {
     setLoading(true);
 
     const endpoint = isLogin
-      ? `${import.meta.env.VITE_API_URL}/login.php`
-      : `${import.meta.env.VITE_API_URL}/reg.php`;
+      ? `${import.meta.env.VITE_API_URL}api/auth/login`
+      : `${import.meta.env.VITE_API_URL}api/auth/register`;
 
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
@@ -117,39 +117,50 @@ export default function Auth() {
       });
       const result = response.data;
 
-      if (result.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: result.message || (isLogin ? 'Login successful' : 'Registration successful'),
-          showConfirmButton: true,
-        });
+      // Support both { success, token } and { token } response shapes
+      const token = result.token || result.accessToken || result.data?.token;
+      const isSuccess = result.success === true || !!token;
 
+      if (isSuccess) {
         const userData = {
-          email: result.user?.email,
-          firstName: result.user?.firstName || 'User',
-          lastName: result.user?.lastName || '',
-          phone: result.user?.phone || '',
-          role: result.user?.role || ROLES.USER,
+          email: result.user?.email || result.data?.email,
+          firstName: result.user?.firstName || result.data?.firstName || 'User',
+          lastName: result.user?.lastName || result.data?.lastName || '',
+          phone: result.user?.phone || result.data?.phone || '',
+          role: result.user?.role || result.data?.role || ROLES.USER,
         };
 
         if (isLogin) {
-          login(userData, result.token);
-          localStorage.setItem('jwt', result.token);
-          if (userData.role === ROLES.USER) navigate('/dashboard');
-          else if (userData.role === ROLES.ADMIN) navigate('/dashboard/requests');
-          else if (userData.role === ROLES.SUPER_ADMIN) navigate('/dashboard/manage-admins');
+          login(userData, token);
+          localStorage.setItem('jwt', token);
+          Swal.fire({
+            icon: 'success',
+            title: 'Welcome back!',
+            text: result.message || 'Login successful',
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => navigate('/dashboard'));
         } else {
+          Swal.fire({
+            icon: 'success',
+            title: 'Account Created!',
+            text: result.message || 'Registration successful. Please sign in.',
+            showConfirmButton: true,
+          });
           toggleForm();
         }
 
         setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
       } else {
-        setError(result.message || (isLogin ? 'Login failed' : 'Registration failed'));
+        setError(result.message || result.error || (isLogin ? 'Login failed' : 'Registration failed'));
       }
     } catch (err) {
       console.error('Server error:', err);
-      setError('Unable to connect to the server.');
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Unable to connect to the server. Please try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }

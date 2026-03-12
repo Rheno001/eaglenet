@@ -23,10 +23,15 @@ export default function Orders() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost/backend/get-bookings.php");
-      const data = await response.json();
-      if (data && data.bookings) {
-        setOrders(data.bookings);
+      const token = localStorage.getItem("jwt");
+      const response = await fetch("https://eaglenet.onrender.com/api/shipments", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      if (result && result.data) {
+        setOrders(result.data);
       } else {
         setOrders([]);
       }
@@ -44,7 +49,7 @@ export default function Orders() {
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(order =>
-        order.customerName?.toLowerCase().includes(search) ||
+        order.fullName?.toLowerCase().includes(search) ||
         order.trackingId?.toLowerCase().includes(search) ||
         order.email?.toLowerCase().includes(search)
       );
@@ -68,7 +73,7 @@ export default function Orders() {
     setOrders(updatedOrders);
 
     try {
-      const response = await fetch("http://localhost/backend/update-booking-status.php", {
+      const response = await fetch("https://eaglenet.onrender.com/update-booking-status.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingId, status: "Delivered" }),
@@ -88,7 +93,7 @@ export default function Orders() {
 
   const updateStatus = async (newStatus) => {
     try {
-      const response = await fetch("http://localhost/backend/update-booking-status.php", {
+      const response = await fetch("https://eaglenet.onrender.com/update-booking-status.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackingId: selectedOrder.trackingId, status: newStatus }),
@@ -185,7 +190,7 @@ export default function Orders() {
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
                     <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">{order.trackingId}</td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden lg:table-cell">
-                      <div className="font-medium text-gray-900">{order.customerName}</div>
+                      <div className="font-medium text-gray-900">{order.fullName}</div>
                       <div className="text-gray-500 text-xs">{order.email}</div>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-gray-600 hidden lg:table-cell">
@@ -198,9 +203,9 @@ export default function Orders() {
                       </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
-                      {order.amount_paid ? `₦${parseFloat(order.amount_paid).toLocaleString()}` : "—"}
+                      {order.amount ? `₦${parseFloat(order.amount).toLocaleString()}` : "—"}
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.date}</td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.preferredPickupDate?.split('T')[0] || order.createdAt?.split('T')[0]}</td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
                       <button
                         onClick={() => {
@@ -255,11 +260,11 @@ export default function Orders() {
                     <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">Name</dt>
-                        <dd className="mt-1 text-gray-900 font-semibold">{selectedOrder.customerName || "—"}</dd>
+                        <dd className="mt-1 text-gray-900 font-semibold">{selectedOrder.fullName || "—"}</dd>
                       </div>
                       <div className="sm:col-span-1">
                         <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.phone || "—"}</dd>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.phoneNumber || "—"}</dd>
                       </div>
                       <div className="sm:col-span-2">
                         <dt className="text-sm font-medium text-gray-500">Email</dt>
@@ -278,12 +283,12 @@ export default function Orders() {
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Total Weight</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.packageWeight || "—"}</dd>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.weight || "—"}</dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Amount Paid</dt>
                         <dd className="mt-1 text-xl font-bold text-blue-600">
-                          {selectedOrder.amount_paid ? `₦${parseFloat(selectedOrder.amount_paid).toLocaleString()}` : "Not Paid"}
+                          {selectedOrder.amount ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}` : "Not Paid"}
                         </dd>
                       </div>
                       <div className="sm:col-span-2">
@@ -305,7 +310,7 @@ export default function Orders() {
                     </div>
                     <div className="mt-4">
                       <p className="text-sm font-medium text-gray-500">Order Date</p>
-                      <p className="text-gray-900 font-semibold">{selectedOrder.date}</p>
+                      <p className="text-gray-900 font-semibold">{selectedOrder.preferredPickupDate?.split('T')[0] || selectedOrder.createdAt?.split('T')[0]}</p>
                     </div>
                   </div>
 
@@ -322,7 +327,7 @@ export default function Orders() {
                       <div className="pl-8 relative">
                         <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-green-500 rounded-full"></div>
                         <p className="font-semibold text-green-600">Destination</p>
-                        <p className="text-gray-800">{selectedOrder.destinationAddress || "—"}</p>
+                        <p className="text-gray-800">{selectedOrder.deliveryAddress || "—"}</p>
                         <p className="text-sm text-gray-500">{selectedOrder.destinationCity || "—"}</p>
                       </div>
                     </div>

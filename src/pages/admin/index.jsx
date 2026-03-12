@@ -37,7 +37,7 @@ export default function Overview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("http://localhost/backend/admin-users.php", {
+        const response = await fetch("https://eaglenet.onrender.com/admin-users.php", {
           credentials: "include",
         });
         const data = await response.json();

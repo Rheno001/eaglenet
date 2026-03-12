@@ -30,7 +30,7 @@ export default function AdminPayments() {
 
   const fetchPayments = async () => {
     try {
-      const res = await fetch("http://localhost/backend/get-all-payments.php");
+      const res = await fetch("https://eaglenet.onrender.com/get-all-payments.php");
       const data = await res.json();
       if (data.payments) {
         setPayments(data.payments);
@@ -43,7 +43,7 @@ export default function AdminPayments() {
   };
 
   const exportPayments = (type) => {
-    window.open(`http://localhost/backend/export-payments.php?type=${type}`, "_blank");
+    window.open(`https://eaglenet.onrender.com/export-payments.php?type=${type}`, "_blank");
   };
 
   // Filter & Search

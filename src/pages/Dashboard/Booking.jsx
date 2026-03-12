@@ -116,14 +116,30 @@ export default function Booking() {
     setLoading(true);
 
     try {
-      const trackingId = generateTrackingId();
-      const payload = { ...formData, trackingId };
+      // Map form data to the new API payload structure
+      const payload = {
+        fullName: formData.customerName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        pickupAddress: formData.pickupAddress,
+        pickupCity: formData.pickupCity,
+        deliveryAddress: formData.destination,
+        destinationCity: formData.destinationCity,
+        weight: formData.packageWeight,
+        packageDetails: formData.packageDetails,
+        preferredPickupDate: formData.date,
+        preferredPickupTime: formData.preferredTime,
+        specialRequirements: formData.specialRequirements,
+      };
 
-      const response = await fetch("http://localhost/backend/Booking.php", {
+      const token = localStorage.getItem("jwt");
+
+      const response = await fetch("https://eaglenet.onrender.com/api/shipments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -148,11 +164,13 @@ export default function Booking() {
         return;
       }
 
-      console.log("Parsed response from Booking.php:", result);
+      console.log("Parsed response from api/shipments:", result);
 
-      if (response.ok && result && result.status === "success") {
-        const estimatedCost = (parseFloat(formData.packageWeight) * 150).toFixed(2);
-        setBookingId(result.trackingId || trackingId || '');
+      if (response.ok && result && result.status === "success" && result.data) {
+        const shipment = result.data;
+        const trackingId = shipment.trackingId;
+        const estimatedCost = shipment.amount || (parseFloat(formData.packageWeight) * 150).toFixed(2);
+        setBookingId(trackingId);
 
         const MySwal = withReactContent(Swal);
         await MySwal.fire({

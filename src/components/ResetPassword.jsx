@@ -29,7 +29,7 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost/backend/reset-password.php", {
+      const res = await fetch("https://eaglenet.onrender.com/reset-password.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
