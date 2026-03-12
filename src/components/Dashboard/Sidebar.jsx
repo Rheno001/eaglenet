@@ -139,7 +139,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === "/dashboard"}
+                end={item.path === "/customer-dashboard" || item.path === "/admin-dashboard"}
                 className={linkClass}
                 onClick={() => isMobile && toggleSidebar()}
               >
