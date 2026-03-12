@@ -4,6 +4,7 @@ import { Users, Globe, Target, Truck, Award, Clock, ArrowRight, CheckCircle2 } f
 import { motion, useScroll, useTransform } from "framer-motion";
 import HeroContainer from "../../assets/hero-container-crane.png";
 import HaulageServices from "../../assets/haulage-services.webp";
+import EagleAbout from "../../assets/eagle-about.jpg";
 
 export default function About() {
   const { scrollY } = useScroll();
@@ -58,12 +59,19 @@ export default function About() {
               <h2 className="text-6xl lg:text-8xl font-black font-heading text-black leading-none uppercase tracking-tighter">
                 Our <br /> Story
               </h2>
+              <div className="w-full overflow-hidden">
+                <img
+                  src={EagleAbout}
+                  alt="EagleNet About Us"
+                  className="w-full h-auto object-cover"
+                />
+              </div>
             </div>
 
             <div className="lg:col-span-1 hidden lg:block h-full border-l border-gray-100 mx-auto"></div>
 
             <div className="lg:col-span-6 space-y-8">
-              <p className="text-2xl lg:text-3xl text-gray-500 font-bold leading-relaxed">
+              <p className="text-base lg:text-lg text-gray-500 font-medium leading-relaxed">
                 Eaglenet Logistics Services Ltd is a trusted name in freight forwarding, cargo handling, warehousing, and logistics solutions across Nigeria and beyond. Since our inception, we have remained dedicated to providing fast, efficient, and reliable door-to-door delivery services — ensuring that freight is always fulfilled, on time and with care.
                 <br /><br />
                 At Eaglenet, we believe logistics is more than just movement — it’s about connecting people, products, and possibilities. With a team of seasoned professionals, modern equipment, and a passion for excellence, we deliver integrated logistics and supply chain solutions tailored to your business needs.
@@ -114,40 +122,53 @@ export default function About() {
         </div>
       </section>
 
-      {/* Our Journey Section (Detailed Timeline) */}
+      {/* Why Choose Us Section */}
       <section className="py-24 lg:py-40 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-12 mb-24">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
-                <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Journey</span>
+                <span className="text-sm font-black uppercase tracking-widest text-gray-900">Why Choose Us</span>
               </div>
               <h2 className="text-6xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
-                Years of <br /> Innovation
+                The EagleNet <br /> Difference
               </h2>
             </div>
             <p className="max-w-md text-lg text-gray-500 font-medium leading-relaxed">
-              Tracing Our Path From A Local Startup To A Global Logistics Powerhouse, Driven By Technology And Trust.
+              We go beyond logistics — delivering trust, expertise, and a commitment to excellence at every step of your journey.
             </p>
           </div>
 
-          <div className="space-y-24">
+          <div className="grid md:grid-cols-2 gap-1 border-t border-l border-gray-100">
             {[
-              { year: "2010", title: "The Beginning", desc: "EagleNet starts with a fleet of 5 vans, focusing on last-mile delivery in major urban centers." },
-              { year: "2014", title: "Regional Expansion", desc: "We expanded our operations to cover 10 countries, introducing air freight and customs brokerage." },
-              { year: "2018", title: "Digital Revolution", desc: "Launch of our proprietary tracking and supply chain management platform, transforming how clients view their freight." },
-              { year: "2023", title: "Global Powerhouse", desc: "Now operating across 150+ countries with a network of strategic partners and automated warehouses." }
-            ].map((item, idx) => (
-              <div key={idx} className="grid lg:grid-cols-12 gap-12 items-center">
-                <div className="lg:col-span-3">
-                  <h3 className="text-7xl lg:text-9xl font-black text-gray-100 uppercase tracking-tighter leading-none">{item.year}</h3>
-                </div>
-                <div className="lg:col-span-1 hidden lg:block h-20 border-l border-gray-100 mx-auto"></div>
-                <div className="lg:col-span-8">
-                  <h4 className="text-3xl font-black uppercase tracking-tighter mb-4 text-[#3B1350]">{item.title}</h4>
-                  <p className="text-xl text-gray-500 font-bold leading-relaxed">{item.desc}</p>
-                </div>
+              {
+                num: "01",
+                title: "Our Value",
+                desc: "We provide dependable operational support, including pre-financing when required, to ensure our clients' moving needs are efficiently met and kept on schedule."
+              },
+              {
+                num: "02",
+                title: "Experts",
+                desc: "Eaglenet is equipped with seasoned experts who bring extensive professional experience, delivering efficient logistics solutions tailored to meet your diverse needs."
+              },
+              {
+                num: "03",
+                title: "Customer-Centric Service",
+                desc: "Our clients are at the heart of what we do. We listen, understand, and tailor solutions to meet their unique logistics and relocation needs."
+              },
+              {
+                num: "04",
+                title: "Professionalism & Excellence",
+                desc: "We maintain the highest standards in handling shipments, documentation, packing, delivery, and communication. Ensuring a seamless experience and top notch services to foster complete satisfaction is our initiative here at Eaglenet."
+              },
+            ].map((item, i) => (
+              <div key={i} className="p-12 border-r border-b border-gray-100 group hover:bg-[#3B1350] transition-colors duration-500">
+                <span className="text-xs font-black uppercase tracking-widest text-[#3B1350] group-hover:text-white/50 mb-8 block transition-colors">{item.num}</span>
+                <h4 className="text-3xl font-black uppercase tracking-tighter mb-6 text-black group-hover:text-white transition-colors">{item.title}</h4>
+                <p className="text-gray-500 font-medium leading-relaxed group-hover:text-white/70 transition-colors">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>

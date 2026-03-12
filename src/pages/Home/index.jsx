@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Package, Truck, Globe, Clock, Shield, ArrowRight, CheckCircle2, Play } from 'lucide-react';
 import { Link } from "react-router-dom";
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'framer-motion';
+import HeroContainer from "../../assets/CONTAINER.png";
+import gemnetwork from "../../assets/gemnetwork.webp";
+import iam from "../../assets/iam.webp";
+import moverspoe from "../../assets/moverspoe.webp";
+import pcg from "../../assets/pcg.webp";
 
 const CountingNumber = ({ value, duration = 2 }) => {
     const [count, setCount] = useState(0);
@@ -39,12 +44,15 @@ const FadeInWhenVisible = ({ children, delay = 0 }) => {
 
 export default function LogisticsWebsite() {
     const [trackingCode, setTrackingCode] = useState('');
-    const { scrollYProgress } = useScroll();
+    const { scrollYProgress, scrollY } = useScroll();
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
         restDelta: 0.001
     });
+
+    // Parallax effect for the hero image
+    const imageY = useTransform(scrollY, [0, 1000], [0, -300]);
 
     const handleTrackSubmit = () => {
         if (trackingCode.trim()) {
@@ -57,6 +65,36 @@ export default function LogisticsWebsite() {
             handleTrackSubmit();
         }
     };
+
+    // Rotating hero text state
+    const [currentTextIndex, setCurrentTextIndex] = useState(0);
+    const logisticsTerms = ["Delivering", "Logistics", "Shipping", "Forwarding", "Global"];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentTextIndex((prev) => (prev + 1) % logisticsTerms.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Reviews carousel state
+    const reviews = [
+        { quote: "EagleNet Has Transformed Our Supply Chain Efficiency, Reducing Delays And Helping Us Serve Customers Better Than Ever.", author: "GlobalMart Inc." },
+        { quote: "Their door-to-door delivery service is unmatched. Our goods always arrive on time and in perfect condition.", author: "AgroExpress Ltd." },
+        { quote: "Customs clearing used to be a nightmare for us. EagleNet made the whole process seamless and stress-free.", author: "TechHub Imports" },
+        { quote: "We've used EagleNet for our warehousing needs for over two years. Professional, organized, and always reliable.", author: "MapleGoods Nigeria" },
+    ];
+    const [activeReview, setActiveReview] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setActiveReview((prev) => (prev + 1) % reviews.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [reviews.length]);
+
+    const goToPrev = () => setActiveReview((prev) => (prev - 1 + reviews.length) % reviews.length);
+    const goToNext = () => setActiveReview((prev) => (prev + 1) % reviews.length);
 
     const containerVariants = {
         hidden: { opacity: 0 },
