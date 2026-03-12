@@ -7,13 +7,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: true, // Listen on all addresses
-    port: 5173,
-    strictPort: true, // fail if 5173 is already in use
+    port: 5174,
+    strictPort: true, // fail if 5174 is already in use
     allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.io'],
     hmr: {
       protocol: 'ws',
       host: 'localhost',
-      clientPort: 5173
+      clientPort: 5174
     },
     watch: {
       usePolling: true,

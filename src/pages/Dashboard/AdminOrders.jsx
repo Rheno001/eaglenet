@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -77,7 +78,8 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${order.id}`, {
+      const shipmentId = order.trackingId || order._id || order.id;
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -100,7 +102,8 @@ export default function Orders() {
   const updateStatus = async (newStatus) => {
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}`, {
+      const shipmentId = selectedOrder.trackingId || selectedOrder._id || selectedOrder.id;
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -113,11 +116,24 @@ export default function Orders() {
         setOrders(prev =>
           prev.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o)
         );
+        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Status Updated',
+          text: `Shipment status changed to ${newStatus}`,
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      } else {
+        Swal.fire('Update Failed', result.message || 'Error occurred', 'error');
       }
     } catch (err) {
       console.error("Error updating status:", err);
-    } finally {
-      setShowModal(false);
+      Swal.fire('Sync Interrupted', 'Could not reach logistics hub.', 'error');
     }
   };
 
@@ -220,7 +236,7 @@ export default function Orders() {
                       </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
-                      {order.amount ? `₦${parseFloat(order.amount).toLocaleString()}` : "—"}
+                      {order.amount || order.amount === 0 || order.amount === "0" ? `₦${parseFloat(order.amount).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.preferredPickupDate?.split('T')[0] || order.createdAt?.split('T')[0]}</td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
@@ -336,12 +352,18 @@ export default function Orders() {
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Total Weight</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.weight || "—"}</dd>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.weight ? `${selectedOrder.weight} kg` : "—"}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Service Type</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Amount Paid</dt>
                         <dd className="mt-1 text-xl font-bold text-blue-600">
-                          {selectedOrder.amount ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}` : "Not Paid"}
+                          {selectedOrder.amount || selectedOrder.amount === 0 || selectedOrder.amount === "0" 
+                            ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}` 
+                            : "—"}
                         </dd>
                       </div>
                       <div className="sm:col-span-2">

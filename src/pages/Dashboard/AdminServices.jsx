@@ -12,8 +12,10 @@ import {
   Truck,
   Wind,
   Anchor,
-  Globe
+  Globe,
+  Plus
 } from 'lucide-react';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 
 export default function AdminServices() {
@@ -49,6 +51,67 @@ export default function AdminServices() {
     }
   };
 
+  const handleCreateService = async () => {
+    const { value: serviceName } = await Swal.fire({
+      title: 'Initialize New Service',
+      input: 'text',
+      inputLabel: 'Service Designation',
+      inputPlaceholder: 'e.g. Express Air Logistic',
+      showCancelButton: true,
+      confirmButtonText: 'Register Service',
+      confirmButtonColor: '#0f172a',
+      background: '#ffffff',
+      customClass: {
+        popup: 'rounded-[2rem]',
+        input: 'rounded-xl font-bold py-4 px-6 border-slate-100 bg-slate-50',
+        confirmButton: 'rounded-xl px-8 py-4 font-black uppercase tracking-widest text-[10px]',
+        cancelButton: 'rounded-xl px-8 py-4 font-black uppercase tracking-widest text-[10px]'
+      },
+      inputValidator: (value) => {
+        if (!value) return 'Designation is required for registry inclusion.';
+      }
+    });
+
+    if (serviceName) {
+      try {
+        Swal.fire({
+          title: 'Syncing with Hub...',
+          didOpen: () => Swal.showLoading(),
+          allowOutsideClick: false
+        });
+
+        const token = localStorage.getItem("jwt");
+        const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+        
+        const response = await fetch(`${baseUrl}/api/services`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ serviceName }),
+        });
+
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          Swal.fire({
+            icon: 'success',
+            title: 'Service Registered',
+            text: `${serviceName} is now active in the global catalog.`,
+            timer: 3000,
+            showConfirmButton: false
+          });
+          fetchServices();
+        } else {
+          Swal.fire('Registry Error', result.message || 'Failed to create service', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Hub Timeout', 'Could not broadcast new service to the network.', 'error');
+      }
+    }
+  };
+
   const filteredServices = services.filter(s => 
     s.serviceName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -75,9 +138,17 @@ export default function AdminServices() {
           </h1>
           <p className="text-slate-500 font-medium mt-1">Global logistics clearance types and service registry.</p>
         </div>
-        <div className="flex items-center gap-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-           <Activity size={16} />
-           System Registry Live
+        <div className="flex flex-col md:flex-row items-center gap-4">
+           <button 
+             onClick={handleCreateService}
+             className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 text-[10px] uppercase tracking-widest"
+           >
+              <Plus size={20} /> Initialize New Service
+           </button>
+           <div className="flex items-center gap-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+              <Activity size={16} />
+              System Registry Live
+           </div>
         </div>
       </header>
 

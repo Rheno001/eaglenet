@@ -152,16 +152,36 @@ export default function Shipment() {
             <Package className="w-3 h-3" /> Pending
           </span>
         );
+      case "processing":
+        return (
+          <span className={`${base} bg-indigo-100 text-indigo-700`}>
+            <Loader className="w-3 h-3 animate-spin" /> Processing
+          </span>
+        );
+      case "transit":
       case "in transit":
         return (
           <span className={`${base} bg-blue-100 text-blue-700`}>
             <Truck className="w-3 h-3" /> In Transit
           </span>
         );
+      case "arrived":
+        return (
+          <span className={`${base} bg-teal-100 text-teal-700`}>
+            <MapPin className="w-3 h-3" /> Arrived
+          </span>
+        );
+      case "delay":
+      case "delayed":
+        return (
+          <span className={`${base} bg-red-100 text-red-700`}>
+            <AlertCircle className="w-3 h-3" /> Delayed
+          </span>
+        );
       default:
         return (
           <span className={`${base} bg-gray-100 text-gray-600`}>
-            Unknown
+             {status || "Unknown"}
           </span>
         );
     }

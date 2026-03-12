@@ -115,11 +115,10 @@ export default function Booking() {
         fullName: formData.customerName,
         email: formData.email,
         phoneNumber: formData.phone,
-        pickupAddress: formData.pickupAddress,
-        pickupCity: formData.pickupCity,
-        deliveryAddress: formData.destination,
-        destinationCity: formData.destinationCity,
+        origin: `${formData.pickupAddress}, ${formData.pickupCity}`,
+        destination: `${formData.destination}, ${formData.destinationCity}`,
         weight: formData.packageWeight,
+        packageType: formData.packageType,
         packageDetails: formData.packageDetails,
         preferredPickupDate: formData.date,
         preferredPickupTime: formData.preferredTime,
@@ -170,16 +169,16 @@ export default function Booking() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700">
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-4">
              <div className="p-3 bg-slate-900 rounded-2xl">
                 <Truck className="text-white" size={32} />
              </div>
-             Logistics Booking
+             New Shipment Booking
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Initialize a new shipment mission within the EAGLENET registry.</p>
+          <p className="text-slate-500 font-medium mt-1">Create a new shipment request in our logistics network.</p>
         </div>
         
         <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
@@ -196,28 +195,27 @@ export default function Booking() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2">
-          <form className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 space-y-10">
+      <div className="w-full">
+          <form className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 space-y-10 w-full">
             
             {currentStep === 1 && (
               <div className="space-y-8 animate-in slide-in-from-right-4">
                 <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                  <User className="text-teal-500" /> Identity Intelligence
+                  <User className="text-teal-500" /> Shipper Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Name</label>
-                    <input name="customerName" value={formData.customerName} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Full legal name" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <input name="customerName" value={formData.customerName} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Full name" />
                     {errors.customerName && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.customerName}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Email</label>
-                    <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="official@agency.com" />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="email@example.com" />
                     {errors.email && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.email}</p>}
                   </div>
                   <div className="space-y-2 md:col-span-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Secure Line (Phone)</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
                     <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="+234 ..." />
                     {errors.phone && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.phone}</p>}
                   </div>
@@ -228,12 +226,12 @@ export default function Booking() {
             {currentStep === 2 && (
               <div className="space-y-8 animate-in slide-in-from-right-4">
                 <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                  <MapPin className="text-teal-500" /> Route Mapping
+                  <MapPin className="text-teal-500" /> Shipment Route
                 </h2>
                 <div className="space-y-6">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pickup City</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Origin City</label>
                          <select name="pickupCity" value={formData.pickupCity} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
                            <option value="">Select Origin</option>
                            {nigerianCities.map(c => <option key={c} value={c}>{c}</option>)}
@@ -249,7 +247,7 @@ export default function Booking() {
                    <div className="h-px bg-slate-100"></div>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Delivery City</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Destination City</label>
                          <select name="destinationCity" value={formData.destinationCity} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
                            <option value="">Select Destination</option>
                            {nigerianCities.map(c => <option key={c} value={c}>{c}</option>)}
@@ -257,7 +255,7 @@ export default function Booking() {
                          {errors.destinationCity && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.destinationCity}</p>}
                       </div>
                       <div className="space-y-2">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Delivery Address</label>
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Destination Address</label>
                          <input name="destination" value={formData.destination} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Street, hub..." />
                          {errors.destination && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.destination}</p>}
                       </div>
@@ -269,34 +267,34 @@ export default function Booking() {
             {currentStep === 3 && (
               <div className="space-y-8 animate-in slide-in-from-right-4">
                 <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                  <Package className="text-teal-500" /> Payload Specifications
+                  <Package className="text-teal-500" /> Shipment Details
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Type</label>
                       <select name="serviceId" value={formData.serviceId} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
-                        <option value="">Select Clearance</option>
+                        <option value="">Select Service Type</option>
                         {services.map(s => <option key={s.id} value={s.id}>{s.serviceName}</option>)}
                       </select>
                       {errors.serviceId && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.serviceId}</p>}
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Weight Class (KG)</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Weight (KG)</label>
                       <input name="packageWeight" type="number" step="0.1" value={formData.packageWeight} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="0.0" />
                       {errors.packageWeight && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageWeight}</p>}
                    </div>
                    <div className="space-y-2 md:col-span-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detailed Manifesto</label>
-                      <textarea name="packageDetails" value={formData.packageDetails} onChange={handleChange} rows="3" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="List of items, fragile markers..." />
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Package Contents</label>
+                      <textarea name="packageDetails" value={formData.packageDetails} onChange={handleChange} rows="3" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="List of items, fragility note..." />
                       {errors.packageDetails && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageDetails}</p>}
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dispatch Date</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Desired Pickup Date</label>
                       <input name="date" type="date" value={formData.date} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" />
                       {errors.date && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.date}</p>}
                    </div>
                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dispatch Window</label>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Pickup Time</label>
                       <select name="preferredTime" value={formData.preferredTime} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
                         <option value="anytime">Flexible</option>
                         <option value="morning">Morning (08:00 - 12:00)</option>
@@ -318,63 +316,12 @@ export default function Booking() {
                ) : (
                  <button type="button" onClick={handleSubmit} disabled={loading} className="ml-auto px-10 py-4 bg-teal-500 text-white rounded-2xl font-bold flex items-center gap-3 hover:bg-teal-600 transition-all shadow-xl shadow-teal-500/20 disabled:opacity-50">
                    {loading ? <Loader className="animate-spin" /> : <CheckCircle size={20} />}
-                   Confirm Mission
+                   Create Shipment
                  </button>
                )}
             </div>
           </form>
         </div>
-
-        <div className="space-y-6">
-           <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white space-y-6">
-              <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                 <Info size={20} className="text-teal-400" /> Intelligence Summary
-              </h3>
-              
-              <div className="space-y-4">
-                 <div className="flex justify-between items-center group">
-                    <div className="flex items-center gap-3">
-                       <div className="p-2 bg-slate-800 rounded-lg text-slate-400 group-hover:text-teal-400 transition-colors"><Weight size={14}/></div>
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Yield</span>
-                    </div>
-                    <span className="text-xl font-black">{formData.packageWeight || "0.0"} <span className="text-xs text-slate-500">kg</span></span>
-                 </div>
-                 <div className="flex justify-between items-center group">
-                    <div className="flex items-center gap-3">
-                       <div className="p-2 bg-slate-800 rounded-lg text-slate-400 group-hover:text-teal-400 transition-colors"><Clock size={14}/></div>
-                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dispatch Window</span>
-                    </div>
-                    <span className="text-xs font-black uppercase">{formData.preferredTime}</span>
-                 </div>
-                 <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Financial Projection</p>
-                    <div className="flex items-end justify-between">
-                       <p className="text-3xl font-black">₦ {(parseFloat(formData.packageWeight || 0) * 150).toLocaleString()}</p>
-                       <p className="text-[9px] text-slate-500 font-bold mb-1 italic">est. conversion</p>
-                    </div>
-                 </div>
-              </div>
-           </div>
-
-           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Clearances</h4>
-              <div className="space-y-2">
-                 {loadingServices ? (
-                    <div className="animate-pulse flex flex-col gap-2">
-                       <div className="h-4 bg-slate-100 rounded w-3/4"></div>
-                       <div className="h-4 bg-slate-100 rounded w-1/2"></div>
-                    </div>
-                 ) : (
-                    services.slice(0, 4).map(s => (
-                       <div key={s.id} className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                          <CheckCircle size={14} className="text-teal-500" /> {s.serviceName}
-                       </div>
-                    ))
-                 )}
-              </div>
-           </div>
-        </div>
       </div>
-    </div>
   );
 }
