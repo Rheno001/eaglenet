@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import { Mail, Phone, MapPin, Send, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const FAQItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-200 py-4">
+    <div className="border-b border-gray-100 py-6">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex justify-between items-center w-full text-left focus:outline-none group"
       >
-        <span className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{question}</span>
-        {isOpen ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+        <span className="text-xl font-black uppercase tracking-tighter text-gray-900 group-hover:text-[#E40000] transition-colors">{question}</span>
+        {isOpen ? <ChevronUp className="w-6 h-6 text-[#E40000]" /> : <ChevronDown className="w-6 h-6 text-gray-300" />}
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -22,7 +23,7 @@ const FAQItem = ({ question, answer }) => {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <p className="mt-2 text-gray-600 leading-relaxed">{answer}</p>
+            <p className="mt-4 text-gray-500 font-medium leading-relaxed">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -32,18 +33,18 @@ const FAQItem = ({ question, answer }) => {
 
 const ContactInput = ({ label, type = "text", placeholder, rows }) => {
   return (
-    <div className="relative group">
-      <label className="block text-sm font-medium text-gray-700 mb-1 transition-colors group-focus-within:text-blue-600">{label}</label>
+    <div className="relative group space-y-2">
+      <label className="block text-sm font-black uppercase tracking-widest text-[#E40000]">{label}</label>
       {rows ? (
         <textarea
           rows={rows}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all duration-300 resize-none"
+          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#E40000] outline-none transition-all duration-300 resize-none font-medium text-gray-900 placeholder:text-gray-400"
           placeholder={placeholder}
         />
       ) : (
         <input
           type={type}
-          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 outline-none transition-all duration-300"
+          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#E40000] outline-none transition-all duration-300 font-medium text-gray-900 placeholder:text-gray-400"
           placeholder={placeholder}
         />
       )}
@@ -53,104 +54,152 @@ const ContactInput = ({ label, type = "text", placeholder, rows }) => {
 
 export default function Contact() {
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-gray-900 selection:text-white pt-20">
+    <div className="min-h-screen bg-white font-sans selection:bg-[#E40000] selection:text-white pt-20">
       {/* Hero Section */}
-      <section className="relative py-20 px-6 lg:px-8 bg-gray-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cube-coat.png')]"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-[128px] opacity-20 translate-x-1/2 -translate-y-1/2"></div>
+      <section className="bg-black py-24 lg:py-40 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20 flex items-center justify-center pointer-events-none">
+          <h1 className="text-[30vw] font-black uppercase tracking-tighter leading-none select-none text-white/5">CONNECT</h1>
+        </div>
 
-        <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-5xl md:text-7xl font-bold font-heading mb-6"
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex justify-start">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-2xl lg:max-w-3xl space-y-8"
           >
-            Get in <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-white">Touch</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-gray-300 max-w-2xl mx-auto"
-          >
-            Have a question or need a custom logistics solution? Our team is here to help 24/7.
-          </motion.p>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-1 bg-[#E40000]"></div>
+              <span className="text-sm font-black uppercase tracking-widest text-white/80">Support</span>
+            </div>
+            <h1 className="text-6xl lg:text-[7rem] font-black leading-[0.9] tracking-tighter uppercase">
+              Get In <br /> <span className="text-white/70">Touch.</span>
+            </h1>
+            <p className="text-xl lg:text-2xl font-medium text-white/90 leading-relaxed max-w-2xl">
+              Have a question or need a custom logistics solution? Our team is here to help 24/7.
+            </p>
+          </motion.div>
         </div>
       </section>
 
-      <section className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Send us a message</h2>
-              <p className="text-gray-500">We usually respond within 2 hours.</p>
+      {/* Main Content Section */}
+      <section className="py-24 lg:py-40 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-24">
+
+          {/* Contact Details (Left Side) */}
+          <div className="lg:w-5/12 space-y-16">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-[#E40000]"></div>
+                <span className="text-sm font-black uppercase tracking-widest text-[#E40000]">Contact Info</span>
+              </div>
+              <h2 className="text-5xl font-black uppercase tracking-tighter leading-none text-black">
+                Reach Out <br /> To Us
+              </h2>
             </div>
 
-            <form className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <ContactInput label="First Name" placeholder="John" />
-                <ContactInput label="Last Name" placeholder="Doe" />
-              </div>
-              <ContactInput label="Email Address" type="email" placeholder="john@example.com" />
-              <ContactInput label="Subject" placeholder="Shipping Inquiry" />
-              <ContactInput label="Message" rows={5} placeholder="Tell us about your shipment..." />
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="grid gap-8"
+            >
+              {[
+                { icon: MapPin, title: "Head Office", details: ["Carlin Concept Complex Plot 1483,", "Km 27, Umaru Musa Yar'adua Way Airport Road,", "Abuja, Nigeria", "Tel: +234 803 786 0962", "Tel: +234 810 557 0699"] },
+                { icon: MapPin, title: "Lagos Office 1", details: ["8A Lateef Salami Street", "Ajao Estate, Lagos.", "Tel: +234 805 895 1862", "Tel: +234 810 557 0699"] },
+                { icon: MapPin, title: "Lagos Sea Operations", details: ["21, Warehouse Road,", "Apapa Lagos.", "Tel: +234 803 786 0962", "Tel: +234 810 557 0699"] },
+                { icon: Mail, title: "Email Us", details: ["info@eaglenetnigeria.com", "operations@eaglenetnigeria.com"] }
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-8 group">
+                  <div className="w-16 h-16 bg-[#F9FAFB] flex items-center justify-center group-hover:bg-[#E40000] group-hover:text-white transition-colors duration-500 shrink-0">
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <div className="pt-2">
+                    <h3 className="font-black uppercase tracking-tighter text-2xl mb-4 group-hover:text-[#E40000] transition-colors">{item.title}</h3>
+                    <div className="space-y-1">
+                      {item.details.map((line, idx) => (
+                        <p key={idx} className="text-gray-500 font-medium">{line}</p>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
 
-              <button className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-lg hover:bg-black hover:scale-[1.02] transition-all shadow-xl shadow-gray-900/10 flex items-center justify-center gap-2 cursor-pointer">
-                <Send className="w-5 h-5" /> Send Message
-              </button>
-            </form>
-          </motion.div>
+          {/* Form and FAQ (Right Side) */}
+          <div className="lg:w-7/12 space-y-24">
 
-          {/* Contact Info & FAQ */}
-          <div className="space-y-12">
+            {/* Form */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="grid gap-6"
             >
-              {[
-                { icon: MapPin, title: "Our Office", details: ["123 Logistics Avenue", "Abuja, Nigeria"] },
-                { icon: Phone, title: "Phone", details: ["+234 800 123 4567", "+234 800 987 6543"] },
-                { icon: Mail, title: "Email", details: ["support@eaglenet.com", "sales@eaglenet.com"] }
-              ].map((item, i) => (
-                <div key={i} className="flex items-start p-6 rounded-2xl bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-900 shadow-sm mr-6 shrink-0">
-                    <item.icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg mb-1">{item.title}</h3>
-                    {item.details.map((line, idx) => (
-                      <p key={idx} className="text-gray-600">{line}</p>
-                    ))}
-                  </div>
+              <div className="mb-12">
+                <h3 className="text-4xl font-black uppercase tracking-tighter mb-4 text-black">Send us a message</h3>
+                <p className="text-gray-500 font-medium text-lg">We usually respond within 2 hours.</p>
+              </div>
+
+              <form className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <ContactInput label="First Name" placeholder="John" />
+                  <ContactInput label="Last Name" placeholder="Doe" />
                 </div>
-              ))}
+                <ContactInput label="Email Address" type="email" placeholder="john@example.com" />
+                <ContactInput label="Subject" placeholder="Shipping Inquiry" />
+                <ContactInput label="Message" rows={5} placeholder="Tell us about your shipment..." />
+
+                <button className="flex items-center gap-8 group pt-4 bg-transparent border-none p-0 cursor-pointer text-left w-auto">
+                  <span className="text-3xl font-black uppercase tracking-tighter">Send Message</span>
+                  <div className="w-16 h-16 bg-[#E40000] flex items-center justify-center text-white group-hover:bg-[#C20000] transition-all group-hover:scale-110 shrink-0">
+                    <Send className="w-6 h-6" />
+                  </div>
+                </button>
+              </form>
             </motion.div>
 
+            {/* FAQ Area */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.4 }}
+              className="pt-12 border-t border-gray-100"
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <MessageSquare className="w-6 h-6" /> FAQ
+              <h3 className="text-4xl font-black uppercase tracking-tighter mb-12 text-black flex items-center gap-4">
+                FAQ
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <FAQItem question="How do I track my shipment?" answer="You can track your shipment using the tracking ID provided in your confirmation email. Simply enter it on our homepage tracking tool." />
                 <FAQItem question="What are your delivery hours?" answer="We deliver between 8:00 AM and 6:00 PM, Monday through Saturday. Express delivery services may include Sundays." />
                 <FAQItem question="Do you offer insurance?" answer="Yes, all shipments are covered by our basic insurance policy. Comprehensive coverage is available for high-value items." />
               </div>
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final Call to Action  */}
+      <section className="py-24 lg:py-40 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
+          <h2 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none text-black">
+            Ready for a custom <br /> quote?
+          </h2>
+          <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">
+            Get precise pricing for your freight and logistics needs by requesting a quote today.
+          </p>
+          <div className="pt-8">
+            <Link to="/quote">
+              <div className="inline-flex items-center gap-8 group cursor-pointer">
+                <span className="text-3xl lg:text-5xl font-black uppercase tracking-tighter text-black">Request A Quote</span>
+                <div className="w-16 h-16 bg-[#E40000] flex items-center justify-center text-white hover:bg-[#C20000] transition-all group-hover:scale-110">
+                  <ArrowRight className="w-8 h-8 -rotate-45" />
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
