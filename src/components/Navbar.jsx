@@ -16,11 +16,12 @@ export default function Navbar() {
   const navLinksLeft = [
     { name: "Home", path: "/" },
     { name: "Services", path: "/services" },
+    { name: "About Us", path: "/about" },
   ];
 
   const navLinksRight = [
-    { name: "About Us", path: "/about" },
     { name: "Contact Us", path: "/contact" },
+    { name: "Get A Quote", path: "/quote" },
   ];
 
   return (
@@ -64,10 +65,11 @@ export default function Navbar() {
                   </Link>
                 ))}
 
-                {/* Red CTA Button */}
-                <Link to="/quote" className="h-full">
+
+                {/* Login Button */}
+                <Link to="/login" className="h-full">
                   <button className="h-full px-10 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all">
-                    Get A Quote
+                    Login
                   </button>
                 </Link>
               </div>
@@ -126,9 +128,9 @@ export default function Navbar() {
                   ))}
                 </div>
                 <div className="p-6">
-                  <Link to="/quote" onClick={() => setIsOpen(false)}>
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
                     <button className="w-full py-5 bg-[#3B1350] text-white font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66]">
-                      Get A Quote
+                      Login
                     </button>
                   </Link>
                 </div>
