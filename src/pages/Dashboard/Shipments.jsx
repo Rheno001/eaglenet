@@ -46,7 +46,7 @@ export default function Shipment() {
         return;
       }
 
-      const response = await fetch(`https://eaglenet.onrender.com/api/shipments/mine`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/mine`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export default function Shipment() {
     try {
       setLoadingDetails(true);
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet.onrender.com/api/shipments/${id}`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

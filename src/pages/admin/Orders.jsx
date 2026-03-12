@@ -1,37 +1,59 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader
 } from "lucide-react";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // Reset to first page on new search
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [orders, searchTerm, filterStatus]);
+  }, [currentPage, filterStatus, debouncedSearch, limit]);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
-      const response = await fetch("https://eaglenet.onrender.com/api/shipments", {
+      
+      const params = new URLSearchParams({
+        page: currentPage,
+        limit: limit,
+      });
+
+      if (debouncedSearch) params.append("search", debouncedSearch);
+      if (filterStatus !== "all") params.append("status", filterStatus.toLowerCase());
+
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments?${params.toString()}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
       const result = await response.json();
-      if (result && result.data) {
+      if (result && result.status === "success") {
         setOrders(result.data);
+        setTotalPages(result.meta?.totalPages || 1);
+        setTotal(result.meta?.total || 0);
       } else {
         setOrders([]);
       }
@@ -43,82 +65,76 @@ export default function Orders() {
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...orders];
-
-    if (searchTerm.trim()) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(order =>
-        order.fullName?.toLowerCase().includes(search) ||
-        order.trackingId?.toLowerCase().includes(search) ||
-        order.email?.toLowerCase().includes(search)
-      );
-    }
-
-    if (filterStatus !== "all") {
-      filtered = filtered.filter(order => order.status === filterStatus);
-    }
-
-    setFilteredOrders(filtered);
-  };
-
-  const confirmDelivered = async (trackingId) => {
+  const confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
     const originalOrders = [...orders];
 
     // Optimistically update the UI
     const updatedOrders = orders.map((o) =>
-      o.trackingId === trackingId ? { ...o, status: "Delivered" } : o
+      o.id === order.id ? { ...o, status: "DELIVERED" } : o
     );
     setOrders(updatedOrders);
 
     try {
-      const response = await fetch("https://eaglenet.onrender.com/update-booking-status.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackingId, status: "Delivered" }),
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${order.id}`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: "DELIVERED" }),
       });
 
       const result = await response.json();
-      if (!result.success) {
+      if (result.status !== "success") {
         throw new Error("Server failed to update status.");
       }
     } catch (err) {
       console.error("Error updating delivery:", err);
       // If the update fails, revert to the original state
       setOrders(originalOrders);
-      // Optionally, you can set an error state here to notify the admin
     }
   };
 
   const updateStatus = async (newStatus) => {
     try {
-      const response = await fetch("https://eaglenet.onrender.com/update-booking-status.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trackingId: selectedOrder.trackingId, status: newStatus }),
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
       const result = await response.json();
-      if (result.success) {
+      if (result.status === "success") {
         setOrders(prev =>
-          prev.map(o => o.trackingId === selectedOrder.trackingId ? { ...o, status: newStatus } : o)
+          prev.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o)
         );
       }
     } catch (err) {
       console.error("Error updating status:", err);
-      setOrders(prev =>
-        prev.map(o => o.trackingId === selectedOrder.trackingId ? { ...o, status: newStatus } : o)
-      );
     } finally {
       setShowModal(false);
     }
   };
 
   const statusConfig = {
-    Delivered: { color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle },
-    "In Transit": { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck },
-    Delayed: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle },
-    Pending: { color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock },
+    DELIVERED: { color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle, label: "Delivered" },
+    TRANSIT: { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
+    "IN TRANSIT": { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
+    DELAY: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle, label: "Delayed" },
+    DELAYED: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle, label: "Delayed" },
+    PENDING: { color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock, label: "Pending" },
+    PROCESSING: { color: "bg-indigo-100 text-indigo-700 border-indigo-300", icon: Loader, label: "Processing" },
+    ARRIVED: { color: "bg-teal-100 text-teal-700 border-teal-300", icon: MapPin, label: "Arrived" },
+  };
+
+  const getStatusInfo = (status) => {
+    const s = status?.toUpperCase() || "PENDING";
+    return statusConfig[s] || { color: "bg-gray-100 text-gray-700 border-gray-300", icon: Clock, label: status };
   };
 
   if (loading) return (
@@ -160,10 +176,11 @@ export default function Orders() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="In Transit">In Transit</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Delayed">Delayed</option>
+                <option value="PENDING">Pending</option>
+                <option value="TRANSIT">In Transit</option>
+                <option value="ARRIVED">Arrived</option>
+                <option value="DELIVERED">Delivered</option>
+                <option value="DELAY">Delayed</option>
               </select>
             </div>
           </div>
@@ -184,7 +201,7 @@ export default function Orders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredOrders.map(order => {
+              {orders.map(order => {
                 const StatusIcon = statusConfig[order.status]?.icon || Clock;
                 return (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
@@ -197,9 +214,9 @@ export default function Orders() {
                       {order.pickupCity} → {order.destinationCity}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm">
-                      <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold border flex items-center gap-1 w-fit ${statusConfig[order.status]?.color}`}>
-                        <StatusIcon className="w-3 h-3 md:w-4 md:h-4" />
-                        {order.status}
+                      <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold border flex items-center gap-1 w-fit ${getStatusInfo(order.status).color}`}>
+                        {React.createElement(getStatusInfo(order.status).icon, { className: "w-3 h-3 md:w-4 md:h-4" })}
+                        {getStatusInfo(order.status).label}
                       </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
@@ -216,9 +233,9 @@ export default function Orders() {
                       >
                         <Eye className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">View</span>
                       </button>
-                      {order.status !== "Delivered" && (
+                      {order.status !== "DELIVERED" && (
                         <button
-                          onClick={() => confirmDelivered(order.trackingId)}
+                          onClick={() => confirmDelivered(order)}
                           className="px-2 py-1 md:px-3 md:py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-1"
                         >
                           <CheckCircle className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Deliver</span>
@@ -230,6 +247,42 @@ export default function Orders() {
               })}
             </tbody>
           </table>
+
+          {/* Pagination UI */}
+          <div className="px-6 py-4 bg-slate-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="text-sm text-gray-500 font-medium">
+              Showing <span className="text-gray-900 font-bold">{Math.min((currentPage - 1) * limit + 1, total)}</span> to <span className="text-gray-900 font-bold">{Math.min(currentPage * limit, total)}</span> of <span className="text-gray-900 font-bold">{total}</span> results
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 text-sm font-bold rounded-lg transition-all ${currentPage === i + 1 ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Detail Modal */}
@@ -304,9 +357,9 @@ export default function Orders() {
                   {/* Status Card */}
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Truck className="w-6 h-6 text-blue-600" />Status</h3>
-                    <div className={`p-3 rounded-lg flex items-center gap-3 ${statusConfig[selectedOrder.status]?.color}`}>
-                      {React.createElement(statusConfig[selectedOrder.status]?.icon || Clock, { className: "w-6 h-6" })}
-                      <span className="font-bold text-lg">{selectedOrder.status}</span>
+                    <div className={`p-3 rounded-lg flex items-center gap-3 ${getStatusInfo(selectedOrder.status).color}`}>
+                      {React.createElement(getStatusInfo(selectedOrder.status).icon, { className: "w-6 h-6" })}
+                      <span className="font-bold text-lg">{getStatusInfo(selectedOrder.status).label}</span>
                     </div>
                     <div className="mt-4">
                       <p className="text-sm font-medium text-gray-500">Order Date</p>
@@ -337,17 +390,24 @@ export default function Orders() {
                   <div className="bg-white border border-gray-200 rounded-xl p-5">
                     <label className="block text-sm font-bold text-gray-900 mb-3">Update Status</label>
                     <div className="grid grid-cols-2 gap-2">
-                      {["Pending", "In Transit", "Delayed", "Delivered"].map(status => (
+                      {[
+                        { key: "PENDING", label: "Pending" },
+                        { key: "PROCESSING", label: "Processing" },
+                        { key: "TRANSIT", label: "In Transit" },
+                        { key: "ARRIVED", label: "Arrived" },
+                        { key: "DELAY", label: "Delayed" },
+                        { key: "DELIVERED", label: "Delivered" }
+                      ].map(status => (
                         <button
-                          key={status}
-                          onClick={() => updateStatus(status)}
-                          disabled={selectedOrder.status === status}
-                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${selectedOrder.status === status
-                            ? `${statusConfig[status]?.color} cursor-not-allowed`
-                            : "bg-white border-gray-300 hover:border-blue-500 hover:text-blue-600"
+                          key={status.key}
+                          onClick={() => updateStatus(status.key)}
+                          disabled={selectedOrder.status === status.key}
+                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${selectedOrder.status === status.key
+                            ? `${statusConfig[status.key]?.color} cursor-not-allowed`
+                            : "bg-white border-gray-200 hover:border-blue-500 hover:text-blue-600"
                             }`}
                         >
-                          {status}
+                          {status.label}
                         </button>
                       ))}
                     </div>

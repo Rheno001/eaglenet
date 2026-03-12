@@ -40,8 +40,10 @@ export default function Navbar({ user, toggleSidebar }) {
 
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden lg:block">
-                            <p className="text-xs font-bold text-gray-900 leading-none">{user?.name || "Admin"}</p>
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase mt-1">Super Admin</p>
+                            <p className="text-xs font-bold text-gray-900 leading-none">{user?.name || user?.firstName || "Admin"}</p>
+                            <p className="text-[10px] font-semibold text-gray-400 uppercase mt-1">
+                                {user?.role === "superadmin" ? "Super Admin" : "Admin"}
+                            </p>
                         </div>
                         <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs font-black shadow-lg shadow-indigo-600/20">
                             {user?.name?.[0] || <User size={16} />}

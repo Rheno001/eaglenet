@@ -1,58 +1,62 @@
-import React, { useEffect, useState } from "react";
 import {
   PieChart,
   Pie,
   Cell,
   Tooltip,
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
-  YAxis
+  YAxis,
+  CartesianGrid
 } from "recharts";
 import {
   Package,
   Truck,
   CheckCircle,
   Users,
-  ShoppingCart,
+  CreditCard,
   TrendingUp,
   ArrowUpRight,
-  MoreVertical,
-  Calendar as CalendarIcon
+  Clock,
+  AlertCircle,
+  Calendar as CalendarIcon,
+  Activity
 } from "lucide-react";
 
 export default function Overview() {
   const [stats, setStats] = useState({
-    total_users: 0,
-    total_bookings: 0,
-    pending_shipments: 0,
-    delivered_shipments: 0,
-    in_transit_shipments: 0,
+    totalUsers: 0,
+    totalOrders: 0,
+    inTransit: 0,
+    pending: 0,
+    processing: 0,
+    arrived: 0,
+    delivered: 0,
+    delayed: 0,
+    totalRevenue: 0,
+    pieChart: [],
+    barChart: []
   });
 
   const [loading, setLoading] = useState(true);
-  const [pieFilter, setPieFilter] = useState("All");
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("https://eaglenet.onrender.com/admin-users.php", {
-          credentials: "include",
+        const token = localStorage.getItem("jwt");
+        const response = await fetch("https://eaglenet-eb9x.onrender.com/api/admin/dashboard", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
-        const data = await response.json();
-        if (data.success) {
-          setStats(data);
+        const result = await response.json();
+        if (result.status === "success") {
+          setStats(result.data);
         }
       } catch (err) {
-        console.error("Error fetching stats:", err);
-        setStats({
-          total_users: 1450,
-          total_bookings: 3480,
-          pending_shipments: 245,
-          delivered_shipments: 2890,
-          in_transit_shipments: 345,
-        });
+        console.error("Error fetching dashboard stats:", err);
       } finally {
         setLoading(false);
       }
@@ -128,83 +132,140 @@ export default function Overview() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <StatCard icon={Users} label="Total Users" value={stats.total_users || 0} trend="+8%" colorClass="bg-blue-600" />
-        <StatCard icon={ShoppingCart} label="Bookings" value={stats.total_bookings || 0} trend="+12%" colorClass="bg-emerald-600" />
-        <StatCard icon={Package} label="Pending" value={stats.pending_shipments || 0} trend="-3%" colorClass="bg-amber-600" />
-        <StatCard icon={Truck} label="In Transit" value={stats.in_transit_shipments || 0} trend="+5%" colorClass="bg-indigo-600" />
-        <StatCard icon={CheckCircle} label="Delivered" value={stats.delivered_shipments || 0} trend="+15%" colorClass="bg-purple-600" />
+        <StatCard 
+          icon={Users} 
+          label="Total Users" 
+          value={stats.totalUsers || 0} 
+          trend="+5%" 
+          colorClass="bg-blue-600" 
+        />
+        <StatCard 
+          icon={CreditCard} 
+          label="Total Revenue" 
+          value={`₦${(stats.totalRevenue || 0).toLocaleString()}`} 
+          trend="+12%" 
+          colorClass="bg-emerald-600" 
+        />
+        <StatCard 
+          icon={Clock} 
+          label="Pending" 
+          value={stats.pending || 0} 
+          trend={`${stats.pending > 5 ? "+" : "-"}${Math.abs(stats.pending - 2)}`} 
+          colorClass="bg-amber-600" 
+        />
+        <StatCard 
+          icon={Truck} 
+          label="In Transit" 
+          value={stats.inTransit || 0} 
+          trend="+1" 
+          colorClass="bg-indigo-600" 
+        />
+        <StatCard 
+          icon={CheckCircle} 
+          label="Delivered" 
+          value={stats.delivered || 0} 
+          trend="+0" 
+          colorClass="bg-purple-600" 
+        />
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Pie Chart */}
-        <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 flex flex-col h-[320px]">
+        <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 flex flex-col h-[380px]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Distribution</h2>
-            <div className="flex bg-gray-50 p-1 rounded gap-1">
-              {["All", "Pending", "In Transit"].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setPieFilter(f)}
-                  className={`px-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${pieFilter === f ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-400'}`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
+            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Order Status Distribution</h2>
+            <Activity size={14} className="text-gray-300" />
           </div>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={shipmentData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={4} dataKey="value" stroke="none">
-                  {shipmentData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
+                <Pie 
+                  data={stats.pieChart || []} 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius={60} 
+                  outerRadius={85} 
+                  paddingAngle={5} 
+                  dataKey="value" 
+                  nameKey="label"
+                  stroke="none"
+                >
+                  {(stats.pieChart || []).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center gap-4 mt-2">
-            {shipmentDataAll.map(d => (
-              <div key={d.name} className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: d.fill }}></div>
-                <span className="text-[9px] font-bold text-gray-400 uppercase">{d.name}</span>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {(stats.pieChart || []).map(d => (
+              <div key={d.label} className="flex items-center gap-1.5 p-1.5 bg-gray-50 rounded border border-gray-100">
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }}></div>
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-gray-400 uppercase truncate">{d.label}</p>
+                  <p className="text-xs font-bold text-gray-900">{d.value}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Area Chart */}
-        <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 flex flex-col h-[320px]">
+        {/* Bar Chart */}
+        <div className="bg-white rounded-lg p-5 shadow-sm border border-gray-100 flex flex-col h-[380px]">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Weekly Trends</h2>
-            <MoreVertical size={14} className="text-gray-300" />
+            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Volume Analysis</h2>
+            <TrendingUp size={14} className="text-gray-300" />
           </div>
           <div className="flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={[
-                { day: 'Mon', val: 40 }, { day: 'Tue', val: 55 }, { day: 'Wed', val: 45 },
-                { day: 'Thu', val: 75 }, { day: 'Fri', val: 60 }, { day: 'Sat', val: 80 },
-                { day: 'Sun', val: (stats.delivered_shipments % 100) || 50 }
-              ]}>
-                <defs>
-                  <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" hide />
-                <YAxis hide />
-                <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="val" stroke="#0d9488" strokeWidth={2} fillOpacity={1} fill="url(#colorVal)" />
-              </AreaChart>
+              <BarChart data={stats.barChart || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="label" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} 
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: '#f8fafc' }}
+                  content={({ active, payload }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-gray-900 text-white p-2 rounded shadow-lg text-[10px] font-bold">
+                          {payload[0].value} {payload[0].payload.label}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar 
+                  dataKey="value" 
+                  fill="#6366f1" 
+                  radius={[4, 4, 0, 0]} 
+                  barSize={30}
+                />
+              </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 p-3 bg-gray-50 rounded border border-gray-100 flex items-center justify-between">
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Efficiency Rate</p>
-              <p className="text-lg font-bold text-gray-900">88.4% <span className="text-[10px] text-emerald-600 ml-1">↑ 3%</span></p>
+          <div className="mt-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                <AlertCircle size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">System Capacity</p>
+                <p className="text-sm font-bold text-indigo-900">Optimal ({(stats.totalOrders / 20 * 100).toFixed(1)}%)</p>
+              </div>
             </div>
-            <div className="px-2 py-0.5 bg-teal-50 text-teal-600 rounded text-[9px] font-bold uppercase border border-teal-100">Target Met</div>
+            <button className="px-3 py-1.5 bg-white text-indigo-600 rounded-lg text-[10px] font-black uppercase border border-indigo-200 shadow-sm hover:shadow-md transition-all">View Log</button>
           </div>
         </div>
       </div>

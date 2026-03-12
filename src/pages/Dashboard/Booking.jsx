@@ -39,7 +39,7 @@ export default function Booking() {
       const token = localStorage.getItem("jwt");
       console.log("Fetching services with token:", token ? "Token present" : "Token missing");
       
-      const response = await fetch("https://eaglenet.onrender.com/api/shipments/services", {
+      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments/services", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -189,7 +189,7 @@ export default function Booking() {
 
       const token = localStorage.getItem("jwt");
 
-      const response = await fetch("https://eaglenet.onrender.com/api/shipments", {
+      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

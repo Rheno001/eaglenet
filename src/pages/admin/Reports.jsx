@@ -32,9 +32,9 @@ export default function MonthlyReport() {
 
     try {
       const [bookingsRes, usersRes, paymentsRes] = await Promise.all([
-        fetch(`https://eaglenet.onrender.com/get-bookings-report.php?month=${month}&year=${year}`),
-        fetch(`https://eaglenet.onrender.com/get-users.php?month=${month}&year=${year}`),
-        fetch(`https://eaglenet.onrender.com/get-payments.php?month=${month}&year=${year}`)
+        fetch(`https://eaglenet-eb9x.onrender.com/get-bookings-report.php?month=${month}&year=${year}`),
+        fetch(`https://eaglenet-eb9x.onrender.com/get-users.php?month=${month}&year=${year}`),
+        fetch(`https://eaglenet-eb9x.onrender.com/get-payments.php?month=${month}&year=${year}`)
       ]);
 
       // Helper to process responses
@@ -79,7 +79,7 @@ export default function MonthlyReport() {
 
   const exportReport = (type) => {
     const [month, year] = getMonthRange(monthOffset);
-    window.open(`https://eaglenet.onrender.com/export-report.php?month=${month}&year=${year}&type=${type}`, "_blank");
+    window.open(`https://eaglenet-eb9x.onrender.com/export-report.php?month=${month}&year=${year}&type=${type}`, "_blank");
   };
 
   const totalRevenue = payments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);

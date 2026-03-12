@@ -31,7 +31,7 @@ export default function UserPayments() {
       const token = localStorage.getItem("jwt");
       if (!token) return;
 
-      const response = await fetch("https://eaglenet.onrender.com/api/payments/mine", {
+      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/payments/mine", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export default function UserPayments() {
   const handleInitializePayment = async (amount) => {
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch("https://eaglenet.onrender.com/api/payments/initialize", {
+      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/payments/initialize", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -83,7 +83,7 @@ export default function UserPayments() {
     try {
       setVerifyingId(paymentId);
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet.onrender.com/api/payments/verify/${paymentId}`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/verify/${paymentId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

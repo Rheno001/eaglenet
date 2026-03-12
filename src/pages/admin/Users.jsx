@@ -22,7 +22,7 @@ export default function Users() {
 
     try {
       const response = await axios.post(
-        "https://eaglenet.onrender.com/users.php",
+        "https://eaglenet-eb9x.onrender.com/users.php",
         isSearching ? { email: searchEmail } : {},
         { withCredentials: true }
       );

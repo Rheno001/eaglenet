@@ -18,7 +18,7 @@ export default function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("https://eaglenet.onrender.com/get-notifications.php");
+      const res = await fetch("https://eaglenet-eb9x.onrender.com/get-notifications.php");
       const data = await res.json();
       if (data.status === "success") {
         const sorted = data.notifications.sort((a, b) => 

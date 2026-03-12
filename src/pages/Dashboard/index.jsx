@@ -31,7 +31,7 @@ export default function CustomerDashboard() {
       }
 
       const res = await axios.get(
-        "https://eaglenet.onrender.com/api/shipments/mine",
+        "https://eaglenet-eb9x.onrender.com/api/shipments/mine",
         { 
           headers: { 
             "Content-Type": "application/json",

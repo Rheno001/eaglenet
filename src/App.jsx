@@ -35,7 +35,9 @@ import AdminNotifications from "./pages/admin/Notifications";
 import AdminSettings from "./pages/admin/Settings";
 
 // SUPER ADMIN Dashboard
+import SuperAdminLayout from "./pages/superAdmin/Layout";
 import SuperAdminDashboard from "./pages/superAdmin";
+import SuperAdminAdmins from "./pages/superAdmin/Admins";
 
 function App() {
   const location = useLocation();
@@ -99,7 +101,14 @@ function App() {
 
           {/* ✅ SUPER ADMIN DASHBOARD */}
           <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
-            <Route path="/eaglenet/auth/superadmin" element={<SuperAdminDashboard />} />
+            <Route path="/eaglenet/auth/superadmin" element={<SuperAdminLayout />}>
+              <Route index element={<SuperAdminDashboard />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="admins" element={<SuperAdminAdmins />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="payment" element={<AdminPayment />} />
+            </Route>
           </Route>
 
           {/* ✅ CATCH-ALL */}
