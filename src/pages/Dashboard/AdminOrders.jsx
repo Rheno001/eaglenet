@@ -12,7 +12,7 @@ export default function Orders() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -36,7 +36,7 @@ export default function Orders() {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
-      
+
       const params = new URLSearchParams({
         page: currentPage,
         limit: limit,
@@ -81,7 +81,7 @@ export default function Orders() {
       const shipmentId = order.id || order._id || order.trackingId;
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
@@ -105,7 +105,7 @@ export default function Orders() {
       const shipmentId = selectedOrder.id || selectedOrder._id || selectedOrder.trackingId;
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
@@ -117,7 +117,7 @@ export default function Orders() {
           prev.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o)
         );
         setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-        
+
         Swal.fire({
           icon: 'success',
           title: 'Status Updated',
@@ -277,7 +277,7 @@ export default function Orders() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
                   <button
@@ -357,17 +357,21 @@ export default function Orders() {
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Amount Paid</dt>
                         <dd className="mt-1 text-xl font-bold text-blue-600">
-                          {selectedOrder.amount || selectedOrder.amount === 0 || selectedOrder.amount === "0" 
-                            ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}` 
+                          {selectedOrder.amount || selectedOrder.amount === 0 || selectedOrder.amount === "0"
+                            ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}`
                             : "—"}
                         </dd>
                       </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Weight</dt>
+                        <dd className="mt-1 text-gray-900 font-bold">{selectedOrder.weight || 0} KG</dd>
+                      </div>
                       <div className="sm:col-span-2">
                         <div className="flex items-center justify-between mb-2">
-                          <dt className="text-sm font-medium text-gray-500">Description</dt>
+                          <dt className="text-sm font-medium text-gray-500">Package Details</dt>
                           <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                             <TrendingUp size={12} className="text-blue-100" />
-                             {selectedOrder.weight || 0} KG
+                            <TrendingUp size={12} className="text-blue-100" />
+                            {selectedOrder.weight || 0} KG
                           </span>
                         </div>
                         <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic">

@@ -182,7 +182,7 @@ export default function Shipment() {
       default:
         return (
           <span className={`${base} bg-gray-100 text-gray-600`}>
-             {status || "Unknown"}
+            {status || "Unknown"}
           </span>
         );
     }
@@ -397,7 +397,7 @@ export default function Shipment() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                       Customer
+                      Customer
                     </p>
                     <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.fullName}</p>
                   </div>
@@ -476,12 +476,16 @@ export default function Shipment() {
                       <p className="text-sm text-gray-600 font-medium">Package Type</p>
                       <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-sm text-gray-600 font-medium">Weight</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight || 0} kg</p>
+                    </div>
                     <div className="lg:col-span-2">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-600 font-medium">Item Details</p>
+                        <p className="text-sm text-gray-600 font-medium">Package Details</p>
                         <div className="flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-                           <TrendingUp size={12} className="text-teal-400" />
-                           {selectedShipment.weight || 0} KG
+                          <TrendingUp size={12} className="text-teal-400" />
+                          {selectedShipment.weight || 0} KG
                         </div>
                       </div>
                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
@@ -508,10 +512,10 @@ export default function Shipment() {
                     )}
 
                     {selectedShipment.origin && (
-                       <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                         <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
-                         <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
-                       </div>
+                      <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
+                        <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
+                      </div>
                     )}
                   </div>
                 </div>
