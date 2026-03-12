@@ -30,22 +30,36 @@ export const AuthProvider = ({ children }) => {
     return null;
   }, []);
 
-  // ✅ Sync state with localStorage on mount
+  // ✅ Sync state with localStorage + Verify Token on boot
   useEffect(() => {
-    const token = localStorage.getItem("jwt");
-    const storedUser = localStorage.getItem("user");
+    const verifyToken = async () => {
+      const token = localStorage.getItem("jwt");
+      const storedUser = localStorage.getItem("user");
 
-    if (token && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        const normalizedUser = { ...parsedUser, role: parsedUser.role?.toLowerCase() };
-        setUser(normalizedUser);
-      } catch (e) {
-        console.error("Auth state recovery failed:", e);
-        logout();
+      if (token && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          const normalizedUser = { ...parsedUser, role: parsedUser.role?.toLowerCase() };
+          setUser(normalizedUser);
+
+          // Optional: Verify with backend if endpoint exists
+          fetch("https://eaglenet-eb9x.onrender.com/verify-token.php", {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).then(res => res.json())
+            .then(data => {
+              if (!data.success) logout();
+            }).catch(() => {});
+            
+        } catch (e) {
+          console.error("Auth state recovery failed:", e);
+          logout();
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+
+    verifyToken();
   }, [logout]);
 
   return (

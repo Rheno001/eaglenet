@@ -179,7 +179,7 @@ export default function Overview() {
             <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Order Status Distribution</h2>
             <Activity size={14} className="text-gray-300" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie 
@@ -220,7 +220,7 @@ export default function Overview() {
             <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Volume Analysis</h2>
             <TrendingUp size={14} className="text-gray-300" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.barChart || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

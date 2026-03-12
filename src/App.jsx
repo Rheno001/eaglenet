@@ -17,7 +17,6 @@ import Auth from "./pages/Auth";
 import Unauthorized from "./pages/Unauthorized";
 import Track from "./pages/Track";
 
-// USER Dashboard pages
 // Dashboard pages (Consolidated)
 import DashboardLayout from "./pages/Dashboard/Layout";
 import Overview from "./pages/Dashboard/Overview";
@@ -34,19 +33,21 @@ import AdminSettings from "./pages/Dashboard/AdminSettings";
 import SuperAdminDashboard from "./pages/superAdmin/index";
 import SuperAdminAdmins from "./pages/superAdmin/Admins";
 import SuperAdminPromote from "./pages/superAdmin/PromoteUser";
+import CreateAdmin from "./pages/superAdmin/CreateAdmin";
 
 function App() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
 
-  const isDashboard = location.pathname.startsWith("/dashboard");
+  const isDashboard = location.pathname.includes("dashboard");
 
+  // ✅ Redirect logged-in users away from login/signup to their specific dashboard
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // ✅ Redirect logged-in users away from login/signup to a single dashboard entry
   if (parsedUser && (location.pathname === "/login" || location.pathname === "/signup")) {
-    return <Navigate to="/dashboard" replace />;
+    const redirectPath = parsedUser.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (
@@ -63,38 +64,41 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/signup" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Moved here */}
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/track/:trackingId?" element={<Track />} />
 
-          {/* ✅ UNIFIED DASHBOARD SYSTEM */}
-          <Route element={<ProtectedRoute allowedRoles={["user", "admin", "superadmin"]} />}>
-            <Route path="/dashboard" element={<DashboardLayout />}>
+          {/* ✅ CUSTOMER DASHBOARD SYSTEM */}
+          <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
+            <Route path="/customer-dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
-              
-              {/* Common / User specific */}
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
               <Route path="track/:trackingId?" element={<Track />} />
-              <Route path="payment" element={<AdminPayment />} /> {/* Shared payment for now */}
-
-              {/* Admin specific routes */}
-              <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
-                <Route path="admin/orders" element={<AdminOrders />} />
-                <Route path="admin/users" element={<AdminUsers />} />
-                <Route path="admin/reports" element={<AdminReports />} />
-                <Route path="admin/payment" element={<AdminPayment />} />
-                <Route path="admin/notifications" element={<AdminNotifications />} />
-                <Route path="admin/settings" element={<AdminSettings />} />
-              </Route>
-
-              {/* Super Admin specific routes */}
-              <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
-                <Route path="superadmin/admins" element={<SuperAdminAdmins />} />
-                <Route path="superadmin/promote" element={<SuperAdminPromote />} />
-                <Route path="superadmin/analytics" element={<SuperAdminDashboard />} />
-              </Route>
+              <Route path="payment" element={<AdminPayment />} />
             </Route>
           </Route>
+
+          {/* ✅ ADMIN & SUPERADMIN DASHBOARD SYSTEM */}
+          <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
+            <Route path="/admin-dashboard" element={<DashboardLayout />}>
+              <Route index element={<Overview />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="payment" element={<AdminPayment />} />
+              <Route path="notifications" element={<AdminNotifications />} />
+              <Route path="settings" element={<AdminSettings />} />
+              
+              {/* Specialized nesting */}
+              <Route path="admins" element={<SuperAdminAdmins />} />
+              <Route path="promote" element={<SuperAdminPromote />} />
+              <Route path="create-admin" element={<CreateAdmin />} />
+              <Route path="analytics" element={<SuperAdminDashboard />} />
+            </Route>
+          </Route>
+
+          {/* Legacy Redirect */}
+          <Route path="/dashboard" element={<Navigate to={user?.role === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} replace />} />
 
           {/* ✅ CATCH-ALL */}
           <Route path="*" element={<Navigate to="/" replace />} />

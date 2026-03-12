@@ -91,74 +91,74 @@ export default function SuperAdminAdmins() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Manage Administrators</h1>
         <Link 
-          to="/dashboard/superadmin/promote"
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-700 transition-colors"
+          to="/admin-dashboard/create-admin"
+          className="bg-slate-900 text-white px-6 py-3 rounded-2xl flex items-center gap-2 hover:bg-slate-800 transition-all font-bold shadow-xl shadow-slate-200 active:scale-95 text-sm"
         >
           <UserPlus size={18} /> Add New Admin
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Email</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Role</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Joined</th>
-              <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Actions</th>
+          <thead>
+            <tr className="border-b border-slate-50">
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Identity</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Intel</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Security Level</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
+              <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-slate-50">
             {loading ? (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
-                  <Loader2 className="w-10 h-10 text-purple-600 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium tracking-wide">Fetching system administrators...</p>
+                <td colSpan="5" className="px-8 py-24 text-center">
+                  <Loader2 className="w-12 h-12 text-slate-900 animate-spin mx-auto mb-4" />
+                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Syncing Staff Registry...</p>
                 </td>
               </tr>
             ) : admins.length > 0 ? (
               admins.map((admin) => (
-                <tr key={admin.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-                        <UserIcon size={20} />
+                <tr key={admin.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-black text-sm group-hover:from-slate-800 group-hover:to-slate-900 group-hover:text-white transition-all duration-500">
+                        {admin.firstName?.[0]}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">{admin.firstName} {admin.lastName}</p>
-                        <p className="text-xs text-gray-500">ID: {admin.id.substring(0, 8)}...</p>
+                        <p className="font-bold text-slate-900">{admin.firstName} {admin.lastName}</p>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">#{admin.id.substring(0, 8)}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Mail size={14} className="text-gray-400" />
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                      <Mail size={14} className="text-slate-300" />
                       {admin.email}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold border border-purple-200">
+                  <td className="px-8 py-6">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[10px] font-black tracking-widest uppercase border border-indigo-100">
                       <ShieldCheck size={12} />
                       ADMIN
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
                       <Calendar size={14} />
                       {new Date(admin.createdAt).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex items-center gap-3">
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
                       <button 
                         onClick={() => handleDowngrade(admin)}
                         title="Downgrade to Customer"
-                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
+                        className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-amber-50 hover:text-amber-600 transition-all active:scale-90"
                       >
                         <ArrowDownCircle size={20} />
                       </button>
-                      <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                      <button className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-all active:scale-90">
                         <Trash2 size={20} />
                       </button>
                     </div>
@@ -167,12 +167,12 @@ export default function SuperAdminAdmins() {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShieldAlert size={32} className="text-gray-400" />
+                <td colSpan="5" className="px-8 py-32 text-center">
+                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShieldAlert size={32} className="text-slate-300" />
                   </div>
-                  <p className="text-gray-600 font-bold">No Administrators Found</p>
-                  <p className="text-gray-500 text-sm mt-1">There are currently no additional admins in the system.</p>
+                  <p className="text-slate-900 font-bold text-lg">No Administrators Found</p>
+                  <p className="text-slate-400 font-medium">There are currently no additional admins in the system registry.</p>
                 </td>
               </tr>
             )}

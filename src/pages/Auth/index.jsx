@@ -37,7 +37,8 @@ export default function Auth() {
         if (res.data.success) {
           const userData = res.data.user;
           login(userData, token);
-          if (userData.role) navigate('/dashboard');
+          const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+          if (userData.role) navigate(redirectPath);
         } else {
           localStorage.removeItem('jwt');
         }
@@ -141,7 +142,10 @@ export default function Auth() {
             text: result.message || 'Login successful',
             timer: 1500,
             showConfirmButton: false,
-          }).then(() => navigate('/dashboard'));
+          }).then(() => {
+            const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+            navigate(redirectPath);
+          });
         } else {
           Swal.fire({
             icon: 'success',
@@ -149,7 +153,10 @@ export default function Auth() {
             text: result.message || 'Registration successful. Welcome to Eaglenet!',
             timer: 1500,
             showConfirmButton: false,
-          }).then(() => navigate('/dashboard'));
+          }).then(() => {
+            const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+            navigate(redirectPath);
+          });
         }
 
         setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });

@@ -104,29 +104,71 @@ export default function MonthlyReport() {
         </button>
       </header>
 
-      {/* Modern Month Selector */}
-      <section className="bg-white p-4 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
-        <button
-          onClick={handlePrevMonth}
-          className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 transition-all font-bold text-sm"
-        >
-          <ChevronLeft size={20} />
-          Previous Audit
-        </button>
-
-        <div className="flex items-center gap-4 py-2 px-8 bg-slate-900 text-white rounded-2xl shadow-lg shadow-slate-200">
-          <Calendar className="text-teal-400" size={20} />
-          <span className="font-black tracking-tight text-lg uppercase">{formatMonth(monthOffset)}</span>
+      {/* Precise filtering Controls */}
+      <section className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrevMonth}
+              className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 shadow-sm"
+              title="Previous Month"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={handleNextMonth}
+              disabled={monthOffset === 0}
+              className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 disabled:opacity-20 shadow-sm"
+              title="Next Month"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+          <div className="h-8 w-px bg-slate-100 hidden md:block"></div>
+          <div className="flex items-center gap-3 py-2.5 px-6 bg-slate-900 text-white rounded-2xl shadow-lg shadow-slate-200">
+            <Calendar className="text-teal-400" size={18} />
+            <span className="font-black tracking-tight text-sm uppercase">{formatMonth(monthOffset)}</span>
+          </div>
         </div>
 
-        <button
-          onClick={handleNextMonth}
-          disabled={monthOffset === 0}
-          className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 transition-all font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          Next Audit
-          <ChevronRight size={20} />
-        </button>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <select 
+            value={getMonthDate(monthOffset).month}
+            onChange={(e) => {
+              const targetMonth = parseInt(e.target.value);
+              const { year: currentYear } = getMonthDate(monthOffset);
+              const now = new Date();
+              const diffMonth = (now.getFullYear() - currentYear) * 12 + (now.getMonth() + 1 - targetMonth);
+              setMonthOffset(diffMonth);
+            }}
+            className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+          >
+            {Array.from({length: 12}, (_, i) => (
+              <option key={i+1} value={i+1}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+            ))}
+          </select>
+          <select 
+            value={getMonthDate(monthOffset).year}
+            onChange={(e) => {
+              const targetYear = parseInt(e.target.value);
+              const { month: currentMonth } = getMonthDate(monthOffset);
+              const now = new Date();
+              const diffMonth = (now.getFullYear() - targetYear) * 12 + (now.getMonth() + 1 - currentMonth);
+              setMonthOffset(diffMonth);
+            }}
+            className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+          >
+            {[2024, 2025, 2026].map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <button 
+            onClick={fetchData}
+            className="p-3.5 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
+          >
+            <Activity size={20} />
+          </button>
+        </div>
       </section>
 
       {loading ? (
