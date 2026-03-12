@@ -18,43 +18,34 @@ import Unauthorized from "./pages/Unauthorized";
 import Track from "./pages/Track";
 
 // USER Dashboard pages
+// Dashboard pages (Consolidated)
 import DashboardLayout from "./pages/Dashboard/Layout";
-import Overview from "./pages/Dashboard/index";
+import Overview from "./pages/Dashboard/Overview";
 import Shipments from "./pages/Dashboard/Shipments";
 import Booking from "./pages/Dashboard/Booking";
-import Payments from "./pages/Dashboard/Payment";
-
-// ADMIN Dashboard pages
-import AdminLayout from "./pages/admin/Layout";
-import AdminDashboard from "./pages/admin";
-import AdminOrders from "./pages/admin/Orders";
-import AdminUsers from "./pages/admin/Users";
-import AdminReports from "./pages/admin/Reports";
-import AdminPayment from "./pages/admin/Payment";
-import AdminNotifications from "./pages/admin/Notifications";
-import AdminSettings from "./pages/admin/Settings";
+import AdminOrders from "./pages/Dashboard/AdminOrders";
+import AdminUsers from "./pages/Dashboard/AdminUsers";
+import AdminReports from "./pages/Dashboard/AdminReports";
+import AdminPayment from "./pages/Dashboard/AdminPayment";
+import AdminNotifications from "./pages/Dashboard/AdminNotifications";
+import AdminSettings from "./pages/Dashboard/AdminSettings";
 
 // SUPER ADMIN Dashboard
-import SuperAdminLayout from "./pages/superAdmin/Layout";
-import SuperAdminDashboard from "./pages/superAdmin";
+import SuperAdminDashboard from "./pages/superAdmin/index";
 import SuperAdminAdmins from "./pages/superAdmin/Admins";
+import SuperAdminPromote from "./pages/superAdmin/PromoteUser";
 
 function App() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
 
-  const isDashboard =
-    location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/eaglenet/auth/admin") ||
-    location.pathname.startsWith("/eaglenet/auth/superadmin");
+  const isDashboard = location.pathname.startsWith("/dashboard");
 
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // ✅ Redirect logged-in users away from login/signup
+  // ✅ Redirect logged-in users away from login/signup to a single dashboard entry
   if (parsedUser && (location.pathname === "/login" || location.pathname === "/signup")) {
-    if (parsedUser.role === "superadmin") return <Navigate to="/eaglenet/auth/superadmin" replace />;
-    if (parsedUser.role === "admin") return <Navigate to="/eaglenet/auth/admin" replace />;
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -75,39 +66,33 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Moved here */}
           <Route path="/track/:trackingId?" element={<Track />} />
 
-          {/* ✅ USER DASHBOARD */}
-          <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+          {/* ✅ UNIFIED DASHBOARD SYSTEM */}
+          <Route element={<ProtectedRoute allowedRoles={["user", "admin", "superadmin"]} />}>
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
+              
+              {/* Common / User specific */}
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
-              <Route path="payment" element={<Payments />} />
               <Route path="track/:trackingId?" element={<Track />} />
-            </Route>
-          </Route>
+              <Route path="payment" element={<AdminPayment />} /> {/* Shared payment for now */}
 
-          {/* ✅ ADMIN DASHBOARD */}
-          <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
-            <Route path="/eaglenet/auth/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="reports" element={<AdminReports />} />
-              <Route path="payment" element={<AdminPayment />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
-          </Route>
+              {/* Admin specific routes */}
+              <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
+                <Route path="admin/orders" element={<AdminOrders />} />
+                <Route path="admin/users" element={<AdminUsers />} />
+                <Route path="admin/reports" element={<AdminReports />} />
+                <Route path="admin/payment" element={<AdminPayment />} />
+                <Route path="admin/notifications" element={<AdminNotifications />} />
+                <Route path="admin/settings" element={<AdminSettings />} />
+              </Route>
 
-          {/* ✅ SUPER ADMIN DASHBOARD */}
-          <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
-            <Route path="/eaglenet/auth/superadmin" element={<SuperAdminLayout />}>
-              <Route index element={<SuperAdminDashboard />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="admins" element={<SuperAdminAdmins />} />
-              <Route path="reports" element={<AdminReports />} />
-              <Route path="payment" element={<AdminPayment />} />
+              {/* Super Admin specific routes */}
+              <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
+                <Route path="superadmin/admins" element={<SuperAdminAdmins />} />
+                <Route path="superadmin/promote" element={<SuperAdminPromote />} />
+                <Route path="superadmin/analytics" element={<SuperAdminDashboard />} />
+              </Route>
             </Route>
           </Route>
 

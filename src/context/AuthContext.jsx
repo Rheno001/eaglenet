@@ -12,9 +12,10 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Log in user + persist data
   const login = useCallback((userData, token) => {
-    setUser(userData);
+    const normalizedUser = { ...userData, role: userData.role?.toLowerCase() };
+    setUser(normalizedUser);
     localStorage.setItem("jwt", token);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
   }, []);
 
   // ✅ Log out user + clear storage
@@ -36,7 +37,9 @@ export const AuthProvider = ({ children }) => {
 
     if (token && storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        const normalizedUser = { ...parsedUser, role: parsedUser.role?.toLowerCase() };
+        setUser(normalizedUser);
       } catch (e) {
         console.error("Auth state recovery failed:", e);
         logout();

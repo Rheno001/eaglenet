@@ -37,9 +37,7 @@ export default function Auth() {
         if (res.data.success) {
           const userData = res.data.user;
           login(userData, token);
-          if (userData.role === ROLES.USER) navigate('/dashboard');
-          else if (userData.role === ROLES.ADMIN) navigate('/dashboard/requests');
-          else if (userData.role === ROLES.SUPER_ADMIN) navigate('/dashboard/manage-admins');
+          if (userData.role) navigate('/dashboard');
         } else {
           localStorage.removeItem('jwt');
         }
@@ -119,20 +117,24 @@ export default function Auth() {
 
       // Support both { success, token } and { token } response shapes
       const token = result.token || result.accessToken || result.data?.token;
-      const isSuccess = result.success === true || !!token;
+      const isSuccess = result.success === true || result.status === 'success' || !!token;
 
       if (isSuccess) {
+        const source = result.user || result.data?.user || result.data || {};
         const userData = {
-          email: result.user?.email || result.data?.email,
-          firstName: result.user?.firstName || result.data?.firstName || 'User',
-          lastName: result.user?.lastName || result.data?.lastName || '',
-          phone: result.user?.phone || result.data?.phone || '',
-          role: result.user?.role || result.data?.role || ROLES.USER,
+          id: source.id,
+          email: source.email,
+          firstName: source.firstName || 'User',
+          lastName: source.lastName || '',
+          phone: source.phone || '',
+          role: source.role || ROLES.USER,
+          outstandingBalance: source.outstandingBalance || '0.00',
         };
 
+        login(userData, token);
+        localStorage.setItem('jwt', token);
+
         if (isLogin) {
-          login(userData, token);
-          localStorage.setItem('jwt', token);
           Swal.fire({
             icon: 'success',
             title: 'Welcome back!',
@@ -144,10 +146,10 @@ export default function Auth() {
           Swal.fire({
             icon: 'success',
             title: 'Account Created!',
-            text: result.message || 'Registration successful. Please sign in.',
-            showConfirmButton: true,
-          });
-          toggleForm();
+            text: result.message || 'Registration successful. Welcome to Eaglenet!',
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => navigate('/dashboard'));
         }
 
         setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });

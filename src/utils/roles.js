@@ -1,13 +1,12 @@
 export const ROLES = {
-  USER: 'user',
+  USER: 'customer',
   ADMIN: 'admin',
-  SUPER_ADMIN: 'superadmin', // Match Auth.jsx
+  SUPER_ADMIN: 'superadmin',
 };
 
 export const MENU_ITEMS = {
   [ROLES.USER]: [
     { name: 'Overview', path: '/dashboard' },
-    { name: 'My Requests', path: '/dashboard/requests' },
     { name: 'Shipments', path: '/dashboard/shipments' },
     { name: 'Book Shipment', path: '/dashboard/booking' },
     { name: 'Track Package', path: '/dashboard/track' },
@@ -15,17 +14,23 @@ export const MENU_ITEMS = {
   ],
   [ROLES.ADMIN]: [
     { name: 'Overview', path: '/dashboard' },
-    { name: 'All Requests', path: '/dashboard/requests' },
-    { name: 'Shipments', path: '/dashboard/shipments' },
-    { name: 'Admin Panel', path: '/eaglenet/auth/admin' },
-    { name: 'Payment', path: '/dashboard/payment' },
+    { name: 'Orders', path: '/dashboard/admin/orders' },
+    { name: 'Users', path: '/dashboard/admin/users' },
+    { name: 'Reports', path: '/dashboard/admin/reports' },
+    { name: 'Payment', path: '/dashboard/admin/payment' },
+    { name: 'Notifications', path: '/dashboard/admin/notifications' },
+    { name: 'Settings', path: '/dashboard/admin/settings' },
   ],
   [ROLES.SUPER_ADMIN]: [
     { name: 'Overview', path: '/dashboard' },
-    { name: 'All Requests', path: '/dashboard/requests' },
-    { name: 'Shipments', path: '/dashboard/shipments' },
-    { name: 'Manage Admins', path: '/dashboard/manage-admins' },
-    { name: 'Super Admin Panel', path: '/eaglenet/auth/superadmin' },
-    { name: 'Payment', path: '/dashboard/payment' }
+    { name: 'Analytics', path: '/dashboard/superadmin/analytics' },
+    { name: 'Orders', path: '/dashboard/admin/orders' },
+    { name: 'Users', path: '/dashboard/admin/users' },
+    { name: 'Manage Admins', path: '/dashboard/superadmin/admins' },
+    { name: 'Add Admin', path: '/dashboard/superadmin/promote' },
+    { name: 'Reports', path: '/dashboard/admin/reports' },
+    { name: 'Payment', path: '/dashboard/admin/payment' },
+    { name: 'Notifications', path: '/dashboard/admin/notifications' },
+    { name: 'Settings', path: '/dashboard/admin/settings' },
   ],
 };
