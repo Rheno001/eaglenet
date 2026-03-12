@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   Search,
   Eye,
@@ -11,8 +13,69 @@ import {
   Truck,
   User,
   X,
-  ChevronRight
+  ChevronRight,
+  Activity,
+  Warehouse,
+  Box,
+  Home,
+  ShieldCheck
 } from "lucide-react";
+
+const MILESTONES = [
+  { key: 'ORDER_PLACED', label: 'Order Placed', icon: Clock, desc: 'Your booking has been received and registered.' },
+  { key: 'PENDING_CONFIRMATION', label: 'Pending Confirmation', icon: Activity, desc: 'Our agents are reviewing shipment details.' },
+  { key: 'WAITING_TO_BE_SHIPPED', label: 'Waiting Shipping', icon: Box, desc: 'Package is being processed and documented.' },
+  { key: 'SHIPPED', label: 'Shipped', icon: Truck, desc: 'Consignment is in transit to destination.' },
+  { key: 'AVAILABLE_FOR_PICKUP', label: 'At Terminal', icon: Warehouse, desc: 'Arrived at destination and ready for pickup.' },
+  { key: 'DELIVERED', label: 'Delivered', icon: CheckCircle, desc: 'Successfully collected or delivered.' },
+];
+
+const MilestoneTracker = ({ currentStatus }) => {
+  const currentIndex = MILESTONES.findIndex(m => m.key === currentStatus);
+  
+  return (
+    <div className="py-8 px-4">
+      <div className="relative">
+        {/* Background Line */}
+        <div className="absolute left-[19px] top-0 bottom-0 w-0.5 bg-gray-100 lg:left-0 lg:top-[19px] lg:bottom-auto lg:right-0 lg:w-full lg:h-0.5" />
+        
+        <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-4 relative">
+          {MILESTONES.map((step, index) => {
+            const isCompleted = index < currentIndex || currentStatus === 'DELIVERED';
+            const isCurrent = index === currentIndex && currentStatus !== 'DELIVERED';
+            const Icon = step.icon;
+            
+            return (
+              <div key={step.key} className="flex lg:flex-col lg:items-center gap-4 lg:text-center w-full group">
+                <div className="relative z-10 flex items-center justify-center">
+                  <div className={`
+                    w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg
+                    ${isCompleted ? 'bg-green-600 text-white scale-110' : 
+                      isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-125 animate-pulse' : 
+                      'bg-white text-gray-300 border-2 border-gray-100 group-hover:border-gray-300'}
+                  `}>
+                    <Icon size={20} />
+                  </div>
+                </div>
+                
+                <div className="flex flex-col lg:items-center">
+                  <h4 className={`text-xs font-black uppercase tracking-widest mb-1 transition-colors ${
+                    isCompleted ? 'text-green-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'
+                  }`}>
+                    {step.label}
+                  </h4>
+                  <p className="text-[10px] text-gray-500 font-medium leading-tight max-w-[120px] lg:mx-auto">
+                    {step.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Shipment() {
   const [shipments, setShipments] = useState([]);
@@ -24,40 +87,27 @@ export default function Shipment() {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [sortBy, setSortBy] = useState("date");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  useEffect(() => {
-    fetchShipments();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [shipments, searchTerm, filterCity, sortBy]);
-
-  // Fetch shipments from backend filtered by user email
-  const fetchShipments = async () => {
+  // 1. Fetch shipments from backend
+  const fetchShipments = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
-
       if (!token) {
         setError("Authentication token not found. Please login again.");
         setShipments([]);
         setLoading(false);
         return;
       }
-
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/mine`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
       const result = await response.json();
-
-      // The new API returns shipments under result.data
       const shipmentData = result.data || [];
       setShipments(shipmentData);
       setError(null);
@@ -68,36 +118,33 @@ export default function Shipment() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchShipmentDetails = async (id) => {
+  // 2. Verify payment callback
+  const verifyPayment = useCallback(async (reference) => {
     try {
-      setLoadingDetails(true);
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/verify/${reference}`, {
+        headers: { "Authorization": `Bearer ${token}` }
       });
-
-      if (!response.ok) throw new Error(`Server error: ${response.status}`);
-
       const result = await response.json();
-      if (result.status === "success" && result.data) {
-        setSelectedShipment(result.data);
+      if (result.status === "success") {
+        Swal.fire({
+          icon: 'success',
+          title: 'Payment Confirmed',
+          text: 'The transaction was processed successfully.',
+          customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+        });
+        fetchShipments(); // Refresh list
       }
     } catch (err) {
-      console.error("Error fetching shipment details:", err);
-      // Fallback to the item already in state if detail fetch fails
-    } finally {
-      setLoadingDetails(false);
+      console.error("Verification error:", err);
     }
-  };
+  }, [fetchShipments]);
 
-  const applyFilters = () => {
+  // 3. Apply filters callback
+  const applyFilters = useCallback(() => {
     let filtered = [...shipments];
-
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -108,25 +155,96 @@ export default function Shipment() {
           item.trackingId?.toLowerCase().includes(search)
       );
     }
-
     if (filterCity !== "all") {
-      filtered = filtered.filter(
-        (item) => item.destinationCity === filterCity
-      );
+      filtered = filtered.filter((item) => item.destinationCity === filterCity);
     }
-
     filtered.sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.preferredPickupDate || b.createdAt) - new Date(a.preferredPickupDate || a.createdAt);
+        const dateA = new Date(a.preferredPickupDate || a.createdAt || 0);
+        const dateB = new Date(b.preferredPickupDate || b.createdAt || 0);
+        return dateB - dateA;
       } else if (sortBy === "name") {
         return (a.fullName || "").localeCompare(b.fullName || "");
       } else if (sortBy === "weight") {
-        return parseFloat(b.weight) - parseFloat(a.weight);
+        return parseFloat(b.weight || 0) - parseFloat(a.weight || 0);
       }
       return 0;
     });
-
     setFilteredShipments(filtered);
+  }, [shipments, searchTerm, filterCity, sortBy]);
+
+  // 4. Effects
+  useEffect(() => {
+    const reference = searchParams.get("reference");
+    if (reference) {
+      verifyPayment(reference);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("reference");
+      setSearchParams(newParams);
+    }
+  }, [searchParams, setSearchParams, verifyPayment]);
+
+  useEffect(() => {
+    fetchShipments();
+  }, [fetchShipments]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  // 5. Details fetch
+  const fetchShipmentDetails = async (id) => {
+    try {
+      setLoadingDetails(true);
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        setSelectedShipment(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching shipment details:", err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const isPaid = (item) => {
+    if (!item || !item.payments || !Array.isArray(item.payments)) return false;
+    return item.payments.some(p => p?.status === "SUCCESS");
+  };
+
+  const handlePay = async (item) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/initialize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          shipmentId: item.id,
+          amount: item.amount,
+          callbackUrl: `${window.location.origin}/customer-dashboard/shipments`
+        })
+      });
+      const result = await response.json();
+      if (result.status === "success" && result.data?.authorizationUrl) {
+        window.location.href = result.data.authorizationUrl;
+      } else {
+        alert(result.message || "Failed to initialize payment");
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert("Error initiating payment");
+    }
   };
 
   const getCities = () => {
@@ -137,51 +255,56 @@ export default function Shipment() {
   };
 
   const getStatusBadge = (status) => {
-    const base =
-      "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1";
-    switch (status?.toLowerCase()) {
-      case "delivered":
+    const base = "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1";
+    const s = typeof status === 'string' ? status.toLowerCase() : '';
+    
+    switch (s) {
+      case "order_placed":
         return (
-          <span className={`${base} bg-green-100 text-green-700`}>
-            <CheckCircle className="w-3 h-3" /> Delivered
+          <span className={`${base} bg-slate-100 text-slate-700 uppercase font-black text-[10px]`}>
+            <Clock className="w-3 h-3" /> Order Placed
           </span>
         );
-      case "pending":
+      case "pending_confirmation":
         return (
-          <span className={`${base} bg-yellow-100 text-yellow-700`}>
-            <Package className="w-3 h-3" /> Pending
+          <span className={`${base} bg-amber-100 text-amber-700 uppercase font-black text-[10px]`}>
+            <Activity className="w-3 h-3" /> Confirmation Pending
           </span>
         );
-      case "processing":
+      case "waiting_to_be_shipped":
         return (
-          <span className={`${base} bg-indigo-100 text-indigo-700`}>
-            <Loader className="w-3 h-3 animate-spin" /> Processing
+          <span className={`${base} bg-indigo-100 text-indigo-700 uppercase font-black text-[10px]`}>
+            <Package className="w-3 h-3" /> Processing
           </span>
         );
-      case "transit":
-      case "in transit":
+      case "shipped":
         return (
-          <span className={`${base} bg-blue-100 text-blue-700`}>
+          <span className={`${base} bg-blue-100 text-blue-700 uppercase font-black text-[10px]`}>
             <Truck className="w-3 h-3" /> In Transit
           </span>
         );
-      case "arrived":
+      case "available_for_pickup":
         return (
-          <span className={`${base} bg-teal-100 text-teal-700`}>
-            <MapPin className="w-3 h-3" /> Arrived
+          <span className={`${base} bg-teal-100 text-teal-700 uppercase font-black text-[10px]`}>
+            <MapPin className="w-3 h-3" /> Available for Pickup
           </span>
         );
-      case "delay":
-      case "delayed":
+      case "delivered":
         return (
-          <span className={`${base} bg-red-100 text-red-700`}>
-            <AlertCircle className="w-3 h-3" /> Delayed
+          <span className={`${base} bg-green-100 text-green-700 uppercase font-black text-[10px]`}>
+            <CheckCircle className="w-3 h-3" /> Delivered
+          </span>
+        );
+      case "cancelled":
+        return (
+          <span className={`${base} bg-red-100 text-red-700 uppercase font-black text-[10px]`}>
+            <XCircle className="w-3 h-3" /> Cancelled
           </span>
         );
       default:
         return (
           <span className={`${base} bg-gray-100 text-gray-600`}>
-             {status || "Unknown"}
+             {typeof status === 'string' ? status : "Unknown"}
           </span>
         );
     }
@@ -206,10 +329,10 @@ export default function Shipment() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Shipment Records
+            Freight Management
           </h1>
           <p className="text-gray-600">
-            View and manage all shipment records and their delivery status
+            Track your active cargo and manage logistics settlements
           </p>
         </div>
 
@@ -229,7 +352,7 @@ export default function Shipment() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Search
+                Find Consignment
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -289,7 +412,7 @@ export default function Shipment() {
                       Tracking ID
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
-                      Customer
+                      Account
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Route
@@ -301,7 +424,10 @@ export default function Shipment() {
                       Status
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Action
+                      Settlement
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Detail
                     </th>
                   </tr>
                 </thead>
@@ -322,6 +448,22 @@ export default function Shipment() {
                         {item.weight} kg
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
+                      <td className="px-6 py-4 text-sm">
+                        {isPaid(item) ? (
+                            <span className="text-green-600 font-bold text-xs flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" /> Settled
+                            </span>
+                        ) : item.amount > 0 ? (
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handlePay(item); }}
+                                className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition"
+                            >
+                                Pay ₦{parseFloat(item.amount).toLocaleString()}
+                            </button>
+                        ) : (
+                            <span className="text-gray-400 text-xs italic">Calculating Rates</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-sm">
                         <button
                           onClick={() => {
@@ -367,7 +509,7 @@ export default function Shipment() {
                 <div className="flex items-center gap-3">
                   <Package className="w-6 h-6 md:w-7 md:h-7 text-gray-300" />
                   <h2 id="modal-title" className="text-xl md:text-2xl font-bold">
-                    Shipment Details
+                    Consignment Manifest
                   </h2>
                 </div>
                 <button
@@ -396,10 +538,18 @@ export default function Shipment() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                       Customer
+                       Account
                     </p>
                     <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.fullName}</p>
                   </div>
+                </div>
+
+                {/* Milestone Tracker */}
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-slate-200/50 p-4">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-blue-600 pl-4 mb-4">
+                    Live Progress Tracker
+                  </h3>
+                  <MilestoneTracker currentStatus={selectedShipment.status} />
                 </div>
 
                 {/* Sender Info */}
@@ -500,7 +650,9 @@ export default function Shipment() {
                     {selectedShipment.arrivalDate && (
                       <div className="lg:col-span-1 bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <p className="text-xs text-blue-600 font-bold uppercase mb-1">Estimated Arrival</p>
-                        <p className="text-lg text-blue-900 font-bold">{new Date(selectedShipment.arrivalDate).toLocaleDateString()}</p>
+                        <p className="text-lg text-blue-900 font-bold">
+                          {isNaN(Date.parse(selectedShipment.arrivalDate)) ? "To be confirmed" : new Date(selectedShipment.arrivalDate).toLocaleDateString()}
+                        </p>
                       </div>
                     )}
 
@@ -510,6 +662,36 @@ export default function Shipment() {
                          <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
                        </div>
                     )}
+
+                    <div className="lg:col-span-2 border-t border-gray-100 pt-6 mt-4">
+                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div>
+                               <p className="text-sm text-gray-500 font-medium">Settlement Status</p>
+                               <p className={`text-lg font-bold ${isPaid(selectedShipment) ? 'text-green-600' : 'text-gray-900'}`}>{isPaid(selectedShipment) ? 'Settled (PAID)' : 'Outstanding'}</p>
+                            </div>
+                            <div>
+                               <p className="text-sm text-gray-500 font-medium text-right">Freight Charges</p>
+                               <p className="text-2xl font-black text-blue-600 text-right">₦{parseFloat(selectedShipment.amount || 0).toLocaleString()}</p>
+                            </div>
+                         </div>
+                        {!isPaid(selectedShipment) && selectedShipment.amount > 0 && (
+                           <button 
+                             onClick={() => handlePay(selectedShipment)}
+                             className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                           >
+                             <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                                <span className="text-[10px] font-black">₦</span>
+                             </div>
+                             Authorize Freight Payment
+                           </button>
+                        )}
+                        {!isPaid(selectedShipment) && (!selectedShipment.amount || selectedShipment.amount <= 0) && (
+                           <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                              <Clock className="w-5 h-5 text-amber-600" />
+                              <p className="text-sm font-medium text-amber-700">Our logistics experts are finalizing your freight rates.</p>
+                           </div>
+                        )}
+                     </div>
                   </div>
                 </div>
               </div>

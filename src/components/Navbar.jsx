@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import logo from "../assets/eaglenet-logo-removebg-preview.png";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useContext(AuthContext);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-between w-full h-full relative">
               {/* Left Links */}
               <div className="relative z-10 flex items-center h-full">
-                {navLinksLeft.map((link, i) => (
+                {navLinksLeft.map((link) => (
                   <div key={link.name} className="flex items-center h-full border-r border-gray-100">
                     <Link
                       to={link.path}
@@ -66,12 +68,28 @@ export default function Navbar() {
                 ))}
 
 
-                {/* Login Button */}
-                <Link to="/login" className="h-full">
-                  <button className="h-full px-10 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all">
-                    Login
-                  </button>
-                </Link>
+                {/* Dynamic Auth Section */}
+                {user ? (
+                  <div className="flex items-center h-full">
+                    <Link to={user.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} className="h-full">
+                      <button className="h-full px-8 bg-gray-50 text-[#3B1350] font-bold text-sm uppercase tracking-widest border-l border-gray-100 hover:bg-gray-100 transition-all">
+                        Dashboard
+                      </button>
+                    </Link>
+                    <button 
+                      onClick={logout}
+                      className="h-full px-8 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link to="/login" className="h-full">
+                    <button className="h-full px-10 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all">
+                      Login
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -128,11 +146,30 @@ export default function Navbar() {
                   ))}
                 </div>
                 <div className="p-6">
-                  <Link to="/login" onClick={() => setIsOpen(false)}>
-                    <button className="w-full py-5 bg-[#3B1350] text-white font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66]">
-                      Login
-                    </button>
-                  </Link>
+                  {user ? (
+                    <div className="space-y-3">
+                      <Link 
+                        to={user.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} 
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <button className="w-full py-5 bg-gray-100 text-[#3B1350] font-black uppercase tracking-widest text-sm hover:bg-gray-200">
+                          Dashboard
+                        </button>
+                      </Link>
+                      <button 
+                        onClick={() => { logout(); setIsOpen(false); }}
+                        className="w-full py-5 bg-[#3B1350] text-white font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66]"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : (
+                    <Link to="/login" onClick={() => setIsOpen(false)}>
+                      <button className="w-full py-5 bg-[#3B1350] text-white font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66]">
+                        Login
+                      </button>
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>

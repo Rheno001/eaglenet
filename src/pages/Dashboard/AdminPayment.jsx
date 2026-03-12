@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   CreditCard,
   Search,
@@ -51,11 +51,7 @@ export default function AdminPayments() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    fetchPayments();
-  }, [currentPage, filterStatus]);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("jwt");
@@ -74,7 +70,7 @@ export default function AdminPayments() {
       const result = await res.json();
       
       if (result.status === "success") {
-        setPayments(result.data || []);
+        setPayments(Array.isArray(result.data) ? result.data : []);
         setSummary(result.summary || {
           totalRevenue: 0,
           successful: 0,
@@ -93,9 +89,14 @@ export default function AdminPayments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filterStatus, searchTerm]);
+
+  useEffect(() => {
+    fetchPayments();
+  }, [fetchPayments]);
 
   const fetchPaymentDetail = async (id) => {
+    if (!id) return;
     setLoadingDetail(true);
     setShowModal(true);
     try {
@@ -124,7 +125,8 @@ export default function AdminPayments() {
   };
 
   const getStatusBadge = (status) => {
-    switch (status?.toLowerCase()) {
+    const s = String(status || '').toLowerCase();
+    switch (s) {
       case "success":
       case "completed":
         return (
@@ -153,25 +155,56 @@ export default function AdminPayments() {
     }
   };
 
+  const getShipmentStatusLabel = (status) => {
+    const s = String(status || '').toUpperCase();
+    switch (s) {
+      case "ORDER_PLACED": return "Order Placed";
+      case "PENDING_CONFIRMATION": return "Confirmation Pending";
+      case "WAITING_TO_BE_SHIPPED": return "Processing";
+      case "SHIPPED": return "In Transit";
+      case "AVAILABLE_FOR_PICKUP": return "At Terminal";
+      case "DELIVERED": return "Delivered";
+      case "CANCELLED": return "Cancelled";
+      default: return status || "N/A";
+    }
+  };
+
+  const formatCurrency = (val) => {
+    const n = Number(val);
+    return isNaN(n) ? "0" : n.toLocaleString();
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "Invalid Date" : d.toLocaleDateString();
+  };
+
+  const formatTime = (dateStr) => {
+    if (!dateStr) return "--:--";
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Premium Header */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
                 <CreditCard className="text-white" size={28} />
              </div>
-             Financial Ledger
-          </h1>
-          <p className="text-gray-500 mt-2 font-medium">Audit and manage all transactions within the Eaglenet infrastructure.</p>
+             Logistics Billing & Audit
+          </h2>
+          <p className="text-gray-500 mt-2 font-medium">Review and manage all financial settlements within the Eaglenet infrastructure.</p>
         </div>
 
         <div className="flex items-center gap-3">
-           <button className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 text-sm">
-             <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
-             Export Audit
-           </button>
+            <button className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 text-sm">
+              <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
+              Logistics Audit
+            </button>
         </div>
       </header>
 
@@ -181,8 +214,8 @@ export default function AdminPayments() {
             <div className="p-4 bg-emerald-50 text-emerald-600 rounded-3xl w-fit mb-6">
                <DollarSign size={24} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Revenue</p>
-            <p className="text-3xl font-black text-slate-900 tracking-tight">₦{parseFloat(summary.totalRevenue || 0).toLocaleString()}</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Gross Freight Volume</p>
+            <p className="text-3xl font-black text-slate-900 tracking-tight">₦{formatCurrency(summary.totalRevenue)}</p>
             <div className="mt-4 flex items-center gap-2 text-emerald-500 font-bold text-xs">
                <TrendingUp size={14} />
                <span>Gross Volume</span>
@@ -193,7 +226,7 @@ export default function AdminPayments() {
             <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl w-fit mb-6">
                <CheckCircle size={24} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Successful</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Settled Charges</p>
             <p className="text-3xl font-black text-slate-900 tracking-tight">{summary.successful}</p>
             <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-tighter">Cleared Transactions</p>
          </div>
@@ -202,7 +235,7 @@ export default function AdminPayments() {
             <div className="p-4 bg-amber-50 text-amber-600 rounded-3xl w-fit mb-6">
                <Clock size={24} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pending</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Pending Settlement</p>
             <p className="text-3xl font-black text-slate-900 tracking-tight">{summary.pending}</p>
             <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-tighter">Awaiting Settlement</p>
          </div>
@@ -211,7 +244,7 @@ export default function AdminPayments() {
             <div className="p-4 bg-rose-50 text-rose-600 rounded-3xl w-fit mb-6">
                <XCircle size={24} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Failed</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Declined Charges</p>
             <p className="text-3xl font-black text-slate-900 tracking-tight">{summary.failed}</p>
             <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-tighter">Refunded/Rejected</p>
          </div>
@@ -224,7 +257,7 @@ export default function AdminPayments() {
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input 
               type="text" 
-              placeholder="Search by reference, user ID, or tracking ID..."
+              placeholder="Track by reference, transaction ID, or consignment..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 transition-all font-bold text-slate-900"
@@ -239,10 +272,10 @@ export default function AdminPayments() {
               }}
               className="bg-slate-50 border-none rounded-2xl px-6 py-5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none"
             >
-              <option value="all">All Channels</option>
-              <option value="success">Successful</option>
+              <option value="all">All Gateways</option>
+              <option value="success">Settled</option>
               <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
+              <option value="failed">Declined</option>
             </select>
             <button 
               type="submit"
@@ -269,22 +302,24 @@ export default function AdminPayments() {
                 <tr className="border-b border-slate-50">
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reference ID</th>
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Account & Route</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Settlement</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Freight Value</th>
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Record Info</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {payments.map((p) => (
-                  <tr key={p.id} className="group hover:bg-slate-50/50 transition-colors">
+                  <tr key={p.id || Math.random()} className="group hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
                          <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-slate-900 group-hover:text-white transition-all">
                             <Receipt size={16} />
                          </div>
                          <div className="min-w-0">
-                            <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">{p.paymentId || p.id.substring(0, 12)}</p>
+                            <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">
+                               {p.paymentId || (p.id && typeof p.id === 'string' ? p.id.substring(0, 12) : "UNIDENTIFIED")}
+                            </p>
                             <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-tighter flex items-center gap-1">
                                REF: <span className="truncate max-w-[100px]">{p.reference || 'N/A'}</span>
                             </p>
@@ -297,7 +332,7 @@ export default function AdminPayments() {
                              {p.user?.firstName?.[0] || 'U'}
                           </div>
                           <div>
-                             <p className="text-sm font-bold text-slate-900">{p.user?.firstName} {p.user?.lastName}</p>
+                             <p className="text-sm font-bold text-slate-900">{p.user?.firstName || "Unknown"} {p.user?.lastName || "User"}</p>
                              <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 uppercase tracking-tighter mt-0.5">
                                 <Package size={10} />
                                 <span>TRK: {p.shipment?.trackingId || 'PENDING'}</span>
@@ -307,7 +342,7 @@ export default function AdminPayments() {
                     </td>
                     <td className="px-8 py-6">
                        <div>
-                          <p className="text-lg font-black text-slate-900 tracking-tight">₦{parseFloat(p.amount || 0).toLocaleString()}</p>
+                          <p className="text-lg font-black text-slate-900 tracking-tight">₦{formatCurrency(p.amount)}</p>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Paystack Global</p>
                        </div>
                     </td>
@@ -315,8 +350,8 @@ export default function AdminPayments() {
                        <div className="flex items-center gap-2 text-slate-500">
                           <Calendar size={14} className="text-slate-300" />
                           <div>
-                             <p className="text-sm font-bold">{new Date(p.createdAt).toLocaleDateString()}</p>
-                             <p className="text-[10px] font-bold text-slate-400 tracking-tighter">{new Date(p.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                             <p className="text-sm font-bold">{formatDate(p.createdAt)}</p>
+                             <p className="text-[10px] font-bold text-slate-400 tracking-tighter">{formatTime(p.createdAt)}</p>
                           </div>
                        </div>
                     </td>
@@ -354,14 +389,14 @@ export default function AdminPayments() {
              </p>
              <div className="flex items-center gap-2">
                 <button 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                   className="p-3 bg-white border border-slate-100 rounded-2xl hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed group active:scale-90 shadow-sm"
                 >
                    <ChevronLeft size={20} className="text-slate-900" />
                 </button>
                 <div className="flex items-center gap-1">
-                   {[...Array(meta.totalPages)].map((_, i) => (
+                   {Array.from({ length: Math.min(meta.totalPages, 100) }).map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
@@ -376,7 +411,7 @@ export default function AdminPayments() {
                    ))}
                 </div>
                 <button 
-                  onClick={() => setCurrentPage(p => Math.min(meta.totalPages, p + 1))}
+                  onClick={() => setCurrentPage(prev => Math.min(meta.totalPages, prev + 1))}
                   disabled={currentPage === meta.totalPages}
                   className="p-3 bg-white border border-slate-100 rounded-2xl hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed group active:scale-90 shadow-sm"
                 >
@@ -394,7 +429,7 @@ export default function AdminPayments() {
               <div className="px-8 py-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                  <div className="flex items-center gap-3">
                     <Receipt size={24} className="text-slate-900" />
-                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Transaction Dossier</h2>
+                    <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Transaction Summary</h2>
                  </div>
                  <button 
                   onClick={() => {
@@ -411,7 +446,7 @@ export default function AdminPayments() {
                  {loadingDetail ? (
                    <div className="py-20 flex flex-col items-center justify-center">
                       <Loader2 className="animate-spin text-slate-900 mb-4" size={48} />
-                      <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Querying Secure Database...</p>
+                      <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Retrieving Details...</p>
                    </div>
                  ) : selectedPayment ? (
                    <>
@@ -420,8 +455,8 @@ export default function AdminPayments() {
                          <div className="space-y-4">
                             <div>
                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Payment Reference</p>
-                               <p className="text-2xl font-black text-slate-900 tracking-tighter">{selectedPayment.reference}</p>
-                               <p className="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">Global ID: {selectedPayment.paymentId}</p>
+                               <p className="text-2xl font-black text-slate-900 tracking-tighter">{selectedPayment.reference || "N/A"}</p>
+                               <p className="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">System Reference: {selectedPayment.paymentId || "N/A"}</p>
                             </div>
                             <div className="flex items-center gap-8">
                                <div>
@@ -430,13 +465,13 @@ export default function AdminPayments() {
                                </div>
                                <div>
                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Timestamp</p>
-                                  <p className="text-sm font-bold text-slate-900">{new Date(selectedPayment.createdAt).toLocaleString()}</p>
+                                  <p className="text-sm font-bold text-slate-900">{formatDate(selectedPayment.createdAt)} {formatTime(selectedPayment.createdAt)}</p>
                                </div>
                             </div>
                          </div>
                          <div className="bg-slate-900 p-6 rounded-3xl text-white relative overflow-hidden flex flex-col justify-center">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Amount Paid</p>
-                            <p className="text-4xl font-black tracking-tight">₦{parseFloat(selectedPayment.amount).toLocaleString()}</p>
+                            <p className="text-4xl font-black tracking-tight">₦{formatCurrency(selectedPayment.amount)}</p>
                             <div className="mt-4 flex items-center gap-2">
                                <ShieldCheck size={14} className="text-emerald-400" />
                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Paystack Verified</span>
@@ -445,7 +480,7 @@ export default function AdminPayments() {
                          </div>
                       </div>
 
-                      {/* User & Shipment Intelligence */}
+                      {/* Account & Shipment Details */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                          {/* User Info */}
                          <div className="space-y-6">
@@ -453,23 +488,23 @@ export default function AdminPayments() {
                             <div className="bg-slate-50 p-6 rounded-3xl space-y-4 border border-slate-100">
                                <div className="flex items-center gap-4">
                                   <div className="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center text-white font-black text-xl">
-                                     {selectedPayment.user?.firstName?.[0]}
+                                     {selectedPayment.user?.firstName?.[0] || 'U'}
                                   </div>
                                   <div>
-                                     <p className="font-bold text-slate-900 text-lg">{selectedPayment.user?.firstName} {selectedPayment.user?.lastName}</p>
+                                     <p className="font-bold text-slate-900 text-lg">{selectedPayment.user?.firstName || "Unknown"} {selectedPayment.user?.lastName || "Admin"}</p>
                                      <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-md text-[10px] font-black tracking-widest uppercase">
-                                       {selectedPayment.user?.role}
+                                       {selectedPayment.user?.role || "USER"}
                                      </span>
                                   </div>
                                </div>
                                <div className="space-y-2 pt-2">
                                   <div className="flex items-center gap-3 text-slate-500">
                                      <Mail size={14} className="text-slate-300" />
-                                     <p className="text-xs font-bold">{selectedPayment.user?.email}</p>
+                                     <p className="text-xs font-bold">{selectedPayment.user?.email || "No Email"}</p>
                                   </div>
                                   <div className="flex items-center gap-3 text-slate-500">
                                      <User size={14} className="text-slate-300" />
-                                     <p className="text-xs font-bold uppercase tracking-tighter">UID: {selectedPayment.userId}</p>
+                                     <p className="text-xs font-bold uppercase tracking-tighter">UID: {selectedPayment.userId || "N/A"}</p>
                                   </div>
                                </div>
                             </div>
@@ -484,8 +519,10 @@ export default function AdminPayments() {
                                      <Package size={28} />
                                   </div>
                                   <div>
-                                     <p className="font-bold text-slate-900 text-lg">{selectedPayment.shipment?.trackingId}</p>
-                                     <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{selectedPayment.shipment?.status}</p>
+                                     <p className="font-bold text-slate-900 text-lg">{selectedPayment.shipment?.trackingId || "PENDING"}</p>
+                                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                        {getShipmentStatusLabel(selectedPayment.shipment?.status)}
+                                     </p>
                                   </div>
                                </div>
                                <div className="grid grid-cols-2 gap-4 pt-2">
@@ -493,21 +530,21 @@ export default function AdminPayments() {
                                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Origin</p>
                                      <div className="flex items-center gap-2 text-slate-700">
                                         <MapPin size={12} className="text-slate-300" />
-                                        <p className="text-xs font-bold">{selectedPayment.shipment?.origin}</p>
+                                        <p className="text-xs font-bold">{selectedPayment.shipment?.origin || "TBD"}</p>
                                      </div>
                                   </div>
                                   <div className="space-y-1">
                                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination</p>
                                      <div className="flex items-center gap-2 text-slate-700">
                                         <MapPin size={12} className="text-slate-300" />
-                                        <p className="text-xs font-bold">{selectedPayment.shipment?.destination}</p>
+                                        <p className="text-xs font-bold">{selectedPayment.shipment?.destination || "TBD"}</p>
                                      </div>
                                   </div>
                                </div>
                                <div className="pt-2">
                                   <div className="flex items-center gap-3 text-slate-500">
                                      <Truck size={14} className="text-slate-300" />
-                                     <p className="text-xs font-bold uppercase tracking-tighter">Logistics ID: {selectedPayment.shipment?.shippingId}</p>
+                                     <p className="text-xs font-bold uppercase tracking-tighter">Logistics ID: {selectedPayment.shipment?.shippingId || "N/A"}</p>
                                   </div>
                                </div>
                             </div>
@@ -518,22 +555,22 @@ export default function AdminPayments() {
                       <div className="bg-indigo-50/50 p-6 rounded-3xl border border-indigo-100">
                          <div className="flex items-center gap-3 mb-4">
                             <Receipt size={18} className="text-indigo-600" />
-                            <h4 className="text-xs font-black text-indigo-900 uppercase tracking-widest">Gateway Intelligence</h4>
+                            <h4 className="text-xs font-black text-indigo-900 uppercase tracking-widest">Payment Metadata</h4>
                          </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Paystack Access Code</p>
-                               <p className="text-sm font-black text-slate-900 font-mono bg-white px-3 py-1.5 rounded-lg border border-indigo-100">{selectedPayment.paystackAccessCode}</p>
+                               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Authorization Token</p>
+                               <p className="text-sm font-black text-slate-900 font-mono bg-white px-3 py-1.5 rounded-lg border border-indigo-100">{selectedPayment.paystackAccessCode || "N/A"}</p>
                             </div>
                             <div className="space-y-1">
-                               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Paystack Registry Link</p>
+                               <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Gateway Link</p>
                                <a 
-                                href={selectedPayment.paystackAuthUrl} 
+                                href={selectedPayment.paystackAuthUrl || "#"} 
                                 target="_blank" 
                                 rel="noreferrer"
                                 className="text-xs font-black text-indigo-700 hover:text-indigo-900 flex items-center gap-1.5 truncate"
                                >
-                                 Open Tracking Link <ArrowUpRight size={14} />
+                                 View Gateway Record <ArrowUpRight size={14} />
                                </a>
                             </div>
                          </div>
@@ -554,7 +591,7 @@ export default function AdminPayments() {
                  >
                     Dismiss
                  </button>
-                 {selectedPayment?.status?.toLowerCase() === 'success' && (
+                 {String(selectedPayment?.status || '').toLowerCase() === 'success' && (
                     <button className="px-8 py-3 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200">
                        Download Receipt
                     </button>
