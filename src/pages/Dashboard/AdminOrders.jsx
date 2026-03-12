@@ -78,8 +78,8 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const shipmentId = order.trackingId || order._id || order.id;
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}`, {
+      const shipmentId = order.id || order._id || order.trackingId;
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -102,8 +102,8 @@ export default function Orders() {
   const updateStatus = async (newStatus) => {
     try {
       const token = localStorage.getItem("jwt");
-      const shipmentId = selectedOrder.trackingId || selectedOrder._id || selectedOrder.id;
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}`, {
+      const shipmentId = selectedOrder.id || selectedOrder._id || selectedOrder.trackingId;
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",

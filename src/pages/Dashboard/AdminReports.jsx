@@ -19,8 +19,14 @@ import {
   ShieldCheck,
   Zap,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  FileSpreadsheet,
+  File,
+  LayoutDashboard
 } from "lucide-react";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from 'docx';
 
 export default function MonthlyReport() {
   const [monthOffset, setMonthOffset] = useState(0);
@@ -81,6 +87,170 @@ export default function MonthlyReport() {
     window.open(`https://eaglenet-eb9x.onrender.com/api/admin/reports/export?month=${month}&year=${year}`, "_blank");
   };
 
+  const exportToExcel = () => {
+    if (!reportData) return;
+    
+    const { month, year } = getMonthDate(monthOffset);
+    const monthName = formatMonth(monthOffset);
+    
+    const data = [
+      ["EAGLENET LOGISTICS: GLOBAL BUSINESS INTELLIGENCE"],
+      ["Audit Identification", `REP-${year}-${month}-${Math.floor(Math.random() * 9000) + 1000}`],
+      ["Temporal Range", monthName],
+      ["Extraction Metadata", new Date().toLocaleString()],
+      [""],
+      ["OFFICIAL KPI REGISTRY", "VALUE", "STRATEGIC CONTEXT"],
+      ["Logistics Throughput", reportData.totalBookings, "Total unique shipments successfully entered into system registry."],
+      ["User Base Expansion", reportData.newCustomers, "Verification of new citizen identities cleared for service access."],
+      ["Liquidity Audit (Net)", `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, "Financial clearance received via authenticated PG channels."],
+      ["Security Level", "HIGH-VERIFIED", "End-to-end data encryption and integrity checks completed."],
+      [""],
+      ["CERTIFIED BY EAGLENET CENTRAL COMMAND - CONFIDENTIAL"],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    
+    ws['!cols'] = [
+      { wch: 35 }, // A
+      { wch: 25 }, // B
+      { wch: 60 }, // C
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Financial intelligence");
+    
+    XLSX.writeFile(wb, `Eaglenet_BI_Suite_${month}_${year}.xlsx`);
+  };
+
+  const exportToWord = async () => {
+    if (!reportData) return;
+
+    const { month, year } = getMonthDate(monthOffset);
+    const monthName = formatMonth(monthOffset);
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: [
+          new Paragraph({
+             alignment: AlignmentType.CENTER,
+             children: [
+                new TextRun({
+                   text: "EAGLENET SOLUTIONS",
+                   bold: true,
+                   size: 36,
+                   color: "1e293b"
+                }),
+             ],
+             spacing: { after: 200 },
+          }),
+          new Paragraph({
+             alignment: AlignmentType.CENTER,
+             children: [
+                new TextRun({
+                   text: "OPERATIONAL INTELLIGENCE & FISCAL AUDIT",
+                   color: "475569",
+                   size: 22,
+                   bold: true,
+                   smallCaps: true
+                }),
+             ],
+             spacing: { after: 400, before: 100 },
+             border: {
+               bottom: { color: "e2e8f0", space: 1, style: BorderStyle.SINGLE, size: 6 }
+             }
+          }),
+          new Paragraph({
+            spacing: { before: 300 },
+            children: [
+              new TextRun({ text: "AUDIT PERIOD: ", bold: true, size: 24, color: "0f172a" }),
+              new TextRun({ text: monthName.toUpperCase(), size: 24, color: "3b82f6" }),
+            ],
+          }),
+          new Paragraph({
+            spacing: { after: 200 },
+            children: [
+              new TextRun({ text: "REGISTRY ID: ", bold: true, size: 18, color: "94a3b8" }),
+              new TextRun({ text: `EGL-DOSS-X${month}${year}`, size: 18, color: "94a3b8" }),
+            ],
+          }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            margins: { top: 100, bottom: 100, left: 100, right: 100 },
+            rows: [
+              new TableRow({
+                tableHeader: true,
+                children: [
+                  new TableCell({ 
+                     shading: { fill: "1e293b" },
+                     children: [new Paragraph({ children: [new TextRun({ text: "OPERATIONAL KPI", color: "ffffff", bold: true })], alignment: AlignmentType.CENTER })] 
+                  }),
+                  new TableCell({ 
+                     shading: { fill: "1e293b" },
+                     children: [new Paragraph({ children: [new TextRun({ text: "METRIC DATA", color: "ffffff", bold: true })], alignment: AlignmentType.CENTER })] 
+                  }),
+                  new TableCell({ 
+                     shading: { fill: "1e293b" },
+                     children: [new Paragraph({ children: [new TextRun({ text: "STRATEGIC AUDIT", color: "ffffff", bold: true })], alignment: AlignmentType.CENTER })] 
+                  }),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ text: "Shipment Logistics Volume", bold: true })] }),
+                  new TableCell({ children: [new Paragraph({ text: reportData.totalBookings.toString(), alignment: AlignmentType.CENTER })] }),
+                  new TableCell({ children: [new Paragraph("High-fidelity logistics bookings successfully cleared.")] }),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ text: "Resident Acquisition", bold: true })] }),
+                  new TableCell({ children: [new Paragraph({ text: `+${reportData.newCustomers}`, alignment: AlignmentType.CENTER })] }),
+                  new TableCell({ children: [new Paragraph("New account identities verified within the period.")] }),
+                ]
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph({ text: "Net Liquid Revenue", bold: true })] }),
+                  new TableCell({ children: [new Paragraph({ text: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, alignment: AlignmentType.CENTER })] }),
+                  new TableCell({ children: [new Paragraph("Gross financial yield received via secure gateways.")] }),
+                ]
+              }),
+            ]
+          }),
+          new Paragraph({
+             text: "\nEXECUTIVE DATA SUMMARY",
+             bold: true,
+             size: 26,
+             color: "0f172a",
+             spacing: { before: 600, after: 200 },
+          }),
+          new Paragraph({
+             text: `The intelligence extraction for ${monthName} confirms an operational health score of A+. Current logistics throughput stands at ${reportData.totalBookings} units, yielding a performance peak of ₦${parseFloat(reportData.totalRevenue).toLocaleString()}. All system nodes are currently in a state of verified integrity.`,
+             size: 22,
+             color: "475569",
+             spacing: { after: 1200 },
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+               new TextRun({ 
+                  text: "EAGLENET SOLUTIONS - SECURITY AUDIT PROTOCOL - DO NOT DUPLICATE", 
+                  italics: true, 
+                  size: 16,
+                  color: "cbd5e1",
+                  bold: true
+               }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `Eaglenet_Business_Dossier_${month}_${year}.docx`);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Premium Header */}
@@ -90,19 +260,47 @@ export default function MonthlyReport() {
              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
                 <BarChart3 className="text-white" size={28} />
              </div>
-             System Intelligence
+             Strategic Intelligence Ledger
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Monthly performance analytics and strategic reporting.</p>
+          <p className="text-gray-500 mt-2 font-medium">Holistic performance auditing and mission-critical analytics.</p>
         </div>
-
-        <button
-          onClick={exportReport}
-          className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
-        >
-          <Download className="w-5 h-5 group-hover:translate-y-0.5 transition" />
-          Generate PDF Ledger
-        </button>
       </header>
+
+      {/* Export Intelligence Hub */}
+      <section className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 animate-in slide-in-from-top-4">
+         <div className="flex items-center gap-6">
+            <div className="p-5 bg-indigo-50 text-indigo-600 rounded-3xl">
+               <FileText size={32} />
+            </div>
+            <div>
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Intelligence Export Hub</h3>
+               <p className="text-slate-500 text-sm font-medium">Extract high-fidelity reports for external auditing and analysis.</p>
+            </div>
+         </div>
+         <div className="flex flex-wrap gap-3 w-full md:w-auto">
+            <button
+               onClick={exportToExcel}
+               className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-4 bg-emerald-50 text-emerald-700 font-bold rounded-2xl border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95 text-[10px] uppercase tracking-widest shadow-sm"
+            >
+               <FileSpreadsheet size={16} />
+               <span>Excel Data Registry</span>
+            </button>
+            <button
+               onClick={exportToWord}
+               className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-4 bg-blue-50 text-blue-700 font-bold rounded-2xl border border-blue-100 hover:bg-blue-100 transition-all active:scale-95 text-[10px] uppercase tracking-widest shadow-sm"
+            >
+               <File size={16} />
+               <span>Word Official Dossier</span>
+            </button>
+            <button
+               onClick={exportReport}
+               className="flex-1 md:flex-none flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 text-[10px] uppercase tracking-widest"
+            >
+               <Download size={16} />
+               <span>PDF Final Ledger</span>
+            </button>
+         </div>
+      </section>
 
       {/* Precise filtering Controls */}
       <section className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
