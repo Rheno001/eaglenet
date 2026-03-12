@@ -1,19 +1,31 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../../components/users/Sidebar";
+import { useState, useContext, useEffect } from "react";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
+import Sidebar from "../../components/Dashboard/Sidebar";
+import Navbar from "../../components/admin/Navbar"; // Shared navbar
+import { AuthContext } from "../../context/AuthContext";
 
-export default function Layout() {
-  const [isOpen, setIsOpen] = useState(false);        // mobile open/close
-  const [isCollapsed, setIsCollapsed] = useState(false); // desktop collapse
+export default function DashboardLayout() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { user, loading } = useContext(AuthContext);
+  const location = useLocation();
 
   const toggleSidebar = () => {
-    setIsOpen(true); 
-    setIsCollapsed((prev) => !prev);
+    setIsOpen((prev) => !prev);
+    if (window.innerWidth >= 1024) {
+      setIsCollapsed((prev) => !prev);
+    }
   };
 
-  return (
-    <div className="flex min-h-screen bg-gray-100">
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
 
+  if (loading) return null; // Or a full page loader if preferred
+  if (!user) return <Navigate to="/login" replace />;
+
+  return (
+    <div className="flex min-h-screen bg-slate-50/50 overflow-x-hidden selection:bg-teal-500/30 selection:text-teal-900">
       {/* SIDEBAR */}
       <Sidebar
         isOpen={isOpen}
@@ -21,20 +33,25 @@ export default function Layout() {
         toggleSidebar={toggleSidebar}
       />
 
-      {/* MAIN CONTENT */}
-      <main
-        className={`
-          flex-1 p-6 transition-all duration-300
-          ${isCollapsed ? "lg:ml-16" : "lg:ml-64"}
-        `}
+      {/* MAIN CONTENT AREA */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "lg:ml-16" : "lg:ml-64"
+        }`}
       >
-        <Outlet />
-      </main>
+        <Navbar user={user} toggleSidebar={toggleSidebar} />
+
+        <main className="flex-1 p-4 md:p-6 lg:p-10 animate-in fade-in zoom-in-95 duration-500">
+          <div className="max-w-[1600px] mx-auto">
+            <Outlet />
+          </div>
+        </main>
+      </div>
 
       {/* MOBILE OVERLAY */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}

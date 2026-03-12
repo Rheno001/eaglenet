@@ -22,6 +22,7 @@ export default function Shipment() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCity, setFilterCity] = useState("all");
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [sortBy, setSortBy] = useState("date");
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function Shipment() {
         return;
       }
 
-      const response = await fetch(`http://localhost/backend/Shipments.php`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/mine`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -54,10 +55,10 @@ export default function Shipment() {
 
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-      const data = await response.json();
+      const result = await response.json();
 
-      // The PHP backend returns shipments under data.shipments
-      const shipmentData = data.shipments || [];
+      // The new API returns shipments under result.data
+      const shipmentData = result.data || [];
       setShipments(shipmentData);
       setError(null);
     } catch (err) {
@@ -69,6 +70,31 @@ export default function Shipment() {
     }
   };
 
+  const fetchShipmentDetails = async (id) => {
+    try {
+      setLoadingDetails(true);
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        setSelectedShipment(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching shipment details:", err);
+      // Fallback to the item already in state if detail fetch fails
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
   const applyFilters = () => {
     let filtered = [...shipments];
 
@@ -76,9 +102,9 @@ export default function Shipment() {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (item) =>
-          item.customerName?.toLowerCase().includes(search) ||
+          item.fullName?.toLowerCase().includes(search) ||
           item.email?.toLowerCase().includes(search) ||
-          item.phone?.includes(search) ||
+          item.phoneNumber?.includes(search) ||
           item.trackingId?.toLowerCase().includes(search)
       );
     }
@@ -91,11 +117,11 @@ export default function Shipment() {
 
     filtered.sort((a, b) => {
       if (sortBy === "date") {
-        return new Date(b.date) - new Date(a.date);
+        return new Date(b.preferredPickupDate || b.createdAt) - new Date(a.preferredPickupDate || a.createdAt);
       } else if (sortBy === "name") {
-        return (a.customerName || "").localeCompare(b.customerName || "");
+        return (a.fullName || "").localeCompare(b.fullName || "");
       } else if (sortBy === "weight") {
-        return parseFloat(b.packageWeight) - parseFloat(a.packageWeight);
+        return parseFloat(b.weight) - parseFloat(a.weight);
       }
       return 0;
     });
@@ -266,29 +292,30 @@ export default function Shipment() {
                         {item.trackingId}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        {item.customerName}
+                        {item.fullName}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
                         <MapPin className="w-4 h-4 text-gray-400 inline mr-1" />
                         {item.pickupCity} → {item.destinationCity}
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        {item.packageWeight} kg
+                        {item.weight} kg
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
                         <button
-                          onClick={() =>
-                            setSelectedShipment(
-                              selectedShipment?.trackingId === item.trackingId
-                                ? null
-                                : item
-                            )
-                          }
+                          onClick={() => {
+                            if (selectedShipment?.id === item.id) {
+                              setSelectedShipment(null);
+                            } else {
+                              setSelectedShipment(item); // Set immediate feedback
+                              fetchShipmentDetails(item.id);
+                            }
+                          }}
                           className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
                         >
                           <Eye className="w-4 h-4" />
-                          {selectedShipment?.trackingId === item.trackingId ? "Hide" : "View"}
+                          {selectedShipment?.id === item.id ? "Hide" : "View"}
                         </button>
                       </td>
                     </tr>
@@ -349,9 +376,9 @@ export default function Shipment() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-gray-500" /> Customer
+                       Customer
                     </p>
-                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.customerName}</p>
+                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.fullName}</p>
                   </div>
                 </div>
 
@@ -367,7 +394,7 @@ export default function Shipment() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-600 font-medium">Phone</p>
-                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.phone}</p>
+                      <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.phoneNumber}</p>
                     </div>
                   </div>
                 </div>
@@ -386,7 +413,7 @@ export default function Shipment() {
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Destination To</p>
                       <p className="text-lg text-gray-900 font-bold">{selectedShipment.destinationCity}</p>
-                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.destination}</p>
+                      <p className="text-gray-600 text-sm mt-1">{selectedShipment.deliveryAddress}</p>
                     </div>
                   </div>
                 </div>
@@ -403,7 +430,7 @@ export default function Shipment() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Scheduled Date</p>
-                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.date}</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredPickupDate?.split('T')[0] || selectedShipment.preferredPickupDate}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
@@ -412,7 +439,7 @@ export default function Shipment() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 font-medium">Preferred Time</p>
-                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredTime || "Flexible"}</p>
+                        <p className="text-lg text-gray-900 font-bold">{selectedShipment.preferredPickupTime || "Flexible"}</p>
                       </div>
                     </div>
                   </div>
@@ -426,11 +453,11 @@ export default function Shipment() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-sm text-gray-600 font-medium">Package Type</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType}</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <p className="text-sm text-gray-600 font-medium">Total Weight</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageWeight} kg</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight} kg</p>
                     </div>
                     <div className="lg:col-span-2">
                       <p className="text-sm text-gray-600 font-medium mb-2">Item Details</p>
@@ -448,9 +475,33 @@ export default function Shipment() {
                         </div>
                       </div>
                     )}
+
+                    {/* Additional Details from API */}
+                    {selectedShipment.arrivalDate && (
+                      <div className="lg:col-span-1 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <p className="text-xs text-blue-600 font-bold uppercase mb-1">Estimated Arrival</p>
+                        <p className="text-lg text-blue-900 font-bold">{new Date(selectedShipment.arrivalDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+
+                    {selectedShipment.origin && (
+                       <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                         <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
+                         <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
+                       </div>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {loadingDetails && (
+                <div className="absolute inset-x-0 bottom-32 flex justify-center pointer-events-none">
+                  <div className="bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full flex items-center gap-3">
+                    <Loader className="w-4 h-4 text-gray-900 animate-spin" />
+                    <span className="text-xs font-bold text-gray-900">Updating full details...</span>
+                  </div>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 p-6 md:p-8 flex justify-end gap-4">
                 <button

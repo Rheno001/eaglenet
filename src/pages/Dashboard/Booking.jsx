@@ -1,7 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { Package, MapPin, Calendar, User, FileText, Truck, CheckCircle, AlertCircle, X } from "lucide-react";
+import { 
+  Package, 
+  MapPin, 
+  Calendar, 
+  User, 
+  FileText, 
+  Truck, 
+  CheckCircle, 
+  AlertCircle, 
+  Loader, 
+  ArrowRight,
+  Info,
+  Clock,
+  Weight
+} from "lucide-react";
 
 export default function Booking() {
   const [formData, setFormData] = useState({
@@ -16,668 +29,350 @@ export default function Booking() {
     packageType: "general",
     packageDetails: "",
     date: "",
-    preferredTime: "",
+    preferredTime: "anytime",
     specialRequirements: "",
+    serviceId: "",
   });
 
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [bookingId, setBookingId] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
 
-  // Generate a short unique tracking ID: EGL-XXXX-YYMMDD
-  const generateTrackingId = () => {
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const d = new Date();
-    const y = String(d.getFullYear()).slice(-2);
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `EGL-${rand}-${y}${m}${day}`;
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    setLoadingServices(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const response = await fetch(`${baseUrl}/api/shipments/services`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const result = await response.json();
+      console.log("🛠️ [Service Registry Search]", result);
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setServices(result.data);
+      }
+    } catch (err) {
+      console.error("Registry fetch error:", err);
+      // Resilience fallback
+      setServices([
+        { id: "fe8d22b9-0f26-4db5-ba14-592afce1887c", serviceName: "Air Freight" },
+        { id: "58477e45-464c-49f2-9db4-8369c3151208", serviceName: "Ocean Freight" },
+        { id: "960f4f5a-9078-4cec-82e6-d5a6bd356cc8", serviceName: "General Logistics" },
+        { id: "99758a29-e31d-4145-84f6-36868b26b284", serviceName: "Haulage & Distribution" }
+      ]);
+    } finally {
+      setLoadingServices(false);
+    }
   };
-
-  const packageTypes = [
-    { value: "general", label: "General Goods" },
-    { value: "fragile", label: "Fragile Items" },
-    { value: "perishable", label: "Perishable Items" },
-    { value: "documents", label: "Documents" },
-    { value: "electronics", label: "Electronics" },
-  ];
-
-  const nigerianCities = [
-    "Abuja", "Lagos", "Kano", "Ibadan", "Port Harcourt",
-    "Benin City", "Kaduna", "Enugu", "Owerri", "Ilorin",
-    "Abeokuta", "Osogbo", "Akure", "Gusau", "Bauchi"
-  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
-  const validateForm = () => {
+  const validateStep = (step) => {
     const newErrors = {};
-
-    if (!formData.customerName.trim()) {
-      newErrors.customerName = "Customer name is required";
+    if (step === 1) {
+      if (!formData.customerName) newErrors.customerName = "Full Name is required";
+      if (!formData.email) newErrors.email = "Email is required";
+      if (!formData.phone) newErrors.phone = "Phone is required";
+    } else if (step === 2) {
+      if (!formData.pickupAddress) newErrors.pickupAddress = "Pickup Address is required";
+      if (!formData.pickupCity) newErrors.pickupCity = "Origin City is required";
+      if (!formData.destination) newErrors.destination = "Destination Address is required";
+      if (!formData.destinationCity) newErrors.destinationCity = "Destination City is required";
+    } else if (step === 3) {
+      if (!formData.serviceId) newErrors.serviceId = "Primary Service is required";
+      if (!formData.packageWeight) newErrors.packageWeight = "Weight is required";
+      if (!formData.packageDetails) newErrors.packageDetails = "Description is required";
+      if (!formData.date) newErrors.date = "Pickup Date is required";
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-
-    if (formData.phone.length < 10) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
-
-    if (!formData.pickupAddress.trim()) {
-      newErrors.pickupAddress = "Pickup address is required";
-    }
-
-    if (!formData.pickupCity) {
-      newErrors.pickupCity = "Pickup city is required";
-    }
-
-    if (!formData.destination.trim()) {
-      newErrors.destination = "Delivery address is required";
-    }
-
-    if (!formData.destinationCity) {
-      newErrors.destinationCity = "Destination city is required";
-    }
-
-    if (!formData.packageWeight || formData.packageWeight <= 0) {
-      newErrors.packageWeight = "Package weight is required";
-    }
-
-    if (!formData.packageDetails.trim()) {
-      newErrors.packageDetails = "Package details are required";
-    }
-
-    if (!formData.date) {
-      newErrors.date = "Pickup date is required";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const nextStep = () => {
+    if (validateStep(currentStep)) setCurrentStep(prev => prev + 1);
+  };
+
+  const prevStep = () => setCurrentStep(prev => prev - 1);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccessMessage("");
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateStep(3)) return;
 
     setLoading(true);
-
     try {
-      const trackingId = generateTrackingId();
-      const payload = { ...formData, trackingId };
+      const token = localStorage.getItem("jwt");
+      const payload = {
+        fullName: formData.customerName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        pickupAddress: formData.pickupAddress,
+        pickupCity: formData.pickupCity,
+        deliveryAddress: formData.destination,
+        destinationCity: formData.destinationCity,
+        weight: formData.packageWeight,
+        packageDetails: formData.packageDetails,
+        preferredPickupDate: formData.date,
+        preferredPickupTime: formData.preferredTime,
+        specialRequirements: formData.specialRequirements,
+        serviceId: formData.serviceId,
+      };
 
-      const response = await fetch("http://localhost/backend/Booking.php", {
+      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
-      const text = await response.text();
-      console.log('Booking.php HTTP status:', response.status, 'raw response length:', text ? text.length : 0);
-
-      if (!text) {
-        console.warn('Booking.php returned empty response body (null).');
-        setErrors({ form: `Server returned empty response (status ${response.status}). Check server logs.` });
-        setLoading(false);
-        return;
-      }
-
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (parseErr) {
-        console.error('Failed to parse JSON response:', parseErr, 'raw:', text);
-        setErrors({ form: `Server error: ${text || response.statusText}` });
-        setLoading(false);
-        return;
-      }
-
-      console.log("Parsed response from Booking.php:", result);
-
-      if (response.ok && result && result.status === "success") {
-        const estimatedCost = (parseFloat(formData.packageWeight) * 150).toFixed(2);
-        setBookingId(result.trackingId || trackingId || '');
-
-        const MySwal = withReactContent(Swal);
-        await MySwal.fire({
-          title: 'Booking Successful',
-          html: `<p class="text-left">Tracking ID: <strong>${trackingId}</strong><br/>Estimated Cost: <strong>₦${estimatedCost}</strong></p>`,
+      const result = await response.json();
+      if (result.status === "success") {
+        Swal.fire({
           icon: 'success',
-          confirmButtonText: 'OK',
-          customClass: {
-            confirmButton: 'bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700',
-          },
+          title: 'Mission Initialized',
+          html: `<div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Tracking ID</p>
+                  <p class="text-2xl font-black text-slate-900 font-mono mb-4">${result.data.trackingId}</p>
+                  <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest">Shipment logged in high-priority registry</p>
+                </div>`,
+          confirmButtonText: 'Command Center',
+          customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
         });
-
+        setCurrentStep(1);
         setFormData({
-          customerName: "",
-          email: "",
-          phone: "",
-          pickupAddress: "",
-          pickupCity: "",
-          destination: "",
-          destinationCity: "",
-          packageWeight: "",
-          packageType: "general",
-          packageDetails: "",
-          date: "",
-          preferredTime: "",
-          specialRequirements: "",
+          customerName: "", email: "", phone: "", pickupAddress: "", pickupCity: "",
+          destination: "", destinationCity: "", packageWeight: "", packageType: "general",
+          packageDetails: "", date: "", preferredTime: "anytime", specialRequirements: "", serviceId: ""
         });
-        setSuccessMessage(`Booking successful! Tracking ID: ${trackingId}`);
       } else {
-        const msg = result && result.message ? result.message : `Server responded with status ${response.status}`;
-        setErrors({ form: msg });
+        Swal.fire('Registry Error', result.message || 'Operation failed', 'error');
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setErrors({ form: "Network error. Please try again." });
+    } catch (err) {
+      Swal.fire('Connection Interrupted', 'Could not sync with the logistics hub.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setFormData({
-      customerName: "",
-      email: "",
-      phone: "",
-      pickupAddress: "",
-      pickupCity: "",
-      destination: "",
-      destinationCity: "",
-      packageWeight: "",
-      packageType: "general",
-      packageDetails: "",
-      date: "",
-      preferredTime: "",
-      specialRequirements: "",
-    });
-    setErrors({});
-    setSuccessMessage("");
-  };
+  const nigerianCities = [
+    "Abuja", "Lagos", "Kano", "Ibadan", "Port Harcourt", "Benin City", "Kaduna", "Enugu", "Owerri", "Ilorin"
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-teal-50 to-orange-50 py-12 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-full bg-gray-900 flex items-center justify-center shadow-lg">
-              <Truck className="w-7 h-7 text-white" />
-            </div>
-            <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-              Book a Shipment
-            </h1>
-          </div>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Seamlessly book your shipment with EagleNet Nigeria Logistics
-          </p>
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tighter flex items-center gap-4">
+             <div className="p-3 bg-slate-900 rounded-2xl">
+                <Truck className="text-white" size={32} />
+             </div>
+             Logistics Booking
+          </h1>
+          <p className="text-slate-500 font-medium mt-1">Initialize a new shipment mission within the EAGLENET registry.</p>
         </div>
-
-        {/* Success Message */}
-        {successMessage && (
-          <div className="bg-teal-50 border-l-4 border-teal-500 rounded-lg p-4 mb-8 flex items-start gap-3 animate-fade-in">
-            <CheckCircle className="w-6 h-6 text-teal-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-teal-700 font-semibold">{successMessage}</p>
+        
+        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
+          {[1, 2, 3].map(s => (
+            <div 
+              key={s}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                currentStep === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-400"
+              }`}
+            >
+              Step {s}
             </div>
-          </div>
-        )}
+          ))}
+        </div>
+      </header>
 
-        {/* Form Error */}
-        {errors.form && (
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-8 flex items-start gap-3 animate-fade-in">
-            <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-red-700 font-semibold">{errors.form}</p>
-          </div>
-        )}
-
-        {/* Main Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10">
-          <form onSubmit={handleSubmit} className="space-y-10">
-            {/* Section 1: Sender Information */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <User className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Sender Information</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="customerName">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="customerName"
-                    name="customerName"
-                    placeholder="Your full name"
-                    value={formData.customerName}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.customerName ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.customerName}
-                    aria-describedby={errors.customerName ? "customerName-error" : undefined}
-                  />
-                  {errors.customerName && (
-                    <p id="customerName-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.customerName}
-                    </p>
-                  )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2">
+          <form className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 space-y-10">
+            
+            {currentStep === 1 && (
+              <div className="space-y-8 animate-in slide-in-from-right-4">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                  <User className="text-teal-500" /> Identity Intelligence
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Name</label>
+                    <input name="customerName" value={formData.customerName} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Full legal name" />
+                    {errors.customerName && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.customerName}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Email</label>
+                    <input name="email" type="email" value={formData.email} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="official@agency.com" />
+                    {errors.email && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.email}</p>}
+                  </div>
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Secure Line (Phone)</label>
+                    <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="+234 ..." />
+                    {errors.phone && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.phone}</p>}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="email">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="your@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.email}
-                    aria-describedby={errors.email ? "email-error" : undefined}
-                  />
-                  {errors.email && (
-                    <p id="email-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.email}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="phone">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    placeholder="+234 801 234 5678"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.phone}
-                    aria-describedby={errors.phone ? "phone-error" : undefined}
-                  />
-                  {errors.phone && (
-                    <p id="phone-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.phone}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Section 2: Pickup Details */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <MapPin className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Pickup Details</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="pickupAddress">
-                    Pickup Address *
-                  </label>
-                  <textarea
-                    id="pickupAddress"
-                    name="pickupAddress"
-                    placeholder="Enter full pickup address"
-                    value={formData.pickupAddress}
-                    onChange={handleChange}
-                    rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.pickupAddress ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.pickupAddress}
-                    aria-describedby={errors.pickupAddress ? "pickupAddress-error" : undefined}
-                  />
-                  {errors.pickupAddress && (
-                    <p id="pickupAddress-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.pickupAddress}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="pickupCity">
-                    Pickup City *
-                  </label>
-                  <select
-                    id="pickupCity"
-                    name="pickupCity"
-                    value={formData.pickupCity}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.pickupCity ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900`}
-                    aria-required="true"
-                    aria-invalid={!!errors.pickupCity}
-                    aria-describedby={errors.pickupCity ? "pickupCity-error" : undefined}
-                  >
-                    <option value="">Select pickup city</option>
-                    {nigerianCities.map((city) => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                  {errors.pickupCity && (
-                    <p id="pickupCity-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.pickupCity}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Section 3: Delivery Details */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <Truck className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Delivery Details</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="destination">
-                    Delivery Address *
-                  </label>
-                  <textarea
-                    id="destination"
-                    name="destination"
-                    placeholder="Enter full delivery address"
-                    value={formData.destination}
-                    onChange={handleChange}
-                    rows="3"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.destination ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.destination}
-                    aria-describedby={errors.destination ? "destination-error" : undefined}
-                  />
-                  {errors.destination && (
-                    <p id="destination-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.destination}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="destinationCity">
-                    Destination City *
-                  </label>
-                  <select
-                    id="destinationCity"
-                    name="destinationCity"
-                    value={formData.destinationCity}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.destinationCity ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900`}
-                    aria-required="true"
-                    aria-invalid={!!errors.destinationCity}
-                    aria-describedby={errors.destinationCity ? "destinationCity-error" : undefined}
-                  >
-                    <option value="">Select destination city</option>
-                    {nigerianCities.map((city) => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                  {errors.destinationCity && (
-                    <p id="destinationCity-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.destinationCity}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Section 4: Package Details */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <Package className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Package Details</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageType">
-                    Package Type *
-                  </label>
-                  <select
-                    id="packageType"
-                    name="packageType"
-                    value={formData.packageType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900"
-                    aria-required="true"
-                  >
-                    {packageTypes.map((type) => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageWeight">
-                    Package Weight (kg) *
-                  </label>
-                  <input
-                    type="number"
-                    id="packageWeight"
-                    name="packageWeight"
-                    placeholder="0.00"
-                    min="0.1"
-                    step="0.1"
-                    value={formData.packageWeight}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.packageWeight ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                    aria-required="true"
-                    aria-invalid={!!errors.packageWeight}
-                    aria-describedby={errors.packageWeight ? "packageWeight-error" : undefined}
-                  />
-                  {errors.packageWeight && (
-                    <p id="packageWeight-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.packageWeight}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageDetails">
-                  Package Description *
-                  </label>
-                <textarea
-                  id="packageDetails"
-                  name="packageDetails"
-                  placeholder="Describe what you're shipping..."
-                  value={formData.packageDetails}
-                  onChange={handleChange}
-                  rows="4"
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                    errors.packageDetails ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                  } bg-gray-50 text-gray-900 placeholder-gray-400`}
-                  aria-required="true"
-                  aria-invalid={!!errors.packageDetails}
-                  aria-describedby={errors.packageDetails ? "packageDetails-error" : undefined}
-                />
-                {errors.packageDetails && (
-                  <p id="packageDetails-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {errors.packageDetails}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Section 5: Scheduling */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <Calendar className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Scheduling</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="date">
-                    Preferred Pickup Date *
-                  </label>
-                  <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
-                      errors.date ? "border-red-500 focus:ring-red-500" : "border-gray-200"
-                    } bg-gray-50 text-gray-900`}
-                    aria-required="true"
-                    aria-invalid={!!errors.date}
-                    aria-describedby={errors.date ? "date-error" : undefined}
-                  />
-                  {errors.date && (
-                    <p id="date-error" className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {errors.date}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="preferredTime">
-                    Preferred Pickup Time
-                  </label>
-                  <select
-                    id="preferredTime"
-                    name="preferredTime"
-                    value={formData.preferredTime}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900"
-                  >
-                    <option value="">Anytime</option>
-                    <option value="morning">Morning (7:00 AM - 12:00 PM)</option>
-                    <option value="afternoon">Afternoon (12:00 PM - 5:00 PM)</option>
-                    <option value="evening">Evening (5:00 PM - 8:00 PM)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 6: Additional Information */}
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-[#1e3a8a]">
-                <FileText className="w-6 h-6 text-[#1e3a8a]" />
-                <h2 className="text-2xl font-bold text-gray-900">Additional Information</h2>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="specialRequirements">
-                  Special Requirements (Optional)
-                </label>
-                <textarea
-                  id="specialRequirements"
-                  name="specialRequirements"
-                  placeholder="Any special handling instructions?"
-                  value={formData.specialRequirements}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400"
-                />
-              </div>
-            </div>
-
-            {/* Pricing Info */}
-            {formData.packageWeight && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700 font-semibold">Estimated Shipping Cost:</span>
-                  <span className="text-2xl font-bold text-orange-600">
-                    ₦{(parseFloat(formData.packageWeight) * 150).toFixed(2)}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-xs mt-2">
-                  *Pricing is ₦150 per kg. Final cost may vary based on distance and additional services.
-                </p>
               </div>
             )}
 
-            {/* Form Actions */}
-            <div className="flex gap-4 pt-6 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-gray-900 hover:bg-[#1e40af] text-white font-semibold py-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5" />
-                    Complete Booking
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={loading}
-                className="px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 shadow-sm"
-              >
-                Clear Form
-              </button>
+            {currentStep === 2 && (
+              <div className="space-y-8 animate-in slide-in-from-right-4">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                  <MapPin className="text-teal-500" /> Route Mapping
+                </h2>
+                <div className="space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pickup City</label>
+                         <select name="pickupCity" value={formData.pickupCity} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
+                           <option value="">Select Origin</option>
+                           {nigerianCities.map(c => <option key={c} value={c}>{c}</option>)}
+                         </select>
+                         {errors.pickupCity && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.pickupCity}</p>}
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Pickup Address</label>
+                         <input name="pickupAddress" value={formData.pickupAddress} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Street, landmark..." />
+                         {errors.pickupAddress && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.pickupAddress}</p>}
+                      </div>
+                   </div>
+                   <div className="h-px bg-slate-100"></div>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Delivery City</label>
+                         <select name="destinationCity" value={formData.destinationCity} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
+                           <option value="">Select Destination</option>
+                           {nigerianCities.map(c => <option key={c} value={c}>{c}</option>)}
+                         </select>
+                         {errors.destinationCity && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.destinationCity}</p>}
+                      </div>
+                      <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Delivery Address</label>
+                         <input name="destination" value={formData.destination} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="Street, hub..." />
+                         {errors.destination && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.destination}</p>}
+                      </div>
+                   </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div className="space-y-8 animate-in slide-in-from-right-4">
+                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                  <Package className="text-teal-500" /> Payload Specifications
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Type</label>
+                      <select name="serviceId" value={formData.serviceId} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
+                        <option value="">Select Clearance</option>
+                        {services.map(s => <option key={s.id} value={s.id}>{s.serviceName}</option>)}
+                      </select>
+                      {errors.serviceId && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.serviceId}</p>}
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Weight Class (KG)</label>
+                      <input name="packageWeight" type="number" step="0.1" value={formData.packageWeight} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="0.0" />
+                      {errors.packageWeight && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageWeight}</p>}
+                   </div>
+                   <div className="space-y-2 md:col-span-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detailed Manifesto</label>
+                      <textarea name="packageDetails" value={formData.packageDetails} onChange={handleChange} rows="3" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="List of items, fragile markers..." />
+                      {errors.packageDetails && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageDetails}</p>}
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dispatch Date</label>
+                      <input name="date" type="date" value={formData.date} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" />
+                      {errors.date && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.date}</p>}
+                   </div>
+                   <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Dispatch Window</label>
+                      <select name="preferredTime" value={formData.preferredTime} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
+                        <option value="anytime">Flexible</option>
+                        <option value="morning">Morning (08:00 - 12:00)</option>
+                        <option value="afternoon">Afternoon (12:00 - 17:00)</option>
+                      </select>
+                   </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-6 border-t border-slate-50">
+               {currentStep > 1 && (
+                 <button type="button" onClick={prevStep} className="px-8 py-4 bg-slate-100 text-slate-400 rounded-2xl font-bold hover:bg-slate-200 transition-all">Back</button>
+               )}
+               {currentStep < 3 ? (
+                 <button type="button" onClick={nextStep} className="ml-auto px-10 py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+                   Continue <ArrowRight size={20} />
+                 </button>
+               ) : (
+                 <button type="button" onClick={handleSubmit} disabled={loading} className="ml-auto px-10 py-4 bg-teal-500 text-white rounded-2xl font-bold flex items-center gap-3 hover:bg-teal-600 transition-all shadow-xl shadow-teal-500/20 disabled:opacity-50">
+                   {loading ? <Loader className="animate-spin" /> : <CheckCircle size={20} />}
+                   Confirm Mission
+                 </button>
+               )}
             </div>
           </form>
         </div>
 
-        {/* Help Section */}
-        <div className="mt-8 bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Need Help?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-            <div className="p-4 bg-teal-50 rounded-lg">
-              <p className="text-teal-600 font-semibold mb-2">📞 Call Us</p>
-              <p className="text-gray-700">+234 (0) 700 123 4567</p>
-            </div>
-            <div className="p-4 bg-purple-50 rounded-lg">
-              <p className="text-purple-600 font-semibold mb-2">📧 Email Us</p>
-              <p className="text-gray-700">support@eaglenet.com</p>
-            </div>
-            <div className="p-4 bg-orange-50 rounded-lg">
-              <p className="text-orange-600 font-semibold mb-2">💬 Chat Support</p>
-              <p className="text-gray-700">Available 8 AM - 8 PM</p>
-            </div>
-          </div>
+        <div className="space-y-6">
+           <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white space-y-6">
+              <h3 className="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                 <Info size={20} className="text-teal-400" /> Intelligence Summary
+              </h3>
+              
+              <div className="space-y-4">
+                 <div className="flex justify-between items-center group">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2 bg-slate-800 rounded-lg text-slate-400 group-hover:text-teal-400 transition-colors"><Weight size={14}/></div>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Yield</span>
+                    </div>
+                    <span className="text-xl font-black">{formData.packageWeight || "0.0"} <span className="text-xs text-slate-500">kg</span></span>
+                 </div>
+                 <div className="flex justify-between items-center group">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2 bg-slate-800 rounded-lg text-slate-400 group-hover:text-teal-400 transition-colors"><Clock size={14}/></div>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dispatch Window</span>
+                    </div>
+                    <span className="text-xs font-black uppercase">{formData.preferredTime}</span>
+                 </div>
+                 <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-800">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Financial Projection</p>
+                    <div className="flex items-end justify-between">
+                       <p className="text-3xl font-black">₦ {(parseFloat(formData.packageWeight || 0) * 150).toLocaleString()}</p>
+                       <p className="text-[9px] text-slate-500 font-bold mb-1 italic">est. conversion</p>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Clearances</h4>
+              <div className="space-y-2">
+                 {loadingServices ? (
+                    <div className="animate-pulse flex flex-col gap-2">
+                       <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                       <div className="h-4 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                 ) : (
+                    services.slice(0, 4).map(s => (
+                       <div key={s.id} className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                          <CheckCircle size={14} className="text-teal-500" /> {s.serviceName}
+                       </div>
+                    ))
+                 )}
+              </div>
+           </div>
         </div>
       </div>
     </div>

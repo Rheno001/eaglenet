@@ -16,44 +16,39 @@ import Contact from "./pages/Contact";
 import Quote from "./pages/Quote/QuoteForm";
 import Auth from "./pages/Auth";
 import Unauthorized from "./pages/Unauthorized";
+import Track from "./pages/Track";
 
-// USER Dashboard pages
+// Dashboard pages (Consolidated)
 import DashboardLayout from "./pages/Dashboard/Layout";
-import Overview from "./pages/Dashboard/index";
+import Overview from "./pages/Dashboard/Overview";
 import Shipments from "./pages/Dashboard/Shipments";
 import Booking from "./pages/Dashboard/Booking";
-import Payments from "./pages/Dashboard/Payment";
-
-// ADMIN Dashboard pages
-import AdminLayout from "./pages/admin/Layout";
-import AdminDashboard from "./pages/admin";
-import AdminOrders from "./pages/admin/Orders";
-import AdminUsers from "./pages/admin/Users";
-import AdminReports from "./pages/admin/Reports";
-import AdminPayment from "./pages/admin/Payment";
-import AdminNotifications from "./pages/admin/Notifications";
-import AdminSettings from "./pages/admin/Settings";
+import AdminOrders from "./pages/Dashboard/AdminOrders";
+import AdminUsers from "./pages/Dashboard/AdminUsers";
+import AdminReports from "./pages/Dashboard/AdminReports";
+import AdminPayment from "./pages/Dashboard/AdminPayment";
+import AdminNotifications from "./pages/Dashboard/AdminNotifications";
+import AdminSettings from "./pages/Dashboard/AdminSettings";
 
 // SUPER ADMIN Dashboard
-import SuperAdminDashboard from "./pages/superAdmin";
+import SuperAdminDashboard from "./pages/superAdmin/index";
+import SuperAdminAdmins from "./pages/superAdmin/Admins";
+import SuperAdminPromote from "./pages/superAdmin/PromoteUser";
+import CreateAdmin from "./pages/superAdmin/CreateAdmin";
 
 function App() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
 
-  const isDashboard =
-    location.pathname.startsWith("/dashboard") ||
-    location.pathname.startsWith("/eaglenet/auth/admin") ||
-    location.pathname.startsWith("/eaglenet/auth/superadmin");
+  const isDashboard = location.pathname.includes("dashboard");
 
+  // ✅ Redirect logged-in users away from login/signup to their specific dashboard
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // ✅ Redirect logged-in users away from login/signup
   if (parsedUser && (location.pathname === "/login" || location.pathname === "/signup")) {
-    if (parsedUser.role === "superadmin") return <Navigate to="/eaglenet/auth/superadmin" replace />;
-    if (parsedUser.role === "admin") return <Navigate to="/eaglenet/auth/admin" replace />;
-    return <Navigate to="/dashboard" replace />;
+    const redirectPath = parsedUser.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (
@@ -71,35 +66,42 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/signup" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ Moved here */}
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/track/:trackingId?" element={<Track />} />
 
-          {/* ✅ USER DASHBOARD */}
-          <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
-            <Route path="/dashboard" element={<DashboardLayout />}>
+          {/* ✅ CUSTOMER DASHBOARD SYSTEM */}
+          <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
+            <Route path="/customer-dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
-              <Route path="payment" element={<Payments />} />
+              <Route path="track/:trackingId?" element={<Track />} />
+              <Route path="payment" element={<AdminPayment />} />
             </Route>
           </Route>
 
-          {/* ✅ ADMIN DASHBOARD */}
+          {/* ✅ ADMIN & SUPERADMIN DASHBOARD SYSTEM */}
           <Route element={<ProtectedRoute allowedRoles={["admin", "superadmin"]} />}>
-            <Route path="/eaglenet/auth/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
+            <Route path="/admin-dashboard" element={<DashboardLayout />}>
+              <Route index element={<Overview />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="booking" element={<Booking />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="payment" element={<AdminPayment />} />
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="settings" element={<AdminSettings />} />
+              
+              {/* Specialized nesting */}
+              <Route path="admins" element={<SuperAdminAdmins />} />
+              <Route path="promote" element={<SuperAdminPromote />} />
+              <Route path="create-admin" element={<CreateAdmin />} />
+              <Route path="analytics" element={<SuperAdminDashboard />} />
             </Route>
           </Route>
 
-          {/* ✅ SUPER ADMIN DASHBOARD */}
-          <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
-            <Route path="/eaglenet/auth/superadmin" element={<SuperAdminDashboard />} />
-          </Route>
+          {/* Legacy Redirect */}
+          <Route path="/dashboard" element={<Navigate to={user?.role === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} replace />} />
 
           {/* ✅ CATCH-ALL */}
           <Route path="*" element={<Navigate to="/" replace />} />

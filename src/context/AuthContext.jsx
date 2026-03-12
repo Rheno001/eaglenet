@@ -1,5 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
+import React, { createContext, useState, useEffect, useCallback } from "react";
 import { ROLES } from "../utils/roles";
 
 export const AuthContext = createContext();
@@ -11,78 +10,57 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL;
-
-  const endpoints = {
-    verify: `${API_BASE_URL}/verify-token.php`,
-    refresh: `${API_BASE_URL}/refresh-token.php`,
-  };
-
   // ✅ Log in user + persist data
-  const login = (userData, token) => {
-    setUser(userData);
+  const login = useCallback((userData, token) => {
+    const normalizedUser = { ...userData, role: userData.role?.toLowerCase() };
+    setUser(normalizedUser);
     localStorage.setItem("jwt", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
+    localStorage.setItem("user", JSON.stringify(normalizedUser));
+  }, []);
 
   // ✅ Log out user + clear storage
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem("jwt");
     localStorage.removeItem("user");
-  };
+  }, []);
 
-  // ✅ Optional refresh (if needed)
-  const refreshToken = async () => {
-    try {
-      const res = await axios.post(endpoints.refresh, {}, { withCredentials: true });
-      if (res.data.success) {
-        const { user, token } = res.data;
-        login(user, token);
-        return token;
-      } else {
-        logout();
-        return null;
+  const refreshToken = useCallback(async () => {
+    // Current backend doesn't support refresh tokens via Axios at this endpoint
+    return null;
+  }, []);
+
+  // ✅ Sync state with localStorage + Verify Token on boot
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem("jwt");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          const normalizedUser = { ...parsedUser, role: parsedUser.role?.toLowerCase() };
+          setUser(normalizedUser);
+
+          // Optional: Verify with backend if endpoint exists
+          fetch("https://eaglenet-eb9x.onrender.com/verify-token.php", {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          }).then(res => res.json())
+            .then(data => {
+              if (!data.success) logout();
+            }).catch(() => {});
+            
+        } catch (e) {
+          console.error("Auth state recovery failed:", e);
+          logout();
+        }
       }
-    } catch (err) {
-      console.error("Token refresh failed:", err);
-      logout();
-      return null;
-    }
-  };
+      setLoading(false);
+    };
 
-  // ✅ Verify token silently in background
- useEffect(() => {
-  const token = localStorage.getItem("jwt");
-  const storedUser = localStorage.getItem("user");
-
-  // Instantly show user if already logged in
-  if (token && storedUser) {
-    setUser(JSON.parse(storedUser));
-  }
-
-  // Silent token verification (non-blocking)
-  (async () => {
-    if (!token) return;
-
-    try {
-      const res = await axios.post(
-        endpoints.verify,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        login(res.data.user, token);
-      } else {
-        await refreshToken();
-      }
-    } catch {
-      await refreshToken();
-    }
-  })();
-
-  setLoading(false); // Don’t block UI
-}, []);
+    verifyToken();
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, refreshToken, loading }}>
