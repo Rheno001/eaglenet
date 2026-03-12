@@ -83,6 +83,7 @@ function App() {
             <Route path="/admin-dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="booking" element={<Booking />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="payment" element={<AdminPayment />} />

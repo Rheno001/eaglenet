@@ -15,6 +15,7 @@ export const MENU_ITEMS = {
   [ROLES.ADMIN]: [
     { name: 'Overview', path: '/admin-dashboard' },
     { name: 'Orders', path: '/admin-dashboard/orders' },
+    { name: 'Book Shipment', path: '/admin-dashboard/booking' },
     { name: 'Users', path: '/admin-dashboard/users' },
     { name: 'Reports', path: '/admin-dashboard/reports' },
     { name: 'Payment', path: '/admin-dashboard/payment' },
@@ -25,6 +26,7 @@ export const MENU_ITEMS = {
     { name: 'Overview', path: '/admin-dashboard' },
     { name: 'Analytics', path: '/admin-dashboard/analytics' },
     { name: 'Orders', path: '/admin-dashboard/orders' },
+    { name: 'Book Shipment', path: '/admin-dashboard/booking' },
     { name: 'Users', path: '/admin-dashboard/users' },
     { name: 'Manage Admins', path: '/admin-dashboard/admins' },
     { name: 'Create Admin', path: '/admin-dashboard/create-admin' },
