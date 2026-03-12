@@ -22,6 +22,7 @@ export default function Shipment() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCity, setFilterCity] = useState("all");
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [sortBy, setSortBy] = useState("date");
 
   useEffect(() => {
@@ -66,6 +67,31 @@ export default function Shipment() {
       setShipments([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchShipmentDetails = async (id) => {
+    try {
+      setLoadingDetails(true);
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet.onrender.com/api/shipments/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        setSelectedShipment(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching shipment details:", err);
+      // Fallback to the item already in state if detail fetch fails
+    } finally {
+      setLoadingDetails(false);
     }
   };
 
@@ -278,17 +304,18 @@ export default function Shipment() {
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
                         <button
-                          onClick={() =>
-                            setSelectedShipment(
-                              selectedShipment?.trackingId === item.trackingId
-                                ? null
-                                : item
-                            )
-                          }
+                          onClick={() => {
+                            if (selectedShipment?.id === item.id) {
+                              setSelectedShipment(null);
+                            } else {
+                              setSelectedShipment(item); // Set immediate feedback
+                              fetchShipmentDetails(item.id);
+                            }
+                          }}
                           className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
                         >
                           <Eye className="w-4 h-4" />
-                          {selectedShipment?.trackingId === item.trackingId ? "Hide" : "View"}
+                          {selectedShipment?.id === item.id ? "Hide" : "View"}
                         </button>
                       </td>
                     </tr>
@@ -448,9 +475,33 @@ export default function Shipment() {
                         </div>
                       </div>
                     )}
+
+                    {/* Additional Details from API */}
+                    {selectedShipment.arrivalDate && (
+                      <div className="lg:col-span-1 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <p className="text-xs text-blue-600 font-bold uppercase mb-1">Estimated Arrival</p>
+                        <p className="text-lg text-blue-900 font-bold">{new Date(selectedShipment.arrivalDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+
+                    {selectedShipment.origin && (
+                       <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                         <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
+                         <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
+                       </div>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {loadingDetails && (
+                <div className="absolute inset-x-0 bottom-32 flex justify-center pointer-events-none">
+                  <div className="bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full flex items-center gap-3">
+                    <Loader className="w-4 h-4 text-gray-900 animate-spin" />
+                    <span className="text-xs font-bold text-gray-900">Updating full details...</span>
+                  </div>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 p-6 md:p-8 flex justify-end gap-4">
                 <button

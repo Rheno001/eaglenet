@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import {
   CreditCard,
   Search,
@@ -15,28 +16,95 @@ import {
 } from "lucide-react";
 
 export default function UserPayments() {
+  const { user } = useContext(AuthContext);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // You can change this
+  const [verifyingId, setVerifyingId] = useState(null);
 
-  // Mock data
-  useEffect(() => {
-    setTimeout(() => {
-      setPayments([
-        { id: 1, amount: 18400, status: "success", date: "2025-04-18T10:30:00", reference: "EGL-PAY-20250418-001", trackingId: "EGL-2025-089" },
-        { id: 2, amount: 9200, status: "success", date: "2025-04-15T14:22:00", reference: "EGL-PAY-20250415-003", trackingId: "EGL-2025-077" },
-        { id: 3, amount: 15600, status: "pending", date: "2025-04-20T09:15:00", reference: "EGL-PAY-20250420-007", trackingId: "EGL-2025-104" },
-        { id: 4, amount: 22100, status: "success", date: "2025-04-10T11:45:00", reference: "EGL-PAY-20250410-012", trackingId: "EGL-2025-065" },
-        { id: 5, amount: 8900, status: "failed", date: "2025-04-08T16:20:00", reference: "EGL-PAY-20250408-019", trackingId: null },
-        { id: 6, amount: 32000, status: "success", date: "2025-04-05T08:12:00", reference: "EGL-PAY-20250405-021", trackingId: "EGL-2025-058" },
-        { id: 7, amount: 12900, status: "success", date: "2025-03-30T19:45:00", reference: "EGL-PAY-20250330-015", trackingId: "EGL-2025-042" },
-        { id: 8, amount: 17500, status: "pending", date: "2025-03-28T11:10:00", reference: "EGL-PAY-20250328-009", trackingId: "EGL-2025-037" },
-      ]);
+  // Fetch real payment history
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("jwt");
+      if (!token) return;
+
+      const response = await fetch("https://eaglenet.onrender.com/api/payments/mine", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch payments");
+
+      const result = await response.json();
+      setPayments(result.data || []);
+    } catch (err) {
+      console.error("Payment fetch error:", err);
+      // Fallback or error handling
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
   }, []);
+
+  const handleInitializePayment = async (amount) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await fetch("https://eaglenet.onrender.com/api/payments/initialize", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount }),
+      });
+
+      const result = await response.json();
+      if (result.status === "success" && result.data.authorizationUrl) {
+        // Redirect to Paystack checkout
+        window.location.href = result.data.authorizationUrl;
+      } else {
+        alert(result.message || "Failed to initialize payment.");
+      }
+    } catch (err) {
+      console.error("Initialization error:", err);
+      alert("Network error. Please try again.");
+    }
+  };
+
+  const handleVerifyPayment = async (paymentId) => {
+    try {
+      setVerifyingId(paymentId);
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet.onrender.com/api/payments/verify/${paymentId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        // Update local state to reflect verification
+        setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: result.data.status.toLowerCase() } : p));
+        alert(`Payment verified! New status: ${result.data.status}`);
+      } else {
+        alert(result.message || "Could not verify payment status.");
+      }
+    } catch (err) {
+      console.error("Verification error:", err);
+      alert("Verification failed. Please try again.");
+    } finally {
+      setVerifyingId(null);
+    }
+  };
 
   // Filter payments
   const filteredPayments = payments.filter(p =>
@@ -94,9 +162,19 @@ export default function UserPayments() {
                 <p className="text-sm text-gray-500">All your EagleNet transactions</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500 uppercase tracking-wider">Total Paid</p>
-              <p className="text-3xl font-bold text-gray-900">₦{totalPaid.toLocaleString()}</p>
+            <div className="text-right flex flex-col items-end gap-2">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wider">Balance</p>
+                <p className="text-3xl font-bold text-gray-900">₦{parseFloat(user?.outstandingBalance || 0).toLocaleString()}</p>
+              </div>
+              {parseFloat(user?.outstandingBalance || 0) > 0 && (
+                <button 
+                  onClick={() => handleInitializePayment(user.outstandingBalance)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+                >
+                  Pay Now
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -183,10 +261,23 @@ export default function UserPayments() {
                           </div>
                         </div>
 
-                        <button className="ml-6 flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm whitespace-nowrap">
-                          View Details
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
+                        <div className="ml-6 flex items-center gap-3">
+                          {payment.status === "pending" && (
+                            <button 
+                              onClick={() => handleVerifyPayment(payment.id)}
+                              disabled={verifyingId === payment.id}
+                              className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition flex items-center gap-2 disabled:opacity-50"
+                            >
+                              {verifyingId === payment.id ? (
+                                <div className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                              ) : "Verify Status"}
+                            </button>
+                          )}
+                          <button className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium text-sm whitespace-nowrap">
+                            View Details
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );

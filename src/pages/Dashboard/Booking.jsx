@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-import { Package, MapPin, Calendar, User, FileText, Truck, CheckCircle, AlertCircle, X } from "lucide-react";
+import { Package, MapPin, Calendar, User, FileText, Truck, CheckCircle, AlertCircle, X, Loader } from "lucide-react";
 
 export default function Booking() {
   const [formData, setFormData] = useState({
@@ -18,12 +18,62 @@ export default function Booking() {
     date: "",
     preferredTime: "",
     specialRequirements: "",
+    serviceId: "",
   });
+
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [bookingId, setBookingId] = useState("");
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      setLoadingServices(true);
+      const token = localStorage.getItem("jwt");
+      console.log("Fetching services with token:", token ? "Token present" : "Token missing");
+      
+      const response = await fetch("https://eaglenet.onrender.com/api/shipments/services", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Response status:", response.status);
+      const result = await response.json();
+      console.log("Services API result:", result);
+
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setServices(result.data);
+      } else {
+        console.warn("Unexpected services structure or error:", result);
+        throw new Error("Server returned an invalid or error response for services");
+      }
+    } catch (err) {
+      console.error("Error fetching services, using fallback:", err);
+      // Fallback data from the route /api/shipments/services
+      setServices([
+        { id: "fe8d22b9-0f26-4db5-ba14-592afce1887c", serviceName: "Air Freight" },
+        { id: "13a297b6-2d5f-4bf8-be9f-2c3e9f2a1342", serviceName: "Customs Clearing" },
+        { id: "960f4f5a-9078-4cec-82e6-d5a6bd356cc8", serviceName: "General Logistics" },
+        { id: "99758a29-e31d-4145-84f6-36868b26b284", serviceName: "Haulage & Distribution" },
+        { id: "28b73a70-2ce7-450a-bce1-fa4ced4c610b", serviceName: "Household Removal" },
+        { id: "58477e45-464c-49f2-9db4-8369c3151208", serviceName: "Ocean Freight" },
+        { id: "a79bace1-2981-489b-bf65-4b859d5aff00", serviceName: "Office Removal" },
+        { id: "37a2ae8a-5434-4a10-9a22-1f92985de4e2", serviceName: "Random service" },
+        { id: "bdb636f5-326e-4a41-ade5-935b43f34281", serviceName: "Warehousing" }
+      ]);
+    } finally {
+      setLoadingServices(false);
+    }
+  };
 
   // Generate a short unique tracking ID: EGL-XXXX-YYMMDD
   const generateTrackingId = () => {
@@ -101,6 +151,10 @@ export default function Booking() {
       newErrors.date = "Pickup date is required";
     }
 
+    if (!formData.serviceId) {
+      newErrors.serviceId = "Logistics service is required";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -130,6 +184,7 @@ export default function Booking() {
         preferredPickupDate: formData.date,
         preferredPickupTime: formData.preferredTime,
         specialRequirements: formData.specialRequirements,
+        serviceId: formData.serviceId,
       };
 
       const token = localStorage.getItem("jwt");
@@ -197,6 +252,7 @@ export default function Booking() {
           date: "",
           preferredTime: "",
           specialRequirements: "",
+          serviceId: "",
         });
         setSuccessMessage(`Booking successful! Tracking ID: ${trackingId}`);
       } else {
@@ -226,6 +282,7 @@ export default function Booking() {
       date: "",
       preferredTime: "",
       specialRequirements: "",
+      serviceId: "",
     });
     setErrors({});
     setSuccessMessage("");
@@ -504,6 +561,41 @@ export default function Booking() {
                       <option key={type.value} value={type.value}>{type.label}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="serviceId">
+                    Logistics Service *
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="serviceId"
+                      name="serviceId"
+                      value={formData.serviceId}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-200 ${
+                        errors.serviceId ? "border-red-500" : "border-gray-200"
+                      } bg-gray-50 text-gray-900`}
+                      aria-required="true"
+                    >
+                      <option value="">Select a service</option>
+                      {services.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.serviceName}
+                        </option>
+                      ))}
+                    </select>
+                    {loadingServices && (
+                      <div className="absolute right-10 top-3.5">
+                        <Loader className="w-5 h-5 text-gray-400 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {errors.serviceId && (
+                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {errors.serviceId}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="packageWeight">
