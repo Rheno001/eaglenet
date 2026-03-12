@@ -133,7 +133,7 @@ export default function Users() {
              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
                 <UsersIcon className="text-white" size={28} />
              </div>
-             Resident Directory
+             User
           </h1>
           <p className="text-gray-500 mt-2 font-medium">Manage and monitor all registered accounts in the Eaglenet ecosystem.</p>
         </div>

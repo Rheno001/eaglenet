@@ -162,9 +162,9 @@ export default function AdminPayments() {
              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
                 <CreditCard className="text-white" size={28} />
              </div>
-             Financial Ledger
+             Payment
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Audit and manage all transactions within the Eaglenet infrastructure.</p>
+          <p className="text-gray-500 mt-2 font-medium">Audit and manage all transactions.</p>
         </div>
 
         <div className="flex items-center gap-3">

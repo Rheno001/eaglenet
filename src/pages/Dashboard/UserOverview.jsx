@@ -104,13 +104,13 @@ export default function UserOverview() {
 
       <div className="bg-gray-900 rounded-2xl p-8 text-white relative overflow-hidden">
         <div className="relative z-10 max-w-lg">
-          <h2 className="text-2xl font-bold mb-4 text-orange-400">Need to track a package?</h2>
-          <p className="text-gray-300 mb-6 font-medium">Get real-time updates on your shipment location and estimated delivery time with our advanced tracking system.</p>
+          <h2 className="text-2xl font-bold mb-4 text-orange-400">Need to track a shipment?</h2>
+          <p className="text-gray-300 mb-6 font-medium">Get real-time updates on your shipment location and estimated delivery time with our advanced shipment tracking system.</p>
           <Link 
             to="/dashboard/track" 
             className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-xl"
           >
-            Track Now
+            Track Shipment
             <ArrowUpRight size={18} />
           </Link>
         </div>

@@ -123,8 +123,8 @@ export default function Overview() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Overview</h1>
-          <p className="text-gray-500 text-sm">Real-time logistics analytics</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Home</h1>
+          <p className="text-gray-500 text-sm">Real-time logistics analytics & command</p>
         </div>
         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 text-sm font-semibold text-gray-700">
           <CalendarIcon size={16} />

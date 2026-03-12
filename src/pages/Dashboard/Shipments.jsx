@@ -11,7 +11,8 @@ import {
   Truck,
   User,
   X,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from "lucide-react";
 
 export default function Shipment() {
@@ -206,10 +207,10 @@ export default function Shipment() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Shipment Records
+            Shipment
           </h1>
           <p className="text-gray-600">
-            View and manage all shipment records and their delivery status
+            Monitor and oversee your active shipments.
           </p>
         </div>
 
@@ -475,12 +476,14 @@ export default function Shipment() {
                       <p className="text-sm text-gray-600 font-medium">Package Type</p>
                       <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                      <p className="text-sm text-gray-600 font-medium">Total Weight</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight} kg</p>
-                    </div>
                     <div className="lg:col-span-2">
-                      <p className="text-sm text-gray-600 font-medium mb-2">Item Details</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-gray-600 font-medium">Item Details</p>
+                        <div className="flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                           <TrendingUp size={12} className="text-teal-400" />
+                           {selectedShipment.weight || 0} KG
+                        </div>
+                      </div>
                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
                         <p className="text-gray-700 leading-relaxed italic">
                           {selectedShipment.packageDetails || "No specific details provided."}

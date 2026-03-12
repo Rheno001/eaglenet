@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, TrendingUp
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -165,8 +165,8 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order Management</h2>
-        <p className="text-gray-600 mb-6">Manage and track all shipment orders</p>
+        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order</h2>
+        <p className="text-gray-600 mb-6">Manage and monitor all shipment orders</p>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -351,10 +351,6 @@ export default function Orders() {
                         <dd className="mt-1 text-gray-900">{selectedOrder.packageType || "—"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">Total Weight</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.weight ? `${selectedOrder.weight} kg` : "—"}</dd>
-                      </div>
-                      <div>
                         <dt className="text-sm font-medium text-gray-500">Service Type</dt>
                         <dd className="mt-1 text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</dd>
                       </div>
@@ -367,8 +363,16 @@ export default function Orders() {
                         </dd>
                       </div>
                       <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Description</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.packageDetails || "—"}</dd>
+                        <div className="flex items-center justify-between mb-2">
+                          <dt className="text-sm font-medium text-gray-500">Description</dt>
+                          <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                             <TrendingUp size={12} className="text-blue-100" />
+                             {selectedOrder.weight || 0} KG
+                          </span>
+                        </div>
+                        <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic">
+                          {selectedOrder.packageDetails || "—"}
+                        </dd>
                       </div>
                     </dl>
                   </div>

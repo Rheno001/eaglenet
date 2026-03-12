@@ -61,10 +61,12 @@ export default function Booking() {
       console.error("Registry fetch error:", err);
       // Resilience fallback
       setServices([
-        { id: "fe8d22b9-0f26-4db5-ba14-592afce1887c", serviceName: "Air Freight" },
-        { id: "58477e45-464c-49f2-9db4-8369c3151208", serviceName: "Ocean Freight" },
-        { id: "960f4f5a-9078-4cec-82e6-d5a6bd356cc8", serviceName: "General Logistics" },
-        { id: "99758a29-e31d-4145-84f6-36868b26b284", serviceName: "Haulage & Distribution" }
+        { id: "s1", serviceName: "Household & Office Removals", desc: "Efficient relocation & professional handling" },
+        { id: "s2", serviceName: "Air Freight", desc: "Fast global shipping & tailored solutions" },
+        { id: "s3", serviceName: "Ocean Freight", desc: "Cost-effective global goods transportation" },
+        { id: "s4", serviceName: "Haulage & Distribution", desc: "Nationwide delivery with a modern fleet" },
+        { id: "s5", serviceName: "Customs Clearing", desc: "Accurate documentation & duty processing" },
+        { id: "s6", serviceName: "Warehousing", desc: "Secure organized storage & inventory management" }
       ]);
     } finally {
       setLoadingServices(false);
@@ -176,9 +178,9 @@ export default function Booking() {
              <div className="p-3 bg-slate-900 rounded-2xl">
                 <Truck className="text-white" size={32} />
              </div>
-             New Shipment Booking
+             Booking
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Create a new shipment request in our logistics network.</p>
+          <p className="text-slate-500 font-medium mt-1">Initialize a new shipment booking in our network.</p>
         </div>
         
         <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit">

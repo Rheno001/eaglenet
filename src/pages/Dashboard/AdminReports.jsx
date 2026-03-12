@@ -260,21 +260,21 @@ export default function MonthlyReport() {
              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
                 <BarChart3 className="text-white" size={28} />
              </div>
-             Strategic Intelligence Ledger
+             Reports
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Holistic performance auditing and mission-critical analytics.</p>
+          <p className="text-gray-500 mt-2 font-medium">Holistic performance and analytics.</p>
         </div>
       </header>
 
-      {/* Export Intelligence Hub */}
+      {/* Export Hub */}
       <section className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 animate-in slide-in-from-top-4">
          <div className="flex items-center gap-6">
             <div className="p-5 bg-indigo-50 text-indigo-600 rounded-3xl">
                <FileText size={32} />
             </div>
             <div>
-               <h3 className="text-xl font-black text-slate-900 tracking-tight">Intelligence Export Hub</h3>
-               <p className="text-slate-500 text-sm font-medium">Extract high-fidelity reports for external auditing and analysis.</p>
+               <h3 className="text-xl font-black text-slate-900 tracking-tight">Export Hub</h3>
+               <p className="text-slate-500 text-sm font-medium">Extract reports for external auditing and analysis.</p>
             </div>
          </div>
          <div className="flex flex-wrap gap-3 w-full md:w-auto">
