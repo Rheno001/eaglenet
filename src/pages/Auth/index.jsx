@@ -29,22 +29,22 @@ export default function Auth() {
       const token = localStorage.getItem('jwt');
       if (!token) return;
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/verify-token.php`,
-          {},
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/auth/me`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (res.data.success) {
-          const userData = res.data.user;
+        if (res.data.status === 'success' && res.data.data) {
+          const userData = res.data.data;
           login(userData, token);
           const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
           if (userData.role) navigate(redirectPath);
-        } else {
-          localStorage.removeItem('jwt');
         }
       } catch (err) {
         console.error('Token verification error:', err);
-        localStorage.removeItem('jwt');
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem('jwt');
+          localStorage.removeItem('user');
+        }
       }
     };
     verifyToken();

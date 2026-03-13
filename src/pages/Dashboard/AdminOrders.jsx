@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, TrendingUp, Copy, Check
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp, Copy, Check
 } from "lucide-react";
 import Swal from "sweetalert2";
+
+import { useCallback } from "react";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -36,7 +38,7 @@ export default function Orders() {
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -49,11 +51,7 @@ export default function Orders() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [currentPage, filterStatus, debouncedSearch, limit]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
@@ -85,7 +83,11 @@ export default function Orders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, limit, debouncedSearch, filterStatus]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
@@ -99,8 +101,7 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const shipmentId = order.id || order._id || order.trackingId;
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${order.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -123,8 +124,7 @@ export default function Orders() {
   const updateStatus = async (newStatus) => {
     try {
       const token = localStorage.getItem("jwt");
-      const shipmentId = selectedOrder.id || selectedOrder._id || selectedOrder.trackingId;
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${shipmentId}/status`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -154,19 +154,54 @@ export default function Orders() {
       }
     } catch (err) {
       console.error("Error updating status:", err);
-      Swal.fire('Sync Interrupted', 'Could not reach logistics hub.', 'error');
+    } finally {
+      setShowModal(false);
+    }
+  };
+
+  const updatePrice = async (amount) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/price`, {
+        method: "PATCH",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: parseFloat(amount) }),
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setOrders(prev =>
+          prev.map(o => o.id === selectedOrder.id ? { ...o, amount: parseFloat(amount) } : o)
+        );
+        setSelectedOrder(prev => ({ ...prev, amount: parseFloat(amount) }));
+        Swal.fire({
+          icon: 'success',
+          title: 'Price Updated',
+          text: 'Shipment price has been successfully set.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      }
+    } catch (err) {
+      console.error("Error updating price:", err);
+      Swal.fire('Update Failed', 'Failed to update shipment price', 'error');
     }
   };
 
   const statusConfig = {
+    ORDER_PLACED: { color: "bg-slate-100 text-slate-700 border-slate-300", icon: Clock, label: "Order Placed" },
+    PENDING_CONFIRMATION: { color: "bg-amber-100 text-amber-700 border-amber-300", icon: Activity, label: "Confirmation Pending" },
+    WAITING_TO_BE_SHIPPED: { color: "bg-indigo-100 text-indigo-700 border-indigo-300", icon: Package, label: "Processing" },
+    SHIPPED: { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
+    AVAILABLE_FOR_PICKUP: { color: "bg-teal-100 text-teal-700 border-teal-300", icon: Warehouse, label: "At Terminal" },
     DELIVERED: { color: "bg-green-100 text-green-700 border-green-300", icon: CheckCircle, label: "Delivered" },
-    TRANSIT: { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
-    "IN TRANSIT": { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
-    DELAY: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle, label: "Delayed" },
-    DELAYED: { color: "bg-red-100 text-red-700 border-red-300", icon: AlertCircle, label: "Delayed" },
+    CANCELLED: { color: "bg-red-100 text-red-700 border-red-300", icon: X, label: "Cancelled" },
     PENDING: { color: "bg-yellow-100 text-yellow-700 border-yellow-300", icon: Clock, label: "Pending" },
-    PROCESSING: { color: "bg-indigo-100 text-indigo-700 border-indigo-300", icon: Loader, label: "Processing" },
-    ARRIVED: { color: "bg-teal-100 text-teal-700 border-teal-300", icon: MapPin, label: "Arrived" },
   };
 
   const getStatusInfo = (status) => {
@@ -239,7 +274,6 @@ export default function Orders() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {orders.map(order => {
-                const StatusIcon = statusConfig[order.status]?.icon || Clock;
                 return (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
                     <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">
@@ -268,7 +302,7 @@ export default function Orders() {
                       </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
-                      {order.amount || order.amount === 0 || order.amount === "0" ? `₦${parseFloat(order.amount).toLocaleString()}` : "—"}
+                      {order.amount ? `₦${parseFloat(order.amount).toLocaleString()}` : "—"}
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.preferredPickupDate?.split('T')[0] || order.createdAt?.split('T')[0]}</td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
@@ -353,7 +387,9 @@ export default function Orders() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
                   className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"
                 >
                   <X size={24} />
@@ -396,11 +432,25 @@ export default function Orders() {
                         <dd className="mt-1 text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">Amount Paid</dt>
-                        <dd className="mt-1 text-xl font-bold text-blue-600">
-                          {selectedOrder.amount || selectedOrder.amount === 0 || selectedOrder.amount === "0"
-                            ? `₦${parseFloat(selectedOrder.amount).toLocaleString()}`
-                            : "—"}
+                        <dt className="text-sm font-medium text-gray-500">Amount Paid / Quote</dt>
+                        <dd className="mt-1 flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              defaultValue={selectedOrder.amount || 0}
+                              id="priceUpdateInput"
+                              className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button 
+                              onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
+                              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
+                            >
+                              Set Quote
+                            </button>
+                          </div>
+                          {selectedOrder.amount > 0 && (
+                            <p className="text-xs font-bold text-emerald-600">Current: ₦{parseFloat(selectedOrder.amount).toLocaleString()}</p>
+                          )}
                         </dd>
                       </div>
                       <div>
@@ -462,12 +512,12 @@ export default function Orders() {
                     <label className="block text-sm font-bold text-gray-900 mb-3">Update Status</label>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { key: "PENDING", label: "Pending" },
-                        { key: "PROCESSING", label: "Processing" },
-                        { key: "TRANSIT", label: "In Transit" },
-                        { key: "ARRIVED", label: "Arrived" },
-                        { key: "DELAY", label: "Delayed" },
-                        { key: "DELIVERED", label: "Delivered" }
+                        { key: "ORDER_PLACED", label: "Ordered" },
+                        { key: "PENDING_CONFIRMATION", label: "Confirm" },
+                        { key: "WAITING_TO_BE_SHIPPED", label: "Process" },
+                        { key: "SHIPPED", label: "Ship" },
+                        { key: "AVAILABLE_FOR_PICKUP", label: "Arrived" },
+                        { key: "DELIVERED", label: "Deliver" }
                       ].map(status => (
                         <button
                           key={status.key}

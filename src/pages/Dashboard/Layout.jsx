@@ -3,6 +3,7 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Navbar from "../../components/admin/Navbar"; // Shared navbar
 import { AuthContext } from "../../context/AuthContext";
+import PaymentWatcher from "../../components/Admin/PaymentWatcher";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,11 +22,12 @@ export default function DashboardLayout() {
     setIsOpen(false);
   }, [location]);
 
-  if (loading) return null; // Or a full page loader if preferred
+  if (loading && !user) return null; // Block only if we have no cached state
   if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="flex min-h-screen bg-slate-50/50 overflow-x-hidden selection:bg-teal-500/30 selection:text-teal-900">
+      <PaymentWatcher user={user} />
       {/* SIDEBAR */}
       <Sidebar
         isOpen={isOpen}
