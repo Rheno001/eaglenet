@@ -190,8 +190,6 @@ export default function Shipment() {
         return dateB - dateA;
       } else if (sortBy === "name") {
         return (a.fullName || "").localeCompare(b.fullName || "");
-      } else if (sortBy === "weight") {
-        return parseFloat(b.weight || 0) - parseFloat(a.weight || 0);
       }
       return 0;
     });
@@ -446,7 +444,7 @@ export default function Shipment() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="date">Latest First</option>
-                <option value="weight">Weight</option>
+                <option value="name">Customer Name</option>
               </select>
             </div>
           </div>
@@ -467,9 +465,6 @@ export default function Shipment() {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Route
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
-                      Weight
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Status
@@ -506,9 +501,6 @@ export default function Shipment() {
                       <td className="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
                         <MapPin className="w-4 h-4 text-gray-400 inline mr-1" />
                         {item.pickupCity} → {item.destinationCity}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
-                        {item.weight} kg
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
@@ -708,17 +700,9 @@ export default function Shipment() {
                       <p className="text-sm text-gray-600 font-medium">Package Type</p>
                       <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                      <p className="text-sm text-gray-600 font-medium">Weight</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight || 0} kg</p>
-                    </div>
                     <div className="lg:col-span-2">
                        <div className="flex items-center justify-between mb-2">
                          <p className="text-sm text-gray-600 font-medium">Package Details</p>
-                         <div className="flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
-                           <TrendingUp size={12} className="text-teal-400" />
-                           {selectedShipment.weight || 0} KG
-                         </div>
                        </div>
                        <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
                          <p className="text-gray-700 leading-relaxed italic">

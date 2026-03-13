@@ -12,8 +12,7 @@ import {
   Loader,
   ArrowRight,
   Info,
-  Clock,
-  Weight
+  Clock
 } from "lucide-react";
 
 export default function Booking() {
@@ -25,7 +24,6 @@ export default function Booking() {
     pickupCity: "",
     destination: "",
     destinationCity: "",
-    packageWeight: "",
     packageType: "general",
     packageDetails: "",
     date: "",
@@ -92,7 +90,6 @@ export default function Booking() {
       if (!formData.destinationCity) newErrors.destinationCity = "Destination City is required";
     } else if (step === 3) {
       if (!formData.serviceId) newErrors.serviceId = "Primary Service is required";
-      if (!formData.packageWeight) newErrors.packageWeight = "Weight is required";
       if (!formData.packageDetails) newErrors.packageDetails = "Description is required";
       if (!formData.date) newErrors.date = "Pickup Date is required";
     }
@@ -119,7 +116,6 @@ export default function Booking() {
         phoneNumber: formData.phone,
         origin: `${formData.pickupAddress}, ${formData.pickupCity}`,
         destination: `${formData.destination}, ${formData.destinationCity}`,
-        weight: formData.packageWeight,
         packageType: formData.packageType,
         packageDetails: formData.packageDetails,
         preferredPickupDate: formData.date,
@@ -153,7 +149,7 @@ export default function Booking() {
         setCurrentStep(1);
         setFormData({
           customerName: "", email: "", phone: "", pickupAddress: "", pickupCity: "",
-          destination: "", destinationCity: "", packageWeight: "", packageType: "general",
+          destination: "", destinationCity: "", packageType: "general",
           packageDetails: "", date: "", preferredTime: "anytime", specialRequirements: "", serviceId: ""
         });
       } else {
@@ -278,11 +274,6 @@ export default function Booking() {
                     {services.map(s => <option key={s.id} value={s.id}>{s.serviceName}</option>)}
                   </select>
                   {errors.serviceId && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.serviceId}</p>}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Weight (KG)</label>
-                  <input name="packageWeight" type="number" step="0.1" value={formData.packageWeight} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="0.0" />
-                  {errors.packageWeight && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageWeight}</p>}
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Package Contents</label>
