@@ -112,9 +112,9 @@ export default function LogisticsWebsite() {
             <section className="relative overflow-hidden bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Top Part: Background Text + Container Image */}
-                    <div className="relative h-[60vh] lg:h-[80vh] flex items-center justify-center">
+                    <div className="relative h-[55vh] lg:h-[75vh] flex items-center justify-center">
                         {/* Background Text - Rotating and Repositioned Higher */}
-                        <div className="absolute inset-x-0 top-10 lg:top-20 flex items-center justify-center pointer-events-none select-none overflow-hidden h-1/2 max-w-[80vw] mx-auto">
+                        <div className="absolute inset-x-0 top-0 lg:top-10 flex items-center justify-center pointer-events-none select-none overflow-hidden h-1/2 max-w-[80vw] mx-auto">
                             <AnimatePresence mode="wait">
                                 <motion.h1
                                     key={logisticsTerms[currentTextIndex]}
@@ -145,7 +145,7 @@ export default function LogisticsWebsite() {
                                 style={{ y: imageY }}
                                 src={HeroContainer}
                                 alt="EagleNet Shipping Container"
-                                className="w-full h-auto drop-shadow-2xl translate-y-10 lg:translate-y-20"
+                                className="w-full h-auto drop-shadow-2xl translate-y-2 lg:translate-y-8"
                             />
                         </motion.div>
                     </div>

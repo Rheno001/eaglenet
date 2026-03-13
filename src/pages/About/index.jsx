@@ -1,10 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Users, Globe, Target, Truck, Award, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { Users, Globe, Target, Truck, Award, Clock, ArrowRight, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import HeroContainer from "../../assets/hero-container-crane.png";
 import HaulageServices from "../../assets/haulage-services.webp";
 import EagleAbout from "../../assets/eagle-about.jpg";
+import CustomerComfort from "../../assets/customers.jpg";
+
+const FAQItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border border-gray-300 p-8 rounded-3xl hover:bg-gray-50 transition-all duration-300 bg-white shadow-sm">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex justify-between items-center w-full text-left focus:outline-none group"
+      >
+        <span className="text-xl font-black uppercase tracking-tighter text-gray-900 group-hover:text-[#3B1350] transition-colors">{question}</span>
+        {isOpen ? <ChevronUp className="w-6 h-6 text-[#3B1350]" /> : <ChevronDown className="w-6 h-6 text-gray-500" />}
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <p className="mt-4 text-gray-500 font-medium leading-relaxed">{answer}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 export default function About() {
   const { scrollY } = useScroll();
@@ -30,21 +59,21 @@ export default function About() {
         <div className="absolute inset-0 bg-[#3B1350]/80 mix-blend-multiply z-0"></div>
         <div className="absolute inset-0 bg-black/40 z-0"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex justify-start">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="max-w-2xl lg:max-w-3xl"
+            className="max-w-6xl mx-auto space-y-8"
           >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-1 bg-[#E31B23]"></div>
-              <span className="text-sm font-black uppercase tracking-widest text-white/80">About EagleNet</span>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-12 h-1 bg-white"></div>
+              <span className="text-sm font-black uppercase tracking-widest text-white/80">Our Vision</span>
             </div>
-            <h1 className="text-5xl lg:text-[6rem] font-black leading-[0.9] tracking-tighter uppercase mb-8">
-              Pioneering <br /> <span className="text-white/70">Logistics.</span>
+            <h1 className="text-5xl lg:text-[7rem] font-black leading-[0.9] tracking-tighter uppercase">
+              Pioneering Global Logistics.
             </h1>
-            <p className="text-lg lg:text-xl font-medium text-white/90 leading-relaxed">
+            <p className="text-xl lg:text-2xl font-medium text-white/90 leading-relaxed max-w-4xl mx-auto">
               We leverage advanced technology and a robust global network to redefine supply chain efficiency and reliability for businesses worldwide.
             </p>
           </motion.div>
@@ -71,7 +100,7 @@ export default function About() {
             <div className="lg:col-span-1 hidden lg:block h-full border-l border-gray-100 mx-auto"></div>
 
             <div className="lg:col-span-6 space-y-8">
-              <p className="text-base lg:text-lg text-gray-500 font-medium leading-relaxed">
+              <p className="text-lg lg:text-xl text-gray-500 font-medium leading-relaxed">
                 Eaglenet Logistics Services Ltd is a trusted name in freight forwarding, cargo handling, warehousing, and logistics solutions across Nigeria and beyond. Since our inception, we have remained dedicated to providing fast, efficient, and reliable door-to-door delivery services — ensuring that freight is always fulfilled, on time and with care.
                 <br /><br />
                 At Eaglenet, we believe logistics is more than just movement — it’s about connecting people, products, and possibilities. With a team of seasoned professionals, modern equipment, and a passion for excellence, we deliver integrated logistics and supply chain solutions tailored to your business needs.
@@ -175,38 +204,39 @@ export default function About() {
         </div>
       </section>
 
-      {/* Global Network Section */}
+      {/* Customer Comfort First Section */}
       <section className="py-24 lg:py-40 bg-black text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-24 items-center">
             <div className="space-y-12">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
-                <span className="text-sm font-black uppercase tracking-widest text-[#3B1350]">Global Network</span>
+                <span className="text-sm font-black uppercase tracking-widest text-[#3B1350]">Experience Excellence</span>
               </div>
               <h2 className="text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-none">
-                Present In <br /> 150+ Countries
+                Customer Comfort <br /> At Every Step
               </h2>
               <p className="text-xl text-white/60 font-medium leading-relaxed">
-                Our Hubs Are Strategically Located In Every Major Continent, Ensuring That Whether Your Cargo Is Moving From Shanghai To Lagos Or London To New York, It's Always In Safe Hands.
+                At Eaglenet, we prioritize your peace of mind. Our logistics solutions are designed to be stress-free, reliable, and tailored to your personal and business needs. We don't just move cargo; we deliver comfort and trust.
               </p>
               <div className="grid grid-cols-2 gap-8 text-sm font-black uppercase tracking-widest text-[#3B1350]">
                 <div className="space-y-4">
-                  <p>• 50+ Modern Warehouses</p>
-                  <p>• 1,200+ Fleet Vehicles</p>
+                  <p>• Stress-Free Relocation</p>
+                  <p>• 24/7 Dedicated Support</p>
                 </div>
                 <div className="space-y-4">
-                  <p>• 5,000+ Global Partners</p>
-                  <p>• 24/7 Support Hubs</p>
+                  <p>• Personalized Handling</p>
+                  <p>• Real-time Transparency</p>
                 </div>
               </div>
             </div>
-            <div className="relative aspect-square border border-white/10 flex items-center justify-center group overflow-hidden">
-              <div className="absolute inset-0 bg-linear-to-tr from-[#3B1350]/20 to-transparent"></div>
-              <div className="relative z-10 text-center space-y-4">
-                <Globe className="w-40 h-40 text-white/10 group-hover:text-[#3B1350]/40 transition-colors duration-700" />
-                <span className="block text-xl font-black uppercase tracking-tighter">Connecting The World</span>
-              </div>
+            <div className="relative aspect-square border border-white/10 group overflow-hidden rounded-3xl">
+              <img
+                src={CustomerComfort}
+                alt="Customer Comfort First"
+                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
+              />
+              <div className="absolute inset-0 bg-linear-to-tr from-[#3B1350]/40 to-transparent"></div>
             </div>
           </div>
         </div>
@@ -267,9 +297,9 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1">
             {[
               { name: "Emeka Johnson", role: "CEO & Founder", img: "/ceo.jpg" },
-              { name: "Amina Bello", role: "Head of Operations", img: "https://images.unsplash.com/photo-1670868720765-ad8f6a0e80ab?w=400&q=80" },
-              { name: "David Adeola", role: "Logistics Coordinator", img: "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?w=400&q=80" },
-              { name: "Chioma Nwankwo", role: "Customer Leads", img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80" },
+              { name: "Amina Bello", role: "Head of Operations", img: "" },
+              { name: "David Adeola", role: "Logistics Coordinator", img: "" },
+              { name: "Chioma Nwankwo", role: "Customer Leads", img: "" },
             ].map((member, i) => (
               <div key={i} className="relative aspect-3/4 overflow-hidden group">
                 <img src={member.img} alt={member.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
@@ -302,10 +332,7 @@ export default function About() {
               { q: "How can I track my shipment?", a: "You can track your shipment securely on our website using the Tracking ID provided." },
               { q: "Do you handle custom clearance?", a: "Yes, we handle end-to-end custom clearance and regulatory compliance for cross-border trade." }
             ].map((faq, idx) => (
-              <div key={idx} className="bg-white p-8 border border-gray-200">
-                <h3 className="text-2xl font-black text-black mb-4">{faq.q}</h3>
-                <p className="text-gray-600 font-medium">{faq.a}</p>
-              </div>
+              <FAQItem key={idx} question={faq.q} answer={faq.a} />
             ))}
           </div>
         </div>

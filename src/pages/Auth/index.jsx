@@ -1,10 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn, UserPlus, Eye, EyeOff, Mail } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../../context/AuthContext';
 import { ROLES } from '../../utils/roles';
+import logo from "../../assets/eaglenet-logo-removebg-preview.png";
 
 export default function Auth() {
   const { login } = useContext(AuthContext);
@@ -58,7 +60,6 @@ export default function Auth() {
   };
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // ✅ Forgot password submission
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return setError('Please enter your email address');
@@ -90,7 +91,6 @@ export default function Auth() {
     }
   };
 
-  // ✅ Login/Signup submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -116,7 +116,6 @@ export default function Auth() {
       });
       const result = response.data;
 
-      // Support both { success, token } and { token } response shapes
       const token = result.token || result.accessToken || result.data?.token;
       const isSuccess = result.success === true || result.status === 'success' || !!token;
 
@@ -135,29 +134,16 @@ export default function Auth() {
         login(userData, token);
         localStorage.setItem('jwt', token);
 
-        if (isLogin) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Welcome back!',
-            text: result.message || 'Login successful',
-            timer: 1500,
-            showConfirmButton: false,
-          }).then(() => {
-            const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
-            navigate(redirectPath);
-          });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Account Created!',
-            text: result.message || 'Registration successful. Welcome to Eaglenet!',
-            timer: 1500,
-            showConfirmButton: false,
-          }).then(() => {
-            const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
-            navigate(redirectPath);
-          });
-        }
+        Swal.fire({
+          icon: 'success',
+          title: isLogin ? 'Welcome back!' : 'Account Created!',
+          text: result.message || (isLogin ? 'Login successful' : 'Registration successful'),
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => {
+          const redirectPath = userData.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard';
+          navigate(redirectPath);
+        });
 
         setFormData({ firstName: '', lastName: '', email: '', phone: '', password: '' });
       } else {
@@ -176,168 +162,196 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen mt-10 flex items-center justify-center bg-gray-50 px-4 py-10 text-gray-900">
-      <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          {isLogin ? (
-            <LogIn className="mx-auto h-10 w-10 text-gray-900" />
-          ) : (
-            <UserPlus className="mx-auto h-10 w-10 text-gray-900" />
-          )}
-          <h1 className="text-3xl font-bold mt-3">
-            {isLogin ? 'Welcome Back' : 'Create Your Account'}
-          </h1>
-          <p className="text-gray-500 mt-2">
-            {isLogin
-              ? 'Sign in to continue'
-              : 'Join us today to manage your logistics easily'}
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] font-sans selection:bg-[#3B1350] selection:text-white pt-20">
+      {/* Background Decorative Elements */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#3B1350]/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#3B1350]/5 rounded-full blur-3xl"></div>
+      </div>
 
-        {/* Forgot Password Form */}
-        {showForgot ? (
-          <form onSubmit={handleForgotPassword} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Email Address</label>
-              <input
-                type="email"
-                value={forgotEmail}
-                onChange={(e) => setForgotEmail(e.target.value)}
-                required
-                className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-              />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex justify-center">
+        {/* Auth Card Only */}
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-full max-w-md bg-white p-10 lg:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 rounded-3xl"
+        >
+          <div className="mb-10 text-center">
+            <div className="mb-10 flex justify-center">
+              <Link to="/">
+                <img src={logo} alt="EagleNet" className="h-12 w-auto" />
+              </Link>
             </div>
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
-            >
-              {loading ? 'Sending...' : 'Send Reset Link'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForgot(false)}
-              className="w-full mt-2 text-gray-700 hover:underline"
-            >
-              Back to Login
-            </button>
-          </form>
-        ) : (
-          <>
-            {/* Login/Signup Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium">First Name</label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium">Last Name</label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      required
-                      placeholder="e.g. +234 800 000 0000"
-                      className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
-                    />
-                  </div>
-                </div>
-              )}
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-black mb-4">
+              {showForgot ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-gray-500 font-medium">
+              {showForgot
+                ? 'Enter your email to receive a reset link.'
+                : isLogin
+                  ? 'Sign in to access your dashboard'
+                  : 'Join the EagleNet logistics network'}
+            </p>
+          </div>
 
-              <div>
-                <label className="text-sm font-medium">Email Address</label>
+          {showForgot ? (
+            <form onSubmit={handleForgotPassword} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">Email Address</label>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                  placeholder="john@example.com"
+                  className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl"
+                />
+              </div>
+              {error && <p className="text-red-600 text-sm font-bold bg-red-50 p-4 rounded-xl">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-between group bg-[#3B1350] text-white p-2 pl-8 rounded-xl font-bold transition-all hover:bg-[#4B1D66] disabled:opacity-50"
+              >
+                <span className="uppercase tracking-widest mt-1">{loading ? 'Sending...' : 'Send Link'}</span>
+                <div className="w-12 h-12 bg-white/10 flex items-center justify-center text-white group-hover:bg-white/20 transition-all rounded-lg">
+                  <Mail className="w-5 h-5" />
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForgot(false)}
+                className="w-full text-center text-sm font-black uppercase tracking-widest text-gray-400 hover:text-[#3B1350] transition-colors"
+              >
+                Back to Login
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <AnimatePresence mode="wait">
+                {!isLogin && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="space-y-6 overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">First Name</label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleChange}
+                          required
+                          placeholder="John"
+                          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">Last Name</label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleChange}
+                          required
+                          placeholder="Doe"
+                          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">Phone Number</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        placeholder="e.g. +234 800 000 0000"
+                        className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">Email Address</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 focus:border-gray-900 outline-none"
+                  placeholder="john@example.com"
+                  className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl"
                 />
               </div>
 
-              <div className="relative">
-                <label className="text-sm font-medium">Password</label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 w-full border-2 border-gray-200 rounded-lg px-4 py-2 pr-10 focus:border-gray-900 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="absolute right-3 top-10 text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+              <div className="relative space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-black uppercase tracking-widest text-[#3B1350]">Password</label>
+                  {isLogin && (
+                    <button
+                      type="button"
+                      onClick={() => setShowForgot(true)}
+                      className="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#3B1350] transition-colors"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="••••••••"
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 rounded-xl pr-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#3B1350] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
-              {error && <p className="text-red-600 text-sm">{error}</p>}
+              {error && <p className="text-red-600 text-sm font-bold bg-red-50 p-4 rounded-xl">{error}</p>}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
+                className="w-full flex items-center justify-between group bg-[#3B1350] text-white p-2 pl-8 rounded-xl font-bold transition-all hover:bg-[#4B1D66] disabled:opacity-50"
               >
-                {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
+                <span className="uppercase tracking-widest mt-1">{loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}</span>
+                <div className="w-12 h-12 bg-white/10 flex items-center justify-center text-white group-hover:bg-white/20 transition-all rounded-lg">
+                  <ArrowRight className="w-5 h-5" />
+                </div>
               </button>
-            </form>
 
-            {/* Forgot Password Link */}
-            {isLogin && (
-              <div className="text-center mt-3">
-                <button
-                  onClick={() => setShowForgot(true)}
-                  className="text-sm text-gray-700 hover:underline"
-                >
-                  Forgot password?
-                </button>
-              </div>
-            )}
-
-            {/* Toggle Login/Signup */}
-            <div className="text-center mt-6">
-              <p className="text-gray-600 text-sm">
-                {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+              <div className="pt-4 text-center">
                 <button
                   type="button"
                   onClick={toggleForm}
-                  className="text-gray-900 font-medium hover:underline"
+                  className="text-sm font-black uppercase tracking-widest text-gray-400 hover:text-[#3B1350] transition-colors group"
                 >
-                  {isLogin ? 'Sign Up' : 'Sign In'}
+                  {isLogin ? "Don't have an account?" : "Already have an account?"}
+                  <span className="ml-2 text-[#3B1350] group-hover:underline">
+                    {isLogin ? 'Sign Up' : 'Sign In'}
+                  </span>
                 </button>
-              </p>
-            </div>
-          </>
-        )}
+              </div>
+            </form>
+          )}
+        </motion.div>
       </div>
     </div>
   );
