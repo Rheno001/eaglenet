@@ -120,10 +120,28 @@ export default function AdminServices() {
     const n = name.toLowerCase();
     if (n.includes('air')) return <Wind className="text-sky-500" />;
     if (n.includes('ocean') || n.includes('sea')) return <Anchor className="text-blue-500" />;
-    if (n.includes('haulage') || n.includes('truck')) return <Truck className="text-amber-500" />;
-    if (n.includes('warehousing')) return <Box className="text-indigo-500" />;
-    if (n.includes('customs')) return <Shield className="text-emerald-500" />;
+    if (n.includes('haulage') || n.includes('truck') || n.includes('distribution')) return <Truck className="text-amber-500" />;
+    if (n.includes('warehousing') || n.includes('storage')) return <Box className="text-indigo-500" />;
+    if (n.includes('customs') || n.includes('clearing')) return <Shield className="text-emerald-500" />;
+    if (n.includes('removal') || n.includes('relocation') || n.includes('household')) return <Package className="text-rose-500" />;
     return <Package className="text-slate-400" />;
+  };
+
+  const getServiceDescription = (name) => {
+    const n = name.toLowerCase();
+    if (n.includes('removal') || n.includes('relocation') || n.includes('household')) 
+      return "Efficient household and office relocation services, handling, transportation, and delivery solutions.";
+    if (n.includes('air freight')) 
+      return "Fast, reliable global shipping with secure handling and tailored solutions for urgent needs.";
+    if (n.includes('ocean freight')) 
+      return "Reliable ocean freight with flexible schedules and cost-effective solutions for global transport.";
+    if (n.includes('haulage')) 
+      return "Timely transportation of goods nationwide using a modern fleet and skilled drivers.";
+    if (n.includes('customs')) 
+      return "Fast customs clearing with accurate documentation, duty processing, and compliance.";
+    if (n.includes('warehousing')) 
+      return "Secure, organized warehousing with inventory management and efficient distribution.";
+    return "Comprehensive logistics infrastructure to power your business growth across global markets.";
   };
 
   return (
@@ -134,16 +152,16 @@ export default function AdminServices() {
              <div className="p-2.5 bg-slate-900 rounded-2xl">
                 <Settings className="text-white" size={24} />
              </div>
-             Service Catalog
+             Services
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Global logistics clearance types and service registry.</p>
+          <p className="text-slate-500 font-medium mt-1">Advanced Logistics Solutions for household and commercial needs.</p>
         </div>
         <div className="flex flex-col md:flex-row items-center gap-4">
            <button 
              onClick={handleCreateService}
              className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 text-[10px] uppercase tracking-widest"
            >
-              <Plus size={20} /> Initialize New Service
+              <Plus size={20} /> Register Service
            </button>
            <div className="flex items-center gap-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
               <Activity size={16} />
@@ -212,7 +230,10 @@ export default function AdminServices() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight leading-tight">{service.serviceName}</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Code: {service.id.substring(0, 8)}</p>
+                    <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed h-12 overflow-hidden line-clamp-2">
+                       {getServiceDescription(service.serviceName)}
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-3">Registry ID: {service.id.substring(0, 8)}</p>
                   </div>
                   
                   <div className="pt-6 border-t border-slate-50 flex items-center justify-between">

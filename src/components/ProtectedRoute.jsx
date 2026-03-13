@@ -32,7 +32,7 @@ function ProtectedRoute({ allowedRoles }) {
     decision: user && allowedRoles?.some(r => r.toLowerCase() === user.role?.toLowerCase()) ? 'GRANTED' : 'DENIED'
   });
 
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-50">
         <div className="flex flex-col items-center gap-4">

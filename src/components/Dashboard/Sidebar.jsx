@@ -33,18 +33,19 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
   }, []);
 
   const iconMap = {
-    'Overview': LayoutDashboard,
-    'Shipments': Package,
-    'Orders': Package,
-    'Book Shipment': Package,
-    'Track Package': Search,
-    'Payment': CreditCard,
-    'Users': Users,
+    'Home': LayoutDashboard,
+    'Shipment': Package,
+    'Booking': Package,
+    'Track Shipment': Search,
+    'Order': Package,
+    'User': Users,
+    'Services': Settings,
     'Reports': BarChart2,
-    'Settings': Settings,
-    'Manage Admins': ShieldAlert,
+    'Payment': CreditCard,
+    'Global Networks': TrendingUp,
+    'Admin Management': ShieldAlert,
     'Notifications': Bell,
-    'Analytics': TrendingUp
+    'Settings': Settings
   };
 
   const menuItems = MENU_ITEMS[user?.role] || [];
@@ -57,9 +58,9 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 
      text-xs md:text-sm font-bold tracking-tight whitespace-nowrap
-     ${isActive 
-       ? "bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20" 
-       : "text-slate-400 hover:bg-slate-800 hover:text-white"}
+     ${isActive
+      ? "bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20"
+      : "text-slate-400 hover:bg-slate-800 hover:text-white"}
      ${isCollapsed ? "justify-center px-2 md:px-3" : ""}`;
 
   const sidebarWidth = isCollapsed ? "w-14 md:w-16" : "w-56 md:w-64";
@@ -104,7 +105,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
           {/* Logo Section */}
           <div className="flex items-center gap-3 mb-6">
             <div className="bg-white p-1.5 rounded-xl shadow-inner">
-               <img src={logo} alt="EagleNet" className="w-8 h-8 object-contain"/>
+              <img src={logo} alt="EagleNet" className="w-8 h-8 object-contain" />
             </div>
             {!isCollapsed && (
               <div className="min-w-0">
@@ -138,7 +139,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
               <NavLink
                 key={item.path}
                 to={item.path}
-                end={item.path === "/dashboard"}
+                end={item.path === "/customer-dashboard" || item.path === "/admin-dashboard"}
                 className={linkClass}
                 onClick={() => isMobile && toggleSidebar()}
               >

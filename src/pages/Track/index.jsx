@@ -16,9 +16,64 @@ import {
   Building,
   ChevronRight,
   ShieldCheck,
-  Zap
+  Zap,
+  Warehouse,
+  Box,
+  Activity,
+  XCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const MILESTONES = [
+  { key: 'ORDER_PLACED', label: 'Order Placed', icon: Clock, desc: 'Booking received.' },
+  { key: 'PENDING_CONFIRMATION', label: 'Confirmation Pending', icon: Activity, desc: 'Reviewing details.' },
+  { key: 'WAITING_TO_BE_SHIPPED', label: 'Processing', icon: Box, desc: 'Being documented.' },
+  { key: 'SHIPPED', label: 'In Transit', icon: Truck, desc: 'Moving to destination.' },
+  { key: 'AVAILABLE_FOR_PICKUP', label: 'At Terminal', icon: Warehouse, desc: 'Ready for collection.' },
+  { key: 'DELIVERED', label: 'Delivered', icon: CheckCircle2, desc: 'Success.' },
+];
+
+const MilestoneTracker = ({ currentStatus }) => {
+  const currentIndex = MILESTONES.findIndex(m => m.key === currentStatus);
+  
+  return (
+    <div className="py-8 px-4 overflow-x-auto">
+      <div className="min-w-[600px] lg:min-w-0 relative">
+        {/* Background Line */}
+        <div className="absolute left-0 top-[19px] right-0 h-0.5 bg-gray-100" />
+        
+        <div className="flex justify-between gap-4 relative">
+          {MILESTONES.map((step, index) => {
+            const isCompleted = index < currentIndex || currentStatus === 'DELIVERED';
+            const isCurrent = index === currentIndex && currentStatus !== 'DELIVERED';
+            const Icon = step.icon;
+            
+            return (
+              <div key={step.key} className="flex flex-col items-center text-center w-full group">
+                <div className="relative z-10 flex items-center justify-center mb-4">
+                  <div className={`
+                    w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg
+                    ${isCompleted ? 'bg-emerald-600 text-white scale-110' : 
+                      isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-125 animate-pulse' : 
+                      'bg-white text-gray-300 border-2 border-gray-100 group-hover:border-gray-300'}
+                  `}>
+                    <Icon size={20} />
+                  </div>
+                </div>
+                
+                <h4 className={`text-[9px] font-black uppercase tracking-widest mb-1 transition-colors leading-tight ${
+                  isCompleted ? 'text-emerald-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'
+                }`}>
+                  {step.label}
+                </h4>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function TrackShipment() {
   const { trackingId: urlTrackingId } = useParams();
@@ -65,20 +120,27 @@ export default function TrackShipment() {
   };
 
   const getStatusColor = (status) => {
-     switch (status?.toLowerCase()) {
-       case "delivered": return "text-green-600 bg-green-50 border-green-200";
-       case "pending": return "text-yellow-600 bg-yellow-50 border-yellow-200";
-       case "in transit": return "text-blue-600 bg-blue-50 border-blue-200";
-       case "delayed": return "text-red-600 bg-red-50 border-red-200";
-       default: return "text-gray-600 bg-gray-50 border-gray-200";
-     }
+    switch (status?.toUpperCase()) {
+      case "ORDER_PLACED": return "text-slate-600 bg-slate-50 border-slate-200";
+      case "PENDING_CONFIRMATION": return "text-amber-600 bg-amber-50 border-amber-200";
+      case "WAITING_TO_BE_SHIPPED": return "text-indigo-600 bg-indigo-50 border-indigo-200";
+      case "SHIPPED": return "text-blue-600 bg-blue-50 border-blue-200";
+      case "AVAILABLE_FOR_PICKUP": return "text-teal-600 bg-teal-50 border-teal-200";
+      case "DELIVERED": return "text-green-600 bg-green-50 border-green-200";
+      case "CANCELLED": return "text-red-600 bg-red-50 border-red-200";
+      default: return "text-gray-600 bg-gray-50 border-gray-200";
+    }
   };
 
   const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case "delivered": return <CheckCircle2 className="w-5 h-5" />;
-      case "pending": return <Clock className="w-5 h-5" />;
-      case "in transit": return <Truck className="w-5 h-5" />;
+    switch (status?.toUpperCase()) {
+      case "ORDER_PLACED": return <Clock className="w-5 h-5" />;
+      case "PENDING_CONFIRMATION": return <Activity className="w-5 h-5" />;
+      case "WAITING_TO_BE_SHIPPED": return <Package className="w-5 h-5" />;
+      case "SHIPPED": return <Truck className="w-5 h-5" />;
+      case "AVAILABLE_FOR_PICKUP": return <Warehouse className="w-5 h-5" />;
+      case "DELIVERED": return <CheckCircle2 className="w-5 h-5" />;
+      case "CANCELLED": return <XCircle className="w-5 h-5" />;
       default: return <Package className="w-5 h-5" />;
     }
   };
@@ -196,6 +258,11 @@ export default function TrackShipment() {
                        {shipment.destination || shipment.destinationCity}
                      </div>
                    </div>
+                </div>
+
+                <div className="border-t border-gray-100 p-6 lg:p-8 bg-slate-50/50">
+                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Milestone Progress</h3>
+                  <MilestoneTracker currentStatus={shipment.status} />
                 </div>
               </div>
 

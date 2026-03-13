@@ -25,8 +25,28 @@ import {
   Activity
 } from "lucide-react";
 
+const StatCard = ({ icon: Icon, label, value, trend, colorClass }) => (
+  <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+    <div className="flex items-center justify-between mb-2">
+      <div className={`p-2 rounded ${colorClass} bg-opacity-10`}>
+        <Icon size={16} className={`${colorClass.replace('bg-', 'text-')}`} />
+      </div>
+      <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+        <TrendingUp size={10} />
+        <span>{trend}</span>
+      </div>
+    </div>
+    <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">{label}</p>
+    <div className="flex items-baseline justify-between">
+      <h3 className="text-lg font-bold text-gray-900 leading-none">
+        {typeof value === 'number' ? value.toLocaleString() : value}
+      </h3>
+      <ArrowUpRight size={12} className="text-gray-300" />
+    </div>
+  </div>
+);
+
 export default function Overview() {
-  const [pieFilter, setPieFilter] = useState("All");
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,
@@ -64,38 +84,15 @@ export default function Overview() {
       }
     };
     fetchStats();
+    
+    // Auto-refresh stats every 60 seconds
+    const interval = setInterval(fetchStats, 60000);
+    return () => clearInterval(interval);
   }, []);
 
-  const shipmentDataAll = [
-    { name: "Pending", value: stats.pending_shipments, fill: "#f59e0b" },
-    { name: "Delivered", value: stats.delivered_shipments, fill: "#10b981" },
-    { name: "In Transit", value: stats.in_transit_shipments, fill: "#3b82f6" },
-  ];
 
-  const shipmentData = pieFilter === "All"
-    ? shipmentDataAll
-    : shipmentDataAll.filter((d) => d.name === pieFilter);
 
-  const StatCard = ({ icon: Icon, label, value, trend, colorClass }) => (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-2">
-        <div className={`p-2 rounded ${colorClass} bg-opacity-10`}>
-          <Icon size={16} className={`${colorClass.replace('bg-', 'text-')}`} />
-        </div>
-        <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600">
-          <TrendingUp size={10} />
-          <span>{trend}</span>
-        </div>
-      </div>
-      <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">{label}</p>
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-lg font-bold text-gray-900 leading-none">
-          {value.toLocaleString()}
-        </h3>
-        <ArrowUpRight size={12} className="text-gray-300" />
-      </div>
-    </div>
-  );
+
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -123,8 +120,8 @@ export default function Overview() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Overview</h1>
-          <p className="text-gray-500 text-sm">Real-time logistics analytics</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Home</h1>
+          <p className="text-gray-500 text-sm">Real-time logistics analytics & command</p>
         </div>
         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 text-sm font-semibold text-gray-700">
           <CalendarIcon size={16} />

@@ -5,8 +5,15 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    try {
+      const storedUser = localStorage.getItem("user");
+      const jwt = localStorage.getItem("jwt");
+      if (!jwt || !storedUser) return null;
+      return JSON.parse(storedUser);
+    } catch (e) {
+      console.error("Failed to parse stored user", e);
+      return null;
+    }
   });
   const [loading, setLoading] = useState(true);
 
@@ -35,26 +42,37 @@ export const AuthProvider = ({ children }) => {
     const verifyToken = async () => {
       const token = localStorage.getItem("jwt");
       const storedUser = localStorage.getItem("user");
+      
+      console.log("🔑 [AuthContext Boot]", { hasToken: !!token, hasUser: !!storedUser, url: window.location.href });
 
-      if (token && storedUser) {
+      if (token) {
         try {
-          const parsedUser = JSON.parse(storedUser);
-          const normalizedUser = { ...parsedUser, role: parsedUser.role?.toLowerCase() };
-          setUser(normalizedUser);
-
-          // Optional: Verify with backend if endpoint exists
-          fetch("https://eaglenet-eb9x.onrender.com/verify-token.php", {
-            method: 'POST',
+          const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+          const response = await fetch(`${apiBase}/api/auth/me`, {
+            method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
-          }).then(res => res.json())
-            .then(data => {
-              if (!data.success) logout();
-            }).catch(() => {});
-            
+          });
+
+          console.log("🔍 [AuthContext Verify Response]", { ok: response.ok, status: response.status });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === "success" && data.data) {
+              const freshUser = { ...data.data, role: data.data.role?.toLowerCase() };
+              setUser(freshUser);
+              localStorage.setItem("user", JSON.stringify(freshUser));
+            }
+          } else if (response.status === 401 || response.status === 403) {
+            console.warn("🚫 [AuthContext] Session expired or invalid token. Logging out.");
+            logout();
+          }
         } catch (e) {
-          console.error("Auth state recovery failed:", e);
-          logout();
+          console.error("⚠️ [AuthContext] Verify error (network?):", e);
         }
+      } else if (storedUser) {
+        // We have a user object but NO token? This is inconsistent.
+        console.warn("⚠️ [AuthContext] User found in storage but JWT is missing. Clearing.");
+        logout();
       }
       setLoading(false);
     };
