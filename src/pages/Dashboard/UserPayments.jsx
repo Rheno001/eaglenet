@@ -297,7 +297,7 @@ export default function UserPayments() {
       {/* DETAIL MODAL */}
       {showModal && selectedPayment && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in duration-300">
-           <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
+           <div className="bg-white rounded-[3rem] w-full max-w-5xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
               {/* Modal Header */}
               <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
                  <div className="flex items-center gap-4">
