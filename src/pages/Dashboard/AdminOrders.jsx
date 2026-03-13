@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, TrendingUp
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, TrendingUp, Copy, Check
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -12,6 +12,27 @@ export default function Orders() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(text);
+      setTimeout(() => setCopiedId(null), 2000);
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
+
+      Toast.fire({
+        icon: 'success',
+        title: 'Tracking ID copied'
+      });
+    });
+  };
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -221,7 +242,18 @@ export default function Orders() {
                 const StatusIcon = statusConfig[order.status]?.icon || Clock;
                 return (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">{order.trackingId}</td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">
+                      <div className="flex items-center gap-2">
+                        <span>{order.trackingId}</span>
+                        <button 
+                          onClick={() => copyToClipboard(order.trackingId)}
+                          className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
+                          title="Copy Tracking ID"
+                        >
+                          {copiedId === order.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden lg:table-cell">
                       <div className="font-medium text-gray-900">{order.fullName}</div>
                       <div className="text-gray-500 text-xs">{order.email}</div>
@@ -309,7 +341,16 @@ export default function Orders() {
               <div className="bg-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between border-b border-gray-200">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
-                  <p className="text-gray-500 text-sm mt-1">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-gray-500 text-sm">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
+                    <button 
+                      onClick={() => copyToClipboard(selectedOrder.trackingId)}
+                      className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
+                      title="Copy Tracking ID"
+                    >
+                      {copiedId === selectedOrder.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    </button>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}

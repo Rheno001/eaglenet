@@ -22,7 +22,9 @@ import {
   History,
   Phone,
   LayoutDashboard,
-  DollarSign
+  DollarSign,
+  Copy,
+  Check
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -43,6 +45,27 @@ export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(text);
+      setTimeout(() => setCopiedId(null), 2000);
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
+
+      Toast.fire({
+        icon: 'success',
+        title: 'ID copied'
+      });
+    });
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -444,7 +467,19 @@ export default function Users() {
                                   {ship.status}
                                 </span>
                               </div>
-                              <p className="font-bold text-slate-900 group-hover:text-white text-lg">{ship.trackingId}</p>
+                              <div className="flex items-center justify-between mt-1">
+                                <p className="font-bold text-slate-900 group-hover:text-white text-lg">{ship.trackingId}</p>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyToClipboard(ship.trackingId);
+                                  }}
+                                  className="p-1.5 bg-white/50 group-hover:bg-white/20 rounded-lg transition-colors text-slate-400 group-hover:text-white/60 hover:text-slate-900 group-hover:hover:text-white"
+                                  title="Copy Tracking ID"
+                                >
+                                  {copiedId === ship.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                </button>
+                              </div>
                               <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 group-hover:text-slate-500 uppercase tracking-widest mt-1">
                                 <MapPin size={10} />
                                 <span>{ship.origin} → {ship.destination}</span>

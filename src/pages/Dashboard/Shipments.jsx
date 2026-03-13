@@ -12,8 +12,11 @@ import {
   User,
   X,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Copy,
+  Check
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function Shipment() {
   const [shipments, setShipments] = useState([]);
@@ -25,6 +28,27 @@ export default function Shipment() {
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [sortBy, setSortBy] = useState("date");
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(text);
+      setTimeout(() => setCopiedId(null), 2000);
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
+
+      Toast.fire({
+        icon: 'success',
+        title: 'Tracking ID copied'
+      });
+    });
+  };
 
   useEffect(() => {
     fetchShipments();
@@ -310,7 +334,19 @@ export default function Shipment() {
                   {filteredShipments.map((item) => (
                     <tr key={item.trackingId} className="hover:bg-gray-50 transition">
                       <td className="px-6 py-4 text-sm font-mono text-gray-800">
-                        {item.trackingId}
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">{item.trackingId}</span>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(item.trackingId);
+                            }}
+                            className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-400 hover:text-gray-900"
+                            title="Copy Tracking ID"
+                          >
+                            {copiedId === item.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900 hidden lg:table-cell">
                         {item.fullName}
@@ -387,7 +423,16 @@ export default function Shipment() {
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
                       <Truck className="w-5 h-5 text-gray-500" /> Tracking ID
                     </p>
-                    <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.trackingId}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <p className="text-lg text-gray-900 font-semibold">{selectedShipment.trackingId}</p>
+                      <button 
+                        onClick={() => copyToClipboard(selectedShipment.trackingId)}
+                        className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-400 hover:text-gray-900"
+                        title="Copy Tracking ID"
+                      >
+                        {copiedId === selectedShipment.trackingId ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
