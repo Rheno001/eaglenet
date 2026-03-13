@@ -24,8 +24,11 @@ import {
    ShieldCheck,
    Mail,
    MapPin,
-   Truck
+   Truck,
+   Copy,
+   Check
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function AdminPayments() {
    const [payments, setPayments] = useState([]);
@@ -45,6 +48,27 @@ export default function AdminPayments() {
    const [searchTerm, setSearchTerm] = useState("");
    const [filterStatus, setFilterStatus] = useState("all");
    const [currentPage, setCurrentPage] = useState(1);
+   const [copiedId, setCopiedId] = useState(null);
+
+   const copyToClipboard = (text) => {
+      navigator.clipboard.writeText(text).then(() => {
+         setCopiedId(text);
+         setTimeout(() => setCopiedId(null), 2000);
+         
+         const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+         });
+
+         Toast.fire({
+            icon: 'success',
+            title: 'ID copied'
+         });
+      });
+   };
 
    // Detail View State
    const [selectedPayment, setSelectedPayment] = useState(null);
@@ -283,12 +307,23 @@ export default function AdminPayments() {
                                     <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-slate-900 group-hover:text-white transition-all">
                                        <Receipt size={16} />
                                     </div>
-                                    <div className="min-w-0">
-                                       <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">{p.paymentId || p.id.substring(0, 12)}</p>
-                                       <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-tighter flex items-center gap-1">
-                                          REF: <span className="truncate max-w-[100px]">{p.reference || 'N/A'}</span>
-                                       </p>
-                                    </div>
+                                     <div className="min-w-0">
+                                        <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">{p.paymentId || p.id.substring(0, 12)}</p>
+                                        <div className="flex items-center gap-1 mt-0.5">
+                                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                              REF: <span className="truncate max-w-[100px]">{p.reference || 'N/A'}</span>
+                                           </p>
+                                           {p.reference && (
+                                              <button 
+                                                 onClick={() => copyToClipboard(p.reference)}
+                                                 className="p-1 hover:bg-slate-200 rounded transition-colors text-slate-400"
+                                                 title="Copy Reference"
+                                              >
+                                                 {copiedId === p.reference ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                                              </button>
+                                           )}
+                                        </div>
+                                     </div>
                                  </div>
                               </td>
                               <td className="px-8 py-6">
@@ -418,9 +453,18 @@ export default function AdminPayments() {
                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 border-b border-slate-100">
                               <div className="space-y-4">
                                  <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Payment Reference</p>
-                                    <p className="text-2xl font-black text-slate-900 tracking-tighter">{selectedPayment.reference}</p>
-                                    <p className="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">Global ID: {selectedPayment.paymentId}</p>
+                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Payment Reference</p>
+                                     <div className="flex items-center gap-2">
+                                        <p className="text-2xl font-black text-slate-900 tracking-tighter">{selectedPayment.reference}</p>
+                                        <button 
+                                           onClick={() => copyToClipboard(selectedPayment.reference)}
+                                           className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors text-slate-400"
+                                           title="Copy Reference"
+                                        >
+                                           {copiedId === selectedPayment.reference ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                                        </button>
+                                     </div>
+                                     <p className="text-xs font-bold text-indigo-500 mt-1 uppercase tracking-widest">Global ID: {selectedPayment.paymentId}</p>
                                  </div>
                                  <div className="flex items-center gap-8">
                                     <div>
@@ -482,10 +526,19 @@ export default function AdminPayments() {
                                        <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center text-white">
                                           <Package size={28} />
                                        </div>
-                                       <div>
-                                          <p className="font-bold text-slate-900 text-lg">{selectedPayment.shipment?.trackingId}</p>
-                                          <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{selectedPayment.shipment?.status}</p>
-                                       </div>
+                                        <div>
+                                           <div className="flex items-center gap-2">
+                                              <p className="font-bold text-slate-900 text-lg">{selectedPayment.shipment?.trackingId}</p>
+                                              <button 
+                                                 onClick={() => copyToClipboard(selectedPayment.shipment?.trackingId)}
+                                                 className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors text-slate-400"
+                                                 title="Copy Tracking ID"
+                                              >
+                                                 {copiedId === selectedPayment.shipment?.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                                              </button>
+                                           </div>
+                                           <p className="text-[10px] font-black text-teal-600 uppercase tracking-widest">{selectedPayment.shipment?.status}</p>
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4 pt-2">
                                        <div className="space-y-1">
