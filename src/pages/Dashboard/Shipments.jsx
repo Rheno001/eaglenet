@@ -18,7 +18,9 @@ import {
   Warehouse,
   Box,
   Home,
-  ShieldCheck
+  ShieldCheck,
+  TrendingUp,
+  XCircle
 } from "lucide-react";
 
 const MILESTONES = [
@@ -256,46 +258,46 @@ export default function Shipment() {
 
   const getStatusBadge = (status) => {
     const base = "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1";
-    const s = typeof status === 'string' ? status.toLowerCase() : '';
+    const s = typeof status === 'string' ? status.toUpperCase() : '';
     
     switch (s) {
-      case "order_placed":
+      case "ORDER_PLACED":
         return (
           <span className={`${base} bg-slate-100 text-slate-700 uppercase font-black text-[10px]`}>
             <Clock className="w-3 h-3" /> Order Placed
           </span>
         );
-      case "pending_confirmation":
+      case "PENDING_CONFIRMATION":
         return (
           <span className={`${base} bg-amber-100 text-amber-700 uppercase font-black text-[10px]`}>
             <Activity className="w-3 h-3" /> Confirmation Pending
           </span>
         );
-      case "waiting_to_be_shipped":
+      case "WAITING_TO_BE_SHIPPED":
         return (
           <span className={`${base} bg-indigo-100 text-indigo-700 uppercase font-black text-[10px]`}>
             <Package className="w-3 h-3" /> Processing
           </span>
         );
-      case "shipped":
+      case "SHIPPED":
         return (
           <span className={`${base} bg-blue-100 text-blue-700 uppercase font-black text-[10px]`}>
             <Truck className="w-3 h-3" /> In Transit
           </span>
         );
-      case "available_for_pickup":
+      case "AVAILABLE_FOR_PICKUP":
         return (
           <span className={`${base} bg-teal-100 text-teal-700 uppercase font-black text-[10px]`}>
-            <MapPin className="w-3 h-3" /> Available for Pickup
+            <Warehouse className="w-3 h-3" /> At Terminal
           </span>
         );
-      case "delivered":
+      case "DELIVERED":
         return (
           <span className={`${base} bg-green-100 text-green-700 uppercase font-black text-[10px]`}>
             <CheckCircle className="w-3 h-3" /> Delivered
           </span>
         );
-      case "cancelled":
+      case "CANCELLED":
         return (
           <span className={`${base} bg-red-100 text-red-700 uppercase font-black text-[10px]`}>
             <XCircle className="w-3 h-3" /> Cancelled
@@ -304,7 +306,7 @@ export default function Shipment() {
       default:
         return (
           <span className={`${base} bg-gray-100 text-gray-600`}>
-             {typeof status === 'string' ? status : "Unknown"}
+            {status || "Unknown"}
           </span>
         );
     }
@@ -329,10 +331,10 @@ export default function Shipment() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Freight Management
+            Shipment
           </h1>
           <p className="text-gray-600">
-            Track your active cargo and manage logistics settlements
+            Monitor and oversee your active shipments
           </p>
         </div>
 
@@ -394,7 +396,6 @@ export default function Shipment() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500"
               >
                 <option value="date">Latest First</option>
-                {/*<option value="name">Customer Name</option>*/}
                 <option value="weight">Weight</option>
               </select>
             </div>
@@ -412,7 +413,7 @@ export default function Shipment() {
                       Tracking ID
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
-                      Account
+                      Customer
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Route
@@ -470,7 +471,7 @@ export default function Shipment() {
                             if (selectedShipment?.id === item.id) {
                               setSelectedShipment(null);
                             } else {
-                              setSelectedShipment(item); // Set immediate feedback
+                              setSelectedShipment(item);
                               fetchShipmentDetails(item.id);
                             }
                           }}
@@ -538,7 +539,7 @@ export default function Shipment() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium flex items-center gap-2">
-                       Account
+                      <User className="w-5 h-5 text-gray-500" /> Customer
                     </p>
                     <p className="text-lg text-gray-900 font-semibold mt-2">{selectedShipment.fullName}</p>
                   </div>
@@ -626,16 +627,22 @@ export default function Shipment() {
                       <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                      <p className="text-sm text-gray-600 font-medium">Total Weight</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight} kg</p>
+                      <p className="text-sm text-gray-600 font-medium">Weight</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.weight || 0} kg</p>
                     </div>
                     <div className="lg:col-span-2">
-                      <p className="text-sm text-gray-600 font-medium mb-2">Item Details</p>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
-                        <p className="text-gray-700 leading-relaxed italic">
-                          {selectedShipment.packageDetails || "No specific details provided."}
-                        </p>
-                      </div>
+                       <div className="flex items-center justify-between mb-2">
+                         <p className="text-sm text-gray-600 font-medium">Package Details</p>
+                         <div className="flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm">
+                           <TrendingUp size={12} className="text-teal-400" />
+                           {selectedShipment.weight || 0} KG
+                         </div>
+                       </div>
+                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
+                         <p className="text-gray-700 leading-relaxed italic">
+                           {selectedShipment.packageDetails || "No specific details provided."}
+                         </p>
+                       </div>
                     </div>
                     {selectedShipment.specialRequirements && (
                       <div className="lg:col-span-2">
@@ -657,10 +664,10 @@ export default function Shipment() {
                     )}
 
                     {selectedShipment.origin && (
-                       <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                         <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
-                         <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
-                       </div>
+                      <div className="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <p className="text-xs text-gray-500 font-bold uppercase mb-1">Official Origin</p>
+                        <p className="text-gray-900 font-bold">{selectedShipment.origin}</p>
+                      </div>
                     )}
 
                     <div className="lg:col-span-2 border-t border-gray-100 pt-6 mt-4">

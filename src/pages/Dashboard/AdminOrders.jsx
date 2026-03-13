@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 import { useCallback } from "react";
 
@@ -13,7 +14,7 @@ export default function Orders() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
@@ -29,15 +30,11 @@ export default function Orders() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  useEffect(() => {
-    fetchBookings();
-  }, [fetchBookings]);
-
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
-      
+
       const params = new URLSearchParams({
         page: currentPage,
         limit: limit,
@@ -67,6 +64,10 @@ export default function Orders() {
     }
   }, [currentPage, limit, debouncedSearch, filterStatus]);
 
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
   const confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
     const originalOrders = [...orders];
@@ -81,7 +82,7 @@ export default function Orders() {
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${order.id}`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
@@ -104,7 +105,7 @@ export default function Orders() {
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
@@ -115,6 +116,20 @@ export default function Orders() {
         setOrders(prev =>
           prev.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o)
         );
+        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Status Updated',
+          text: `Shipment status changed to ${newStatus}`,
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      } else {
+        Swal.fire('Update Failed', result.message || 'Error occurred', 'error');
       }
     } catch (err) {
       console.error("Error updating status:", err);
@@ -140,11 +155,20 @@ export default function Orders() {
           prev.map(o => o.id === selectedOrder.id ? { ...o, amount: parseFloat(amount) } : o)
         );
         setSelectedOrder(prev => ({ ...prev, amount: parseFloat(amount) }));
-        alert("Price updated successfully");
+        Swal.fire({
+          icon: 'success',
+          title: 'Price Updated',
+          text: 'Shipment price has been successfully set.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
       }
     } catch (err) {
       console.error("Error updating price:", err);
-      alert("Failed to update price");
+      Swal.fire('Update Failed', 'Failed to update shipment price', 'error');
     }
   };
 
@@ -176,8 +200,8 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order Management</h2>
-        <p className="text-gray-600 mb-6">Manage and track all shipment orders</p>
+        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order</h2>
+        <p className="text-gray-600 mb-6">Manage and monitor all shipment orders</p>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -229,7 +253,6 @@ export default function Orders() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {orders.map(order => {
-                const StatusIcon = statusConfig[order.status]?.icon || Clock;
                 return (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
                     <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">{order.trackingId}</td>
@@ -288,7 +311,7 @@ export default function Orders() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               <div className="flex items-center gap-1">
                 {[...Array(totalPages)].map((_, i) => (
                   <button
@@ -323,7 +346,9 @@ export default function Orders() {
                   <p className="text-gray-500 text-sm mt-1">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
                 </div>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
                   className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"
                 >
                   <X size={24} />
@@ -362,29 +387,46 @@ export default function Orders() {
                         <dd className="mt-1 text-gray-900">{selectedOrder.packageType || "—"}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm font-medium text-gray-500">Total Weight</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.weight || "—"}</dd>
+                        <dt className="text-sm font-medium text-gray-500">Service Type</dt>
+                        <dd className="mt-1 text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Amount Paid / Quote</dt>
-                        <dd className="mt-1 flex items-center gap-2">
-                          <input 
-                            type="number" 
-                            defaultValue={selectedOrder.amount || 0}
-                            id="priceUpdateInput"
-                            className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                          <button 
-                            onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
-                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
-                          >
-                            Set Quote
-                          </button>
+                        <dd className="mt-1 flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              defaultValue={selectedOrder.amount || 0}
+                              id="priceUpdateInput"
+                              className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button 
+                              onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
+                              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
+                            >
+                              Set Quote
+                            </button>
+                          </div>
+                          {selectedOrder.amount > 0 && (
+                            <p className="text-xs font-bold text-emerald-600">Current: ₦{parseFloat(selectedOrder.amount).toLocaleString()}</p>
+                          )}
                         </dd>
                       </div>
+                      <div>
+                        <dt className="text-sm font-medium text-gray-500">Weight</dt>
+                        <dd className="mt-1 text-gray-900 font-bold">{selectedOrder.weight || 0} KG</dd>
+                      </div>
                       <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Description</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.packageDetails || "—"}</dd>
+                        <div className="flex items-center justify-between mb-2">
+                          <dt className="text-sm font-medium text-gray-500">Package Details</dt>
+                          <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                            <TrendingUp size={12} className="text-blue-100" />
+                            {selectedOrder.weight || 0} KG
+                          </span>
+                        </div>
+                        <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic">
+                          {selectedOrder.packageDetails || "—"}
+                        </dd>
                       </div>
                     </dl>
                   </div>
