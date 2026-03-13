@@ -25,7 +25,6 @@ export const MENU_ITEMS = {
   ],
   [ROLES.SUPER_ADMIN]: [
     { name: 'Home', path: '/admin-dashboard' },
-    { name: 'Global Networks', path: '/admin-dashboard/analytics' },
     { name: 'Order', path: '/admin-dashboard/orders' },
     { name: 'Booking', path: '/admin-dashboard/booking' },
     { name: 'User', path: '/admin-dashboard/users' },

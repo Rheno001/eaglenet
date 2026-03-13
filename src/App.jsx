@@ -99,7 +99,6 @@ function App() {
               <Route path="admins" element={<SuperAdminAdmins />} />
               <Route path="promote" element={<SuperAdminPromote />} />
               <Route path="create-admin" element={<CreateAdmin />} />
-              <Route path="analytics" element={<SuperAdminDashboard />} />
             </Route>
           </Route>
 
