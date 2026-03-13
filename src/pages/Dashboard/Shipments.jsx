@@ -24,8 +24,6 @@ import {
   Copy,
   Check
 } from "lucide-react";
-import Swal from "sweetalert2";
-
 const MILESTONES = [
   { key: 'ORDER_PLACED', label: 'Order Placed', icon: Clock, desc: 'Your booking has been received and registered.' },
   { key: 'PENDING_CONFIRMATION', label: 'Pending Confirmation', icon: Activity, desc: 'Our agents are reviewing shipment details.' },
@@ -91,6 +89,7 @@ export default function Shipment() {
   const [filterCity, setFilterCity] = useState("all");
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [sortBy, setSortBy] = useState("date");
   const [copiedId, setCopiedId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -242,12 +241,28 @@ export default function Shipment() {
   };
 
   const isPaid = (item) => {
-    if (!item || !item.payments || !Array.isArray(item.payments)) return false;
-    return item.payments.some(p => p?.status === "SUCCESS");
+    if (!item) return false;
+    // Check for direct status flags if available
+    if (item.paymentStatus === "PAID" || item.isPaid === true || item.paid === true) return true;
+    // Fallback to checking the payments array
+    if (item.payments && Array.isArray(item.payments)) {
+      return item.payments.some(p => p?.status?.toUpperCase() === "SUCCESS" || p?.status?.toUpperCase() === "COMPLETED");
+    }
+    return false;
   };
 
   const handlePay = async (item) => {
     try {
+      setPaying(true);
+      Swal.fire({
+        title: 'Initializing Payment',
+        text: 'Connecting to secure payment gateway...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/initialize`, {
         method: "POST",
@@ -262,14 +277,25 @@ export default function Shipment() {
         })
       });
       const result = await response.json();
+      
       if (result.status === "success" && result.data?.authorizationUrl) {
         window.location.href = result.data.authorizationUrl;
       } else {
-        alert(result.message || "Failed to initialize payment");
+        setPaying(false);
+        Swal.fire({
+          icon: 'error',
+          title: 'Initialization Failed',
+          text: result.message || "Failed to initialize payment"
+        });
       }
     } catch (err) {
       console.error("Payment error:", err);
-      alert("Error initiating payment");
+      setPaying(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: "Could not connect to the payment server."
+      });
     }
   };
 
@@ -451,8 +477,8 @@ export default function Shipment() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Settlement
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                      Detail
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -486,36 +512,47 @@ export default function Shipment() {
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
-                        {isPaid(item) ? (
-                            <span className="text-green-600 font-bold text-xs flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" /> Settled
+                        <div className="flex flex-col">
+                          <span className="font-black text-slate-900">₦{parseFloat(item.amount || 0).toLocaleString()}</span>
+                          {isPaid(item) ? (
+                            <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 uppercase tracking-tighter">
+                                <CheckCircle className="w-2.5 h-2.5" /> Settled
                             </span>
-                        ) : item.amount > 0 ? (
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handlePay(item); }}
-                                className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition"
-                            >
-                                Pay ₦{parseFloat(item.amount).toLocaleString()}
-                            </button>
-                        ) : (
-                            <span className="text-gray-400 text-xs italic">Calculating Rates</span>
-                        )}
+                          ) : (
+                            <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1 uppercase tracking-tighter">
+                                <Clock className="w-2.5 h-2.5" /> Unpaid
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <button
-                          onClick={() => {
-                            if (selectedShipment?.id === item.id) {
-                              setSelectedShipment(null);
-                            } else {
-                              setSelectedShipment(item);
-                              fetchShipmentDetails(item.id);
-                            }
-                          }}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
-                        >
-                          <Eye className="w-4 h-4" />
-                          {selectedShipment?.id === item.id ? "Hide" : "View"}
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => {
+                              if (selectedShipment?.id === item.id) {
+                                setSelectedShipment(null);
+                              } else {
+                                setSelectedShipment(item);
+                                fetchShipmentDetails(item.id);
+                              }
+                            }}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span className="hidden sm:inline">{selectedShipment?.id === item.id ? "Hide" : "View"}</span>
+                          </button>
+                          
+                          {!isPaid(item) && item.amount > 0 && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handlePay(item); }}
+                              disabled={paying}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition flex items-center gap-1.5 shadow-md shadow-blue-100"
+                            >
+                              {paying ? <Loader className="w-3 h-3 animate-spin" /> : <div className="w-3 h-3 bg-white/20 rounded flex items-center justify-center text-[8px]">₦</div>}
+                              Pay Now
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -729,12 +766,17 @@ export default function Shipment() {
                         {!isPaid(selectedShipment) && selectedShipment.amount > 0 && (
                            <button 
                              onClick={() => handlePay(selectedShipment)}
-                             className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                             disabled={paying}
+                             className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black rounded-xl shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 group"
                            >
-                             <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                                <span className="text-[10px] font-black">₦</span>
-                             </div>
-                             Authorize Freight Payment
+                             {paying ? (
+                               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                             ) : (
+                               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                                  <span className="text-[10px] font-black">₦</span>
+                               </div>
+                             )}
+                             {paying ? 'Redirecting to Checkout...' : 'Authorize Freight Payment'}
                            </button>
                         )}
                         {!isPaid(selectedShipment) && (!selectedShipment.amount || selectedShipment.amount <= 0) && (
