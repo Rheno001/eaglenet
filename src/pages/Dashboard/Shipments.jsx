@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import {
   Search,
@@ -35,36 +36,35 @@ const MILESTONES = [
 
 const MilestoneTracker = ({ currentStatus }) => {
   const currentIndex = MILESTONES.findIndex(m => m.key === currentStatus);
-  
+
   return (
     <div className="py-8 px-4">
       <div className="relative">
         {/* Background Line */}
         <div className="absolute left-[19px] top-0 bottom-0 w-0.5 bg-gray-100 lg:left-0 lg:top-[19px] lg:bottom-auto lg:right-0 lg:w-full lg:h-0.5" />
-        
+
         <div className="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-4 relative">
           {MILESTONES.map((step, index) => {
             const isCompleted = index < currentIndex || currentStatus === 'DELIVERED';
             const isCurrent = index === currentIndex && currentStatus !== 'DELIVERED';
             const Icon = step.icon;
-            
+
             return (
               <div key={step.key} className="flex lg:flex-col lg:items-center gap-4 lg:text-center w-full group">
                 <div className="relative z-10 flex items-center justify-center">
                   <div className={`
                     w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg
-                    ${isCompleted ? 'bg-green-600 text-white scale-110' : 
-                      isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-125 animate-pulse' : 
-                      'bg-white text-gray-300 border-2 border-gray-100 group-hover:border-gray-300'}
+                    ${isCompleted ? 'bg-green-600 text-white scale-110' :
+                      isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-125 animate-pulse' :
+                        'bg-white text-gray-300 border-2 border-gray-100 group-hover:border-gray-300'}
                   `}>
                     <Icon size={20} />
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col lg:items-center">
-                  <h4 className={`text-xs font-black uppercase tracking-widest mb-1 transition-colors ${
-                    isCompleted ? 'text-green-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'
-                  }`}>
+                  <h4 className={`text-xs font-black uppercase tracking-widest mb-1 transition-colors ${isCompleted ? 'text-green-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'
+                    }`}>
                     {step.label}
                   </h4>
                   <p className="text-[10px] text-gray-500 font-medium leading-tight max-w-[120px] lg:mx-auto">
@@ -81,6 +81,7 @@ const MilestoneTracker = ({ currentStatus }) => {
 };
 
 export default function Shipment() {
+  const { user } = useContext(AuthContext);
   const [shipments, setShipments] = useState([]);
   const [filteredShipments, setFilteredShipments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +99,7 @@ export default function Shipment() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(text);
       setTimeout(() => setCopiedId(null), 2000);
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -250,11 +251,48 @@ export default function Shipment() {
   };
 
   const handlePay = async (item) => {
+    const { value: amount } = await Swal.fire({
+      title: 'Authorize Payment',
+      html: `
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-left">
+          <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-1">Tracking ID</p>
+          <p class="text-lg font-black text-slate-900 font-mono mb-4">${item.trackingId}</p>
+          <div class="h-px bg-slate-200 mb-4"></div>
+          <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Enter Amount (₦)</p>
+          <input 
+            type="number" 
+            id="swal-input-amount" 
+            class="swal2-input w-full m-0 rounded-xl border-slate-200 font-black" 
+            placeholder="0.00"
+            value="${item.amount || ""}"
+          >
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Initialize Protocol',
+      cancelButtonText: 'Abort',
+      customClass: {
+        confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold',
+        cancelButton: 'bg-slate-100 text-slate-500 px-8 py-3 rounded-xl font-bold'
+      },
+      preConfirm: () => {
+        const inputAmount = document.getElementById('swal-input-amount').value;
+        if (!inputAmount || parseFloat(inputAmount) <= 0) {
+          Swal.showValidationMessage('Please enter a valid amount');
+          return false;
+        }
+        return inputAmount;
+      }
+    });
+
+    if (!amount) return;
+
     try {
       setPaying(true);
       Swal.fire({
-        title: 'Initializing Payment',
-        text: 'Connecting to secure payment gateway...',
+        title: 'Initializing Secure Link',
+        text: 'Syncing with logistics settlement hub...',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -262,28 +300,34 @@ export default function Shipment() {
       });
 
       const token = localStorage.getItem("jwt");
+      const payload = {
+        shipmentId: item.id || item._id,
+        trackingId: item.trackingId,
+        amount: Number(amount),
+        email: user?.email || item.email,
+        callbackUrl: `${window.location.origin}/customer-dashboard/shipments`
+      };
+
+      console.log("💳 [Payment Protocol] Initializing with payload:", payload);
+
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/initialize`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          shipmentId: item.id,
-          amount: item.amount,
-          callbackUrl: `${window.location.origin}/customer-dashboard/shipments`
-        })
+        body: JSON.stringify(payload)
       });
       const result = await response.json();
-      
+
       if (result.status === "success" && result.data?.authorizationUrl) {
         window.location.href = result.data.authorizationUrl;
       } else {
         setPaying(false);
         Swal.fire({
           icon: 'error',
-          title: 'Initialization Failed',
-          text: result.message || "Failed to initialize payment"
+          title: 'Authorization Failed',
+          text: result.message || "The settlement gateway declined the request."
         });
       }
     } catch (err) {
@@ -291,8 +335,8 @@ export default function Shipment() {
       setPaying(false);
       Swal.fire({
         icon: 'error',
-        title: 'Network Error',
-        text: "Could not connect to the payment server."
+        title: 'Communication Error',
+        text: "Could not establish a secure link with the logistics hub."
       });
     }
   };
@@ -307,7 +351,7 @@ export default function Shipment() {
   const getStatusBadge = (status) => {
     const base = "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1";
     const s = typeof status === 'string' ? status.toUpperCase() : '';
-    
+
     switch (s) {
       case "ORDER_PLACED":
         return (
@@ -472,7 +516,7 @@ export default function Shipment() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Settlement
                     </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Actions
                     </th>
                   </tr>
@@ -483,7 +527,7 @@ export default function Shipment() {
                       <td className="px-6 py-4 text-sm font-mono text-gray-800">
                         <div className="flex items-center gap-2">
                           <span className="font-bold">{item.trackingId}</span>
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
                               copyToClipboard(item.trackingId);
@@ -508,17 +552,17 @@ export default function Shipment() {
                           <span className="font-black text-slate-900">₦{parseFloat(item.amount || 0).toLocaleString()}</span>
                           {isPaid(item) ? (
                             <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 uppercase tracking-tighter">
-                                <CheckCircle className="w-2.5 h-2.5" /> Settled
+                              <CheckCircle className="w-2.5 h-2.5" /> Settled
                             </span>
                           ) : (
                             <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1 uppercase tracking-tighter">
-                                <Clock className="w-2.5 h-2.5" /> Unpaid
+                              <Clock className="w-2.5 h-2.5" /> Unpaid
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-start gap-3">
                           <button
                             onClick={() => {
                               if (selectedShipment?.id === item.id) {
@@ -528,20 +572,24 @@ export default function Shipment() {
                                 fetchShipmentDetails(item.id);
                               }
                             }}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-lg transition font-medium border border-gray-200 whitespace-nowrap"
                           >
                             <Eye className="w-4 h-4" />
                             <span className="hidden sm:inline">{selectedShipment?.id === item.id ? "Hide" : "View"}</span>
                           </button>
                           
-                          {!isPaid(item) && item.amount > 0 && (
+                          {!isPaid(item) && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); handlePay(item); }}
                               disabled={paying}
-                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition flex items-center gap-1.5 shadow-md shadow-blue-100"
+                              className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-slate-200 whitespace-nowrap"
                             >
-                              {paying ? <Loader className="w-3 h-3 animate-spin" /> : <div className="w-3 h-3 bg-white/20 rounded flex items-center justify-center text-[8px]">₦</div>}
-                              Pay Now
+                              {paying ? (
+                                <Loader size={12} className="animate-spin text-teal-400" />
+                              ) : (
+                                <div className="w-4 h-4 bg-white/10 rounded flex items-center justify-center text-[8px] font-black text-teal-400">₦</div>
+                              )}
+                              <span>{paying ? "Redirecting..." : "Pay Now"}</span>
                             </button>
                           )}
                         </div>
@@ -596,7 +644,7 @@ export default function Shipment() {
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <p className="text-lg text-gray-900 font-semibold">{selectedShipment.trackingId}</p>
-                      <button 
+                      <button
                         onClick={() => copyToClipboard(selectedShipment.trackingId)}
                         className="p-1.5 hover:bg-gray-200 rounded-md transition-colors text-gray-400 hover:text-gray-900"
                         title="Copy Tracking ID"
@@ -701,14 +749,14 @@ export default function Shipment() {
                       <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
                     </div>
                     <div className="lg:col-span-2">
-                       <div className="flex items-center justify-between mb-2">
-                         <p className="text-sm text-gray-600 font-medium">Package Details</p>
-                       </div>
-                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
-                         <p className="text-gray-700 leading-relaxed italic">
-                           {selectedShipment.packageDetails || "No specific details provided."}
-                         </p>
-                       </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-gray-600 font-medium">Package Details</p>
+                      </div>
+                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
+                        <p className="text-gray-700 leading-relaxed italic">
+                          {selectedShipment.packageDetails || "No specific details provided."}
+                        </p>
+                      </div>
                     </div>
                     {selectedShipment.specialRequirements && (
                       <div className="lg:col-span-2">
@@ -737,39 +785,39 @@ export default function Shipment() {
                     )}
 
                     <div className="lg:col-span-2 border-t border-gray-100 pt-6 mt-4">
-                         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                            <div>
-                               <p className="text-sm text-gray-500 font-medium">Settlement Status</p>
-                               <p className={`text-lg font-bold ${isPaid(selectedShipment) ? 'text-green-600' : 'text-gray-900'}`}>{isPaid(selectedShipment) ? 'Settled (PAID)' : 'Outstanding'}</p>
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div>
+                          <p className="text-sm text-gray-500 font-medium">Settlement Status</p>
+                          <p className={`text-lg font-bold ${isPaid(selectedShipment) ? 'text-green-600' : 'text-gray-900'}`}>{isPaid(selectedShipment) ? 'Settled (PAID)' : 'Outstanding'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500 font-medium text-right">Freight Charges</p>
+                          <p className="text-2xl font-black text-blue-600 text-right">₦{parseFloat(selectedShipment.amount || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      {!isPaid(selectedShipment) && selectedShipment.amount > 0 && (
+                        <button
+                          onClick={() => handlePay(selectedShipment)}
+                          disabled={paying}
+                          className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black rounded-xl shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 group"
+                        >
+                          {paying ? (
+                            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          ) : (
+                            <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                              <span className="text-[10px] font-black">₦</span>
                             </div>
-                            <div>
-                               <p className="text-sm text-gray-500 font-medium text-right">Freight Charges</p>
-                               <p className="text-2xl font-black text-blue-600 text-right">₦{parseFloat(selectedShipment.amount || 0).toLocaleString()}</p>
-                            </div>
-                         </div>
-                        {!isPaid(selectedShipment) && selectedShipment.amount > 0 && (
-                           <button 
-                             onClick={() => handlePay(selectedShipment)}
-                             disabled={paying}
-                             className="w-full mt-4 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black rounded-xl shadow-xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 group"
-                           >
-                             {paying ? (
-                               <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                             ) : (
-                               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                                  <span className="text-[10px] font-black">₦</span>
-                               </div>
-                             )}
-                             {paying ? 'Redirecting to Checkout...' : 'Authorize Freight Payment'}
-                           </button>
-                        )}
-                        {!isPaid(selectedShipment) && (!selectedShipment.amount || selectedShipment.amount <= 0) && (
-                           <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
-                              <Clock className="w-5 h-5 text-amber-600" />
-                              <p className="text-sm font-medium text-amber-700">Our logistics experts are finalizing your freight rates.</p>
-                           </div>
-                        )}
-                     </div>
+                          )}
+                          {paying ? 'Redirecting to Checkout...' : 'Authorize Freight Payment'}
+                        </button>
+                      )}
+                      {!isPaid(selectedShipment) && (!selectedShipment.amount || selectedShipment.amount <= 0) && (
+                        <div className="mt-4 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                          <Clock className="w-5 h-5 text-amber-600" />
+                          <p className="text-sm font-medium text-amber-700">Our logistics experts are finalizing your freight rates.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
