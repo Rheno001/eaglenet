@@ -158,10 +158,27 @@ export default function Shipment() {
         Swal.fire({
           icon: 'success',
           title: 'Payment Confirmed',
-          text: 'The transaction was processed successfully.',
+          html: `
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-left">
+              <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-1">Tracking ID</p>
+              <p class="text-lg font-black text-slate-900 font-mono mb-4">${result.data?.shipment?.trackingId || 'Verified'}</p>
+              <div class="h-px bg-slate-200 mb-4"></div>
+              <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-1">Amount Paid</p>
+              <p class="text-2xl font-black text-emerald-600">₦${parseFloat(result.data?.amount || 0).toLocaleString()}</p>
+              <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest mt-2">Transaction successfully verified</p>
+            </div>
+          `,
+          confirmButtonText: 'Great',
           customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
         });
         fetchShipments(); // Refresh list
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Verification Failed',
+          text: result.message || 'We could not verify this transaction at the moment.',
+          customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+        });
       }
     } catch (err) {
       console.error("Verification error:", err);
@@ -215,6 +232,16 @@ export default function Shipment() {
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
+
+  // 4. Auto-verify if reference is in URL
+  useEffect(() => {
+    const reference = searchParams.get('reference') || searchParams.get('trtref');
+    if (reference) {
+      verifyPayment(reference);
+      // Clean up URL
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, verifyPayment, setSearchParams]);
 
   // 5. Details fetch
   const fetchShipmentDetails = async (id) => {

@@ -30,6 +30,7 @@ import AdminPayment from "./pages/Dashboard/AdminPayment";
 import AdminNotifications from "./pages/Dashboard/AdminNotifications";
 import AdminSettings from "./pages/Dashboard/AdminSettings";
 import AdminServices from "./pages/Dashboard/AdminServices";
+import UserPayments from "./pages/Dashboard/UserPayments";
 
 // SUPER ADMIN Dashboard
 import SuperAdminDashboard from "./pages/superAdmin/index";
@@ -77,7 +78,7 @@ function App() {
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
               <Route path="track/:trackingId?" element={<Track />} />
-              <Route path="payment" element={<AdminPayment />} />
+              <Route path="payment" element={<UserPayments />} />
             </Route>
           </Route>
 
