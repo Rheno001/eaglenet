@@ -17,8 +17,8 @@ export default function Navbar() {
 
   const navLinksLeft = [
     { name: "Home", path: "/" },
-    { name: "Services", path: "/services" },
     { name: "About Us", path: "/about" },
+    { name: "Services", path: "/services" },
   ];
 
   const navLinksRight = [

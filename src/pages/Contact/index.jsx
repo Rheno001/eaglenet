@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, MessageSquare, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
+import EagleHero from "../../assets/eagle.webp";
 
 const FAQItem = ({ question, answer }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-100 py-6">
+    <div className="border border-gray-300 p-8 rounded-3xl hover:bg-gray-50 transition-all duration-300 shadow-sm">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex justify-between items-center w-full text-left focus:outline-none group"
       >
-        <span className="text-xl font-black uppercase tracking-tighter text-gray-900 group-hover:text-[#E40000] transition-colors">{question}</span>
-        {isOpen ? <ChevronUp className="w-6 h-6 text-[#E40000]" /> : <ChevronDown className="w-6 h-6 text-gray-300" />}
+        <span className="text-xl font-black uppercase tracking-tighter text-gray-900 group-hover:text-[#3B1350] transition-colors">{question}</span>
+        {isOpen ? <ChevronUp className="w-6 h-6 text-[#3B1350]" /> : <ChevronDown className="w-6 h-6 text-gray-500" />}
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -34,17 +35,17 @@ const FAQItem = ({ question, answer }) => {
 const ContactInput = ({ label, type = "text", placeholder, rows }) => {
   return (
     <div className="relative group space-y-2">
-      <label className="block text-sm font-black uppercase tracking-widest text-[#E40000]">{label}</label>
+      <label className="block text-sm font-black uppercase tracking-widest text-[#3B1350]">{label}</label>
       {rows ? (
         <textarea
           rows={rows}
-          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#E40000] outline-none transition-all duration-300 resize-none font-medium text-gray-900 placeholder:text-gray-400"
+          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 resize-none font-medium text-gray-900 placeholder:text-gray-400"
           placeholder={placeholder}
         />
       ) : (
         <input
           type={type}
-          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#E40000] outline-none transition-all duration-300 font-medium text-gray-900 placeholder:text-gray-400"
+          className="w-full px-6 py-4 bg-gray-50 border border-transparent focus:bg-white focus:border-[#3B1350] outline-none transition-all duration-300 font-medium text-gray-900 placeholder:text-gray-400"
           placeholder={placeholder}
         />
       )}
@@ -53,29 +54,44 @@ const ContactInput = ({ label, type = "text", placeholder, rows }) => {
 }
 
 export default function Contact() {
-  return (
-    <div className="min-h-screen bg-white font-sans selection:bg-[#E40000] selection:text-white pt-20">
-      {/* Hero Section */}
-      <section className="bg-black py-24 lg:py-40 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 flex items-center justify-center pointer-events-none">
-          <h1 className="text-[30vw] font-black uppercase tracking-tighter leading-none select-none text-white/5">CONNECT</h1>
-        </div>
+  const { scrollY } = useScroll();
+  const yHero = useTransform(scrollY, [0, 500], [0, 200]);
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex justify-start">
+  return (
+    <div className="min-h-screen bg-white font-sans selection:bg-[#3B1350] selection:text-white pt-20 overflow-x-hidden">
+      {/* Premium Image Hero Section (Standardized) */}
+      <section className="relative pt-20 pb-12 lg:pt-32 lg:pb-20 overflow-hidden text-white min-h-[70vh] flex items-center">
+        {/* Background Image with Parallax */}
+        <motion.div
+          style={{ y: yHero }}
+          className="absolute inset-0 w-full h-[120%] -top-[10%] z-0"
+        >
+          <img
+            src={EagleHero}
+            alt="EagleNet Contact"
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Dark Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-[#3B1350]/80 mix-blend-multiply z-0"></div>
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8 }}
-            className="max-w-2xl lg:max-w-3xl space-y-8"
+            className="max-w-5xl mx-auto space-y-8"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-1 bg-[#E40000]"></div>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-12 h-1 bg-white"></div>
               <span className="text-sm font-black uppercase tracking-widest text-white/80">Support</span>
             </div>
-            <h1 className="text-6xl lg:text-[7rem] font-black leading-[0.9] tracking-tighter uppercase">
-              Get In <br /> <span className="text-white/70">Touch.</span>
+            <h1 className="text-6xl lg:text-[7rem] font-black leading-[0.9] tracking-tighter uppercase text-center mx-auto">
+              Get In Touch.
             </h1>
-            <p className="text-xl lg:text-2xl font-medium text-white/90 leading-relaxed max-w-2xl">
+            <p className="text-xl lg:text-2xl font-medium text-white/90 leading-relaxed max-w-4xl mx-auto text-center">
               Have a question or need a custom logistics solution? Our team is here to help 24/7.
             </p>
           </motion.div>
@@ -90,8 +106,8 @@ export default function Contact() {
           <div className="lg:w-5/12 space-y-16">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-[#E40000]"></div>
-                <span className="text-sm font-black uppercase tracking-widest text-[#E40000]">Contact Info</span>
+                <div className="w-3 h-3 bg-[#3B1350]"></div>
+                <span className="text-sm font-black uppercase tracking-widest text-[#3B1350]">Contact Info</span>
               </div>
               <h2 className="text-5xl font-black uppercase tracking-tighter leading-none text-black">
                 Reach Out <br /> To Us
@@ -112,11 +128,11 @@ export default function Contact() {
                 { icon: Mail, title: "Email Us", details: ["info@eaglenetnigeria.com", "operations@eaglenetnigeria.com"] }
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-8 group">
-                  <div className="w-16 h-16 bg-[#F9FAFB] flex items-center justify-center group-hover:bg-[#E40000] group-hover:text-white transition-colors duration-500 shrink-0">
+                  <div className="w-16 h-16 bg-[#F9FAFB] flex items-center justify-center group-hover:bg-[#3B1350] group-hover:text-white transition-colors duration-500 shrink-0">
                     <item.icon className="w-6 h-6" />
                   </div>
                   <div className="pt-2">
-                    <h3 className="font-black uppercase tracking-tighter text-2xl mb-4 group-hover:text-[#E40000] transition-colors">{item.title}</h3>
+                    <h3 className="font-black uppercase tracking-tighter text-2xl mb-4 group-hover:text-[#3B1350] transition-colors">{item.title}</h3>
                     <div className="space-y-1">
                       {item.details.map((line, idx) => (
                         <p key={idx} className="text-gray-500 font-medium">{line}</p>
@@ -128,8 +144,8 @@ export default function Contact() {
             </motion.div>
           </div>
 
-          {/* Form and FAQ (Right Side) */}
-          <div className="lg:w-7/12 space-y-24">
+          {/* Form (Right Side) */}
+          <div className="lg:w-7/12">
 
             {/* Form */}
             <motion.div
@@ -154,32 +170,39 @@ export default function Contact() {
 
                 <button className="flex items-center gap-8 group pt-4 bg-transparent border-none p-0 cursor-pointer text-left w-auto">
                   <span className="text-3xl font-black uppercase tracking-tighter">Send Message</span>
-                  <div className="w-16 h-16 bg-[#E40000] flex items-center justify-center text-white group-hover:bg-[#C20000] transition-all group-hover:scale-110 shrink-0">
+                  <div className="w-16 h-16 bg-[#3B1350] flex items-center justify-center text-white group-hover:bg-[#4B1D66] transition-all group-hover:scale-110 shrink-0">
                     <Send className="w-6 h-6" />
                   </div>
                 </button>
               </form>
             </motion.div>
 
-            {/* FAQ Area */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="pt-12 border-t border-gray-100"
-            >
-              <h3 className="text-4xl font-black uppercase tracking-tighter mb-12 text-black flex items-center gap-4">
-                FAQ
-              </h3>
-              <div className="space-y-4">
-                <FAQItem question="How do I track my shipment?" answer="You can track your shipment using the tracking ID provided in your confirmation email. Simply enter it on our homepage tracking tool." />
-                <FAQItem question="What are your delivery hours?" answer="We deliver between 8:00 AM and 6:00 PM, Monday through Saturday. Express delivery services may include Sundays." />
-                <FAQItem question="Do you offer insurance?" answer="Yes, all shipments are covered by our basic insurance policy. Comprehensive coverage is available for high-value items." />
-              </div>
-            </motion.div>
           </div>
         </div>
+
+        {/* FAQ Area (Centered Below) */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="pt-24 lg:pt-40 border-t border-gray-100 max-w-4xl mx-auto"
+        >
+          <div className="text-center mb-16 space-y-6">
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-3 h-3 bg-[#3B1350]"></div>
+              <span className="text-sm font-black uppercase tracking-widest text-[#3B1350]">Common Questions</span>
+            </div>
+            <h3 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter text-black">
+              Frequently Asked <br /> Questions
+            </h3>
+          </div>
+          <div className="space-y-4">
+            <FAQItem question="How do I track my shipment?" answer="You can track your shipment using the tracking ID provided in your confirmation email. Simply enter it on our homepage tracking tool." />
+            <FAQItem question="What are your delivery hours?" answer="We deliver between 8:00 AM and 6:00 PM, Monday through Saturday. Express delivery services may include Sundays." />
+            <FAQItem question="Do you offer insurance?" answer="Yes, all shipments are covered by our basic insurance policy. Comprehensive coverage is available for high-value items." />
+          </div>
+        </motion.div>
       </section>
 
       {/* Final Call to Action  */}
@@ -195,7 +218,7 @@ export default function Contact() {
             <Link to="/quote">
               <div className="inline-flex items-center gap-8 group cursor-pointer">
                 <span className="text-3xl lg:text-5xl font-black uppercase tracking-tighter text-black">Request A Quote</span>
-                <div className="w-16 h-16 bg-[#E40000] flex items-center justify-center text-white hover:bg-[#C20000] transition-all group-hover:scale-110">
+                <div className="w-16 h-16 bg-[#3B1350] flex items-center justify-center text-white hover:bg-[#4B1D66] transition-all group-hover:scale-110">
                   <ArrowRight className="w-8 h-8 -rotate-45" />
                 </div>
               </div>

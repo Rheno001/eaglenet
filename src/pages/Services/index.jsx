@@ -1,9 +1,13 @@
 import React from "react";
 import { Truck, Package, Globe, Shield, ArrowRight, Plane, Ship, Home, ClipboardCheck, Warehouse } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import EagleHero from "../../assets/eagle.webp";
 
 export default function Services() {
+  const { scrollY } = useScroll();
+  const yHero = useTransform(scrollY, [0, 500], [0, 200]);
+
   const solutions = [
     {
       icon: <Home className="w-12 h-12" />,
@@ -74,25 +78,43 @@ export default function Services() {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-[#E40000] selection:text-white pt-20">
-      {/* Hero Section */}
-      <section className="bg-black py-24 lg:py-40 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 flex items-center justify-center">
-          <h1 className="text-[30vw] font-black uppercase tracking-tighter leading-none select-none">SMART</h1>
-        </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl space-y-8">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-[#E40000]"></div>
-              <span className="text-sm font-black uppercase tracking-widest text-white/60">Our Expertise</span>
+    <div className="min-h-screen bg-white font-sans selection:bg-[#3B1350] selection:text-white pt-20 overflow-x-hidden">
+      {/* Premium Image Hero Section (Standardized) */}
+      <section className="relative pt-20 pb-12 lg:pt-32 lg:pb-20 overflow-hidden text-white h-[70vh] flex items-center">
+        {/* Background Image with Parallax */}
+        <motion.div
+          style={{ y: yHero }}
+          className="absolute inset-0 w-full h-[120%] -top-[10%] z-0"
+        >
+          <img
+            src={EagleHero}
+            alt="EagleNet Services"
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+
+        {/* Dark Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-[#3B1350]/80 mix-blend-multiply z-0"></div>
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full text-center">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-5xl mx-auto space-y-8"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-12 h-1 bg-white"></div>
+              <span className="text-sm font-black uppercase tracking-widest text-white/80">Our Expertise</span>
             </div>
-            <h1 className="text-6xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.8]">
-              Advanced <br /> Logistics <br /> Solutions
+            <h1 className="text-6xl lg:text-[7rem] font-black leading-[0.9] tracking-tighter uppercase text-center mx-auto">
+              Advanced Logistics Solutions.
             </h1>
-            <p className="text-xl lg:text-2xl text-white/60 font-medium leading-relaxed max-w-2xl">
+            <p className="text-xl lg:text-2xl font-medium text-white/90 leading-relaxed max-w-4xl mx-auto text-center">
               We Provide Comprehensive, Technology-Driven Infrastructure To Power Your Business Growth Across Global Markets.
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -101,8 +123,8 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-1">
             {solutions.map((item, idx) => (
-              <div key={idx} className="p-12 border border-gray-100 group hover:bg-black transition-colors duration-500">
-                <div className="text-[#E40000] mb-12 transform group-hover:scale-110 transition-transform duration-500">
+              <div key={idx} className="p-12 border border-gray-100 group hover:bg-[#3B1350] transition-colors duration-500">
+                <div className="text-[#3B1350] mb-12 transform group-hover:scale-110 group-hover:text-white transition-all duration-500">
                   {item.icon}
                 </div>
                 <h3 className="text-4xl font-black uppercase tracking-tighter mb-6 group-hover:text-white transition-colors">{item.title}</h3>
@@ -112,7 +134,7 @@ export default function Services() {
                 <div className="space-y-4">
                   {item.details.map((detail, i) => (
                     <div key={i} className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-gray-400 group-hover:text-white/40 transition-colors">
-                      <div className="w-2 h-2 bg-[#E40000]" />
+                      <div className="w-2 h-2 bg-[#3B1350] group-hover:bg-white/40 transition-colors" />
                       {detail}
                     </div>
                   ))}
@@ -136,7 +158,7 @@ export default function Services() {
             <Link to="/contact">
               <div className="inline-flex items-center gap-8 group">
                 <span className="text-3xl lg:text-5xl font-black uppercase tracking-tighter">Talk To An Expert</span>
-                <div className="w-16 h-16 bg-[#E40000] flex items-center justify-center text-white hover:bg-[#C20000] transition-all group-hover:scale-110">
+                <div className="w-16 h-16 bg-[#3B1350] flex items-center justify-center text-white hover:bg-[#4B1D66] transition-all group-hover:scale-110">
                   <ArrowRight className="w-8 h-8 -rotate-45" />
                 </div>
               </div>
