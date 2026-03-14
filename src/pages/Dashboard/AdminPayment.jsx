@@ -566,7 +566,7 @@ export default function AdminPayments() {
                      {loadingDetail ? (
                         <div className="py-20 flex flex-col items-center justify-center">
                            <Loader2 className="animate-spin text-slate-900 mb-4" size={48} />
-                           <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Retrieving Details...</p>
+                           <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Loading...</p>
                         </div>
                      ) : selectedPayment ? (
                         <>
