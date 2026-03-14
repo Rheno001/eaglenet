@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Package, Truck, Globe, Clock, Shield, ArrowRight, CheckCircle2, Play } from 'lucide-react';
+import { Search, Package, Truck, Globe, Clock, Shield, ArrowRight, ArrowUpLeft, ArrowDownRight, CheckCircle2, Play } from 'lucide-react';
 import { Link } from "react-router-dom";
 import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'framer-motion';
 import HeroContainer from "../../assets/CONTAINER.png";
@@ -7,6 +7,7 @@ import gemnetwork from "../../assets/gemnetwork.webp";
 import iam from "../../assets/iam.webp";
 import moverspoe from "../../assets/moverspoe.webp";
 import pcg from "../../assets/pcg.webp";
+import globalLogistics from "../../assets/global-logistics.webp";
 
 const CountingNumber = ({ value, duration = 2 }) => {
     const [count, setCount] = useState(0);
@@ -225,12 +226,12 @@ export default function LogisticsWebsite() {
                                     </motion.p>
                                 </AnimatePresence>
                             </div>
-                            <div className="flex gap-4">
-                                <button onClick={goToPrev} className="w-12 h-12 border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group">
-                                    <ArrowRight className="w-6 h-6 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                            <div className="flex border border-gray-200 w-fit">
+                                <button onClick={goToPrev} className="w-16 h-16 bg-white flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer group border-r border-gray-200">
+                                    <ArrowUpLeft className="w-8 h-8 text-black group-hover:-translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                 </button>
-                                <button onClick={goToNext} className="w-12 h-12 bg-[#3B1350] flex items-center justify-center hover:bg-[#4B1D66] transition-colors cursor-pointer group">
-                                    <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" />
+                                <button onClick={goToNext} className="w-16 h-16 bg-[#3B1350] flex items-center justify-center hover:bg-[#4B1D66] transition-colors cursor-pointer group">
+                                    <ArrowDownRight className="w-8 h-8 text-white group-hover:translate-x-1 group-hover:translate-y-1 transition-transform" />
                                 </button>
                             </div>
                         </div>
@@ -315,7 +316,7 @@ export default function LogisticsWebsite() {
                                 path: "/services"
                             },
                             {
-                                img: "https://images.unsplash.com/photo-1566576912906-253c7235575a?w=800&q=80",
+                                img: globalLogistics,
                                 title: "Global Networks",
                                 num: "03",
                                 path: "/services"

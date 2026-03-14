@@ -23,7 +23,7 @@ export default function Navbar() {
 
   const navLinksRight = [
     { name: "Contact Us", path: "/contact" },
-    { name: "Get A Quote", path: "/quote" },
+    //{ name: "Get A Quote", path: "/quote" },
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function Navbar() {
                   <div key={link.name} className="flex items-center h-full border-r border-gray-100">
                     <Link
                       to={link.path}
-                      className="px-8 flex items-center h-full text-sm font-bold uppercase tracking-wider text-gray-900 hover:text-[#3B1350] transition-colors"
+                      className="px-4 flex items-center h-full text-sm font-bold uppercase tracking-wider text-gray-900 hover:text-[#3B1350] transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -61,7 +61,7 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     to={link.path}
-                    className="px-8 flex items-center h-full border-r border-gray-100 text-sm font-bold uppercase tracking-wider text-gray-900 hover:text-[#3B1350] transition-colors"
+                    className="px-4 flex items-center h-full border-r border-gray-100 text-sm font-bold uppercase tracking-wider text-gray-900 hover:text-[#3B1350] transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -72,20 +72,20 @@ export default function Navbar() {
                 {user ? (
                   <div className="flex items-center h-full">
                     <Link to={user.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} className="h-full">
-                      <button className="h-full px-8 bg-gray-50 text-[#3B1350] font-bold text-sm uppercase tracking-widest border-l border-gray-100 hover:bg-gray-100 transition-all">
+                      <button className="h-full px-4 bg-gray-50 text-[#3B1350] font-bold text-sm uppercase tracking-widest border-l border-gray-100 hover:bg-gray-100 transition-all">
                         Dashboard
                       </button>
                     </Link>
-                    <button 
+                    <button
                       onClick={logout}
-                      className="h-full px-8 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all"
+                      className="h-full px-4 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all"
                     >
                       Logout
                     </button>
                   </div>
                 ) : (
                   <Link to="/login" className="h-full">
-                    <button className="h-full px-10 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all">
+                    <button className="h-full px-4 bg-[#3B1350] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#4B1D66] transition-all">
                       Login
                     </button>
                   </Link>
@@ -148,15 +148,15 @@ export default function Navbar() {
                 <div className="p-6">
                   {user ? (
                     <div className="space-y-3">
-                      <Link 
-                        to={user.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard'} 
+                      <Link
+                        to={user.role?.toLowerCase() === 'customer' ? '/customer-dashboard' : '/admin-dashboard'}
                         onClick={() => setIsOpen(false)}
                       >
                         <button className="w-full py-5 bg-gray-100 text-[#3B1350] font-black uppercase tracking-widest text-sm hover:bg-gray-200">
                           Dashboard
                         </button>
                       </Link>
-                      <button 
+                      <button
                         onClick={() => { logout(); setIsOpen(false); }}
                         className="w-full py-5 bg-[#3B1350] text-white font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66]"
                       >

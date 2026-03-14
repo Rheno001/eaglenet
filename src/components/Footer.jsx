@@ -7,7 +7,7 @@ export default function Footer() {
 
   const footerSections = [
     {
-      title: "Services",
+      title: "Logistics",
       links: [
         { name: "Freight Forwarding", path: "/services" },
         { name: "Custom Clearance", path: "/services" },
@@ -34,12 +34,12 @@ export default function Footer() {
       ],
     },
     {
-      title: "Solutions",
+      title: "Services",
       links: [
-        { name: "Integrated Logistics", path: "/solutions" },
-        { name: "Supply Chain", path: "/solutions" },
-        { name: "Global Networks", path: "/solutions" },
-        { name: "All Solutions", path: "/solutions" },
+        { name: "Freight Forwarding", path: "/services" },
+        { name: "Warehousing & Distribution", path: "/services" },
+        { name: "Last-Mile Delivery", path: "/services" },
+        { name: "Customs & Compliance", path: "/services" },
       ],
     },
   ];
