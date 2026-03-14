@@ -51,7 +51,7 @@ export default function Users() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(text);
       setTimeout(() => setCopiedId(null), 2000);
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -81,7 +81,10 @@ export default function Users() {
       const result = await response.json();
 
       if (result.status === "success") {
-        setUsers(result.data || []);
+        const filteredUsers = (result.data || []).filter(
+          (u) => u.role !== "admin" && u.role !== "superadmin"
+        );
+        setUsers(filteredUsers);
       } else {
         setUsers([]);
         setError(result.message || "No users matched your criteria.");
@@ -173,13 +176,13 @@ export default function Users() {
       </header>
 
       {/* Global Stats bar - Subtle */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
           <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600">
             <UsersIcon size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Population</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Users</p>
             <p className="text-xl font-bold text-slate-900">{users.length}</p>
           </div>
         </div>
@@ -190,15 +193,6 @@ export default function Users() {
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Verified Accounts</p>
             <p className="text-xl font-bold text-slate-900">100%</p>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-amber-50 rounded-2xl text-amber-600">
-            <Filter size={20} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Filters</p>
-            <p className="text-xl font-bold text-slate-900">{searchTerm ? 'Search Active' : 'None'}</p>
           </div>
         </div>
       </div>
@@ -239,9 +233,8 @@ export default function Users() {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-50">
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Identity</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Intel</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Permission Level</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name</th>
+                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</th>
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
                   <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
                 </tr>
@@ -268,16 +261,7 @@ export default function Users() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border ${user.role === 'superadmin'
-                          ? 'bg-purple-50 text-purple-700 border-purple-100'
-                          : user.role === 'admin'
-                            ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                            : 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        }`}>
-                        {user.role}
-                      </span>
-                    </td>
+
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2 text-slate-500">
                         <Calendar size={14} />
@@ -327,8 +311,8 @@ export default function Users() {
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
                         className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${currentPage === i + 1
-                            ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
-                            : "bg-white text-slate-500 hover:bg-slate-50"
+                          ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
+                          : "bg-white text-slate-500 hover:bg-slate-50"
                           }`}
                       >
                         {i + 1}
@@ -364,7 +348,7 @@ export default function Users() {
             <div className="px-10 py-8 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <History size={28} className="text-slate-900" />
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Resident Intelligence Dossier</h2>
+                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">User details</h2>
               </div>
               <button
                 onClick={() => {
@@ -381,7 +365,7 @@ export default function Users() {
               {loadingDetail ? (
                 <div className="py-24 flex flex-col items-center justify-center">
                   <Loader2 className="animate-spin text-slate-900 mb-6" size={56} />
-                  <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Querying Identity Registry...</p>
+                  <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Searching</p>
                 </div>
               ) : selectedUser ? (
                 <>
@@ -416,7 +400,7 @@ export default function Users() {
                           <TrendingUp className="text-indigo-600" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Financial Yield</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Amount Paid </p>
                           <p className="text-4xl font-black text-slate-900 tracking-tight">₦{parseFloat(selectedUser.stats?.totalSpent || 0).toLocaleString()}</p>
                           <div className="mt-4 flex items-center gap-2 text-indigo-500 font-black text-[10px] uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full w-fit">
                             <ShieldCheck size={12} />
@@ -428,19 +412,17 @@ export default function Users() {
 
                     <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {[
-                        { label: 'Logistics Volume', value: selectedUser.stats?.totalBookings || 0, icon: Package, color: 'blue', desc: 'Total shipments requested' },
-                        { label: 'Registry Age', value: new Date(selectedUser.createdAt).toLocaleDateString(), icon: Calendar, color: 'emerald', desc: 'Acquisition date' },
-                        { label: 'Secure Balance', value: `₦${parseFloat(selectedUser.outstandingBalance || 0).toLocaleString()}`, icon: DollarSign, color: 'amber', desc: 'Current outstanding' },
-                        { label: 'Account Pulse', value: selectedUser.isActive ? 'Active' : 'Dormant', icon: Activity, color: 'purple', desc: 'Real-time activity status' },
+                        { label: 'Shipment', value: selectedUser.stats?.totalBookings || 0, icon: Package, color: 'blue', desc: 'Total shipments requested' },
+                        { label: 'Registration Date', value: new Date(selectedUser.createdAt).toLocaleDateString(), icon: Calendar, color: 'emerald', desc: 'Acquisition date' },
                       ].map((stat, i) => (
-                        <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between">
-                          <div className={`p-4 bg-slate-50 text-slate-900 rounded-3xl w-fit mb-6`}>
+                        <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+                          <div className={`p-4 bg-slate-50 text-slate-900 rounded-3xl w-fit mb-4`}>
                             <stat.icon size={24} />
                           </div>
                           <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
                             <p className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</p>
-                            <p className="text-xs font-bold text-slate-400 mt-2">{stat.desc}</p>
+                            <p className="text-xs font-bold text-slate-400 mt-1">{stat.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -452,7 +434,7 @@ export default function Users() {
                     {/* Logistic Streams */}
                     <div className="space-y-6">
                       <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-indigo-500 pl-4 flex items-center justify-between">
-                        Logistic Streams
+                        Total Shipment
                         <span className="text-[10px] font-bold text-slate-400">{selectedUser.recentShipments?.length || 0} RECENT</span>
                       </h3>
                       <div className="space-y-4">
@@ -469,7 +451,7 @@ export default function Users() {
                               </div>
                               <div className="flex items-center justify-between mt-1">
                                 <p className="font-bold text-slate-900 group-hover:text-white text-lg">{ship.trackingId}</p>
-                                <button 
+                                <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     copyToClipboard(ship.trackingId);
@@ -502,7 +484,7 @@ export default function Users() {
                     {/* Financial Registry */}
                     <div className="space-y-6">
                       <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-amber-500 pl-4 flex items-center justify-between">
-                        Financial Registry
+                        Payment
                         <span className="text-[10px] font-bold text-slate-400">{selectedUser.recentPayments?.length || 0} AUDITED</span>
                       </h3>
                       <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm">
@@ -549,15 +531,15 @@ export default function Users() {
 
             <div className="px-10 py-8 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
               <div className="flex items-center gap-4 text-slate-400">
-                <History size={16} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Master Clearance Required for Edits</span>
+                {/* <History size={16} /> */}
+                {/* <span className="text-[10px] font-black uppercase tracking-widest">Master Clearance Required for Edits</span> */}
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowModal(false)}
                   className="px-10 py-4 bg-slate-200 text-slate-700 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-300 transition-all active:scale-95"
                 >
-                  Dismiss Dossier
+                  Close
                 </button>
                 {currentUser?.role === 'superadmin' && (
                   <button className="px-10 py-4 bg-slate-900 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200">

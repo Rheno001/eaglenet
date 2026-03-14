@@ -198,7 +198,7 @@ export default function Booking() {
           {currentStep === 1 && (
             <div className="space-y-8 animate-in slide-in-from-right-4">
               <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                <User className="text-teal-500" /> Shipper Information
+                <User className="text-teal-500" /> User Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -287,12 +287,34 @@ export default function Booking() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Pickup Time</label>
-                  <select name="preferredTime" value={formData.preferredTime} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900">
-                    <option value="anytime">Flexible</option>
-                    <option value="morning">Morning (08:00 - 12:00)</option>
-                    <option value="afternoon">Afternoon (12:00 - 17:00)</option>
-                  </select>
+                  <div className="space-y-3">
+                    <select name="preferredTime" value={["anytime", "morning", "afternoon"].includes(formData.preferredTime) ? formData.preferredTime : "specific"} onChange={(e) => {
+                      if (e.target.value === "specific") {
+                         setFormData(prev => ({ ...prev, preferredTime: "09:00" }));
+                      } else {
+                         handleChange(e);
+                      }
+                    }} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
+                      <option value="anytime">Flexible</option>
+                      <option value="morning">Morning (08:00 - 12:00)</option>
+                      <option value="afternoon">Afternoon (12:00 - 17:00)</option>
+                      <option value="specific">Specific Time</option>
+                    </select>
+                    {!["anytime", "morning", "afternoon"].includes(formData.preferredTime) && (
+                      <input 
+                        type="time" 
+                        name="preferredTime" 
+                        value={formData.preferredTime} 
+                        onChange={handleChange} 
+                        className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 animate-in slide-in-from-top-2"
+                      />
+                    )}
+                  </div>
                 </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Special Requirements (Optional)</label>
+                <textarea name="specialRequirements" value={formData.specialRequirements} onChange={handleChange} rows="2" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="e.g. Fragile handling, lift required..." />
               </div>
             </div>
           )}

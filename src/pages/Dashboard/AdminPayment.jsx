@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, WidthType } from "docx";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 import {
    CreditCard,
    Search,
@@ -54,7 +57,7 @@ export default function AdminPayments() {
       navigator.clipboard.writeText(text).then(() => {
          setCopiedId(text);
          setTimeout(() => setCopiedId(null), 2000);
-         
+
          const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -210,6 +213,79 @@ export default function AdminPayments() {
       return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
    };
 
+   const handleExportExcel = () => {
+      const wsData = payments.map(p => ({
+         "Payment ID": p.paymentId || (p.id ? String(p.id).substring(0, 12) : "UNIDENTIFIED"),
+         "Reference": p.reference || "N/A",
+         "User": `${p.user?.firstName || "Unknown"} ${p.user?.lastName || ""}`.trim(),
+         "Email": p.user?.email || "N/A",
+         "Tracking ID": p.shipment?.trackingId || "PENDING",
+         "Amount (₦)": p.amount || 0,
+         "Origin": p.shipment?.origin || "TBD",
+         "Destination": p.shipment?.destination || "TBD",
+         "Status": p.status || "Unknown",
+         "Gateway": "Paystack",
+         "Date": formatDate(p.createdAt),
+         "Time": formatTime(p.createdAt)
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Payments");
+      XLSX.writeFile(wb, "Payments_Audit_Report.xlsx");
+   };
+
+   const handleExportWord = async () => {
+      const tableRows = [
+         new TableRow({
+            children: [
+               new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Payment ID", bold: true })] })] }),
+               new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "User", bold: true })] })] }),
+               new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Amount (₦)", bold: true })] })] }),
+               new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Status", bold: true })] })] }),
+               new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: "Date", bold: true })] })] }),
+            ],
+         }),
+         ...payments.map(
+            (p) =>
+               new TableRow({
+                  children: [
+                     new TableCell({ children: [new Paragraph(p.paymentId || (p.id ? String(p.id).substring(0, 12) : "UNIDENTIFIED"))] }),
+                     new TableCell({ children: [new Paragraph(`${p.user?.firstName || "Unknown"} ${p.user?.lastName || ""}`.trim())] }),
+                     new TableCell({ children: [new Paragraph(formatCurrency(p.amount))] }),
+                     new TableCell({ children: [new Paragraph(p.status || "Unknown")] }),
+                     new TableCell({ children: [new Paragraph(formatDate(p.createdAt))] }),
+                  ],
+               })
+         ),
+      ];
+
+      const doc = new Document({
+         sections: [
+            {
+               properties: {},
+               children: [
+                  new Paragraph({
+                     text: "Payments Audit Report",
+                     heading: HeadingLevel.HEADING_1,
+                  }),
+                  new Paragraph({
+                     text: `Generated on: ${new Date().toLocaleString()}`,
+                     spacing: { after: 400 },
+                  }),
+                  new Table({
+                     width: { size: 100, type: WidthType.PERCENTAGE },
+                     rows: tableRows,
+                  }),
+               ],
+            },
+         ],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, "Payments_Audit_Report.docx");
+   };
+
    return (
       <div className="space-y-8 animate-in fade-in duration-700">
          {/* Premium Header */}
@@ -225,7 +301,17 @@ export default function AdminPayments() {
             </div>
 
             <div className="flex items-center gap-3">
-               <button className="group flex items-center gap-3 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 text-sm">
+               <button
+                  onClick={handleExportWord}
+                  className="group flex items-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 text-sm"
+               >
+                  <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
+                  Export Word
+               </button>
+               <button
+                  onClick={handleExportExcel}
+                  className="group flex items-center gap-2 px-6 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 text-sm"
+               >
                   <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
                   Excel Audit
                </button>
@@ -270,7 +356,7 @@ export default function AdminPayments() {
                </div>
                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Failed</p>
                <p className="text-3xl font-black text-slate-900 tracking-tight">{summary.failed}</p>
-               <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-tighter">Refunded/Rejected</p>
+               <p className="mt-4 text-slate-400 font-bold text-xs uppercase tracking-tighter">Failed Transactions</p>
             </div>
          </div>
 
@@ -279,8 +365,8 @@ export default function AdminPayments() {
             <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
                <div className="flex-1 relative">
                   <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                  <input 
-                     type="text" 
+                  <input
+                     type="text"
                      placeholder="Search by reference, user ID, or tracking ID..."
                      value={searchTerm}
                      onChange={(e) => setSearchTerm(e.target.value)}
@@ -288,7 +374,7 @@ export default function AdminPayments() {
                   />
                </div>
                <div className="flex gap-2">
-                  <select 
+                  <select
                      value={filterStatus}
                      onChange={(e) => {
                         setFilterStatus(e.target.value);
@@ -296,17 +382,17 @@ export default function AdminPayments() {
                      }}
                      className="bg-slate-50 border-none rounded-2xl px-6 py-5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none"
                   >
-                     <option value="all">All Channels</option>
+                     <option value="all">Status</option>
                      <option value="success">Successful</option>
                      <option value="pending">Pending</option>
                      <option value="failed">Failed</option>
                   </select>
-                  <button 
+                  <button
                      type="submit"
                      className="bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all active:scale-95"
                   >
                      <Filter size={20} />
-                     Refine
+                     Search
                   </button>
                </div>
             </form>
@@ -317,16 +403,16 @@ export default function AdminPayments() {
             {loading ? (
                <div className="flex-1 flex flex-col items-center justify-center p-32">
                   <Loader2 className="animate-spin text-slate-900 mb-4" size={48} />
-                  <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Querying Ledger...</p>
+                  <p className="text-slate-400 font-black tracking-widest uppercase text-xs">Loading...</p>
                </div>
             ) : payments.length > 0 ? (
                <div className="overflow-x-auto flex-1">
                   <table className="w-full text-left">
                      <thead>
                         <tr className="border-b border-slate-50">
-                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Reference ID</th>
-                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer & Route</th>
-                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Freight Value</th>
+                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Payment ID</th>
+                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">User </th>
+                           <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Record Info</th>
@@ -340,25 +426,25 @@ export default function AdminPayments() {
                                     <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-slate-900 group-hover:text-white transition-all">
                                        <Receipt size={16} />
                                     </div>
-                                     <div className="min-w-0">
-                                        <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">
-                                           {p.paymentId || (p.id && typeof p.id === 'string' ? p.id.substring(0, 12) : "UNIDENTIFIED")}
-                                        </p>
-                                        <div className="flex items-center gap-1 mt-0.5">
-                                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                                              REF: <span className="truncate max-w-[100px]">{p.reference || 'N/A'}</span>
-                                           </p>
-                                           {p.reference && (
-                                              <button 
-                                                 onClick={() => copyToClipboard(p.reference)}
-                                                 className="p-1 hover:bg-slate-200 rounded transition-colors text-slate-400"
-                                                 title="Copy Reference"
-                                              >
-                                                 {copiedId === p.reference ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
-                                              </button>
-                                           )}
-                                        </div>
-                                     </div>
+                                    <div className="min-w-0">
+                                       <p className="font-bold text-slate-900 truncate uppercase tracking-tighter text-sm">
+                                          {p.paymentId || (p.id && typeof p.id === 'string' ? p.id.substring(0, 12) : "UNIDENTIFIED")}
+                                       </p>
+                                       <div className="flex items-center gap-1 mt-0.5">
+                                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                                             REF: <span className="truncate max-w-[100px]">{p.reference || 'N/A'}</span>
+                                          </p>
+                                          {p.reference && (
+                                             <button
+                                                onClick={() => copyToClipboard(p.reference)}
+                                                className="p-1 hover:bg-slate-200 rounded transition-colors text-slate-400"
+                                                title="Copy Reference"
+                                             >
+                                                {copiedId === p.reference ? <Check size={10} className="text-emerald-500" /> : <Copy size={10} />}
+                                             </button>
+                                          )}
+                                       </div>
+                                    </div>
                                  </div>
                               </td>
                               <td className="px-8 py-6">
@@ -394,7 +480,7 @@ export default function AdminPayments() {
                                  {getStatusBadge(p.status)}
                               </td>
                               <td className="px-8 py-6">
-                                 <button 
+                                 <button
                                     onClick={() => fetchPaymentDetail(p.id)}
                                     className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 shadow-sm"
                                  >
@@ -423,7 +509,7 @@ export default function AdminPayments() {
                      Ledger Page <span className="text-slate-900">{meta.page}</span> of {meta.totalPages} (Total: {meta.total})
                   </p>
                   <div className="flex items-center gap-2">
-                     <button 
+                     <button
                         onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                         disabled={currentPage === 1}
                         className="p-3 bg-white border border-slate-100 rounded-2xl hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed group active:scale-90 shadow-sm"
@@ -435,17 +521,16 @@ export default function AdminPayments() {
                            <button
                               key={i}
                               onClick={() => setCurrentPage(i + 1)}
-                              className={`w-11 h-11 rounded-2xl font-black text-xs transition-all ${
-                                 currentPage === i + 1 
-                                 ? "bg-slate-900 text-white shadow-xl shadow-slate-200" 
+                              className={`w-11 h-11 rounded-2xl font-black text-xs transition-all ${currentPage === i + 1
+                                 ? "bg-slate-900 text-white shadow-xl shadow-slate-200"
                                  : "bg-white text-slate-500 hover:bg-slate-50"
-                              }`}
+                                 }`}
                            >
                               {i + 1}
                            </button>
                         ))}
                      </div>
-                     <button 
+                     <button
                         onClick={() => setCurrentPage(prev => Math.min(meta.totalPages, prev + 1))}
                         disabled={currentPage === meta.totalPages}
                         className="p-3 bg-white border border-slate-100 rounded-2xl hover:shadow-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed group active:scale-90 shadow-sm"
@@ -466,7 +551,7 @@ export default function AdminPayments() {
                         <Receipt size={24} className="text-slate-900" />
                         <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Transaction Summary</h2>
                      </div>
-                     <button 
+                     <button
                         onClick={() => {
                            setShowModal(false);
                            setSelectedPayment(null);
@@ -493,7 +578,7 @@ export default function AdminPayments() {
                                     <div className="flex items-center gap-2">
                                        <p className="text-2xl font-black text-slate-900 tracking-tighter">{selectedPayment.reference || "N/A"}</p>
                                        {selectedPayment.reference && (
-                                          <button 
+                                          <button
                                              onClick={() => copyToClipboard(selectedPayment.reference)}
                                              className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors text-slate-400"
                                              title="Copy Reference"
@@ -558,7 +643,7 @@ export default function AdminPayments() {
 
                               {/* Shipment Info */}
                               <div className="space-y-6">
-                                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-emerald-500 pl-4">Logistics Link</h3>
+                                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-emerald-500 pl-4">Shipment Details</h3>
                                  <div className="bg-slate-50 p-6 rounded-3xl space-y-4 border border-slate-100">
                                     <div className="flex items-center gap-4">
                                        <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center text-white">
@@ -568,7 +653,7 @@ export default function AdminPayments() {
                                           <div className="flex items-center gap-2">
                                              <p className="font-bold text-slate-900 text-lg">{selectedPayment.shipment?.trackingId || "PENDING"}</p>
                                              {selectedPayment.shipment?.trackingId && (
-                                                <button 
+                                                <button
                                                    onClick={() => copyToClipboard(selectedPayment.shipment?.trackingId)}
                                                    className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors text-slate-400"
                                                    title="Copy Tracking ID"
@@ -621,9 +706,9 @@ export default function AdminPayments() {
                                  </div>
                                  <div className="space-y-1">
                                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Registry Link</p>
-                                    <a 
-                                       href={selectedPayment.paystackAuthUrl || "#"} 
-                                       target="_blank" 
+                                    <a
+                                       href={selectedPayment.paystackAuthUrl || "#"}
+                                       target="_blank"
                                        rel="noreferrer"
                                        className="text-xs font-black text-indigo-700 hover:text-indigo-900 flex items-center gap-1.5 truncate"
                                     >
@@ -642,7 +727,7 @@ export default function AdminPayments() {
                   </div>
 
                   <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-                     <button 
+                     <button
                         onClick={() => setShowModal(false)}
                         className="px-8 py-3 bg-slate-200 text-slate-700 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-300 transition-all active:scale-95"
                      >
@@ -663,8 +748,8 @@ export default function AdminPayments() {
             <div className="relative z-10 max-w-2xl">
                <h2 className="text-2xl font-black mb-4 uppercase tracking-tight">Security Audit Protocol</h2>
                <p className="text-slate-400 font-medium text-sm leading-relaxed mb-6">
-                  All financial data shown here is processed through secure Paystack settlement channels. 
-                  Admins are reminded that monetary records represent legal tenders. Unauthorized modification 
+                  All financial data shown here is processed through secure Paystack settlement channels.
+                  Admins are reminded that monetary records represent legal tenders. Unauthorized modification
                   or data extraction is strictly prohibited and logged by the central nervous system.
                </p>
                <div className="inline-flex items-center gap-4 px-5 py-3 bg-white/5 rounded-2xl border border-white/10">

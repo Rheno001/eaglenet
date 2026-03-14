@@ -297,7 +297,7 @@ export default function Shipment() {
       `,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: 'Initialize Protocol',
+      confirmButtonText: 'Continue Payment',
       cancelButtonText: 'Abort',
       customClass: {
         confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold',
@@ -604,9 +604,9 @@ export default function Shipment() {
                             <Eye className="w-4 h-4" />
                             <span className="hidden sm:inline">{selectedShipment?.id === item.id ? "Hide" : "View"}</span>
                           </button>
-                          
+
                           {!isPaid(item) && (
-                            <button 
+                            <button
                               onClick={(e) => { e.stopPropagation(); handlePay(item); }}
                               disabled={paying}
                               className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-slate-200 whitespace-nowrap"
@@ -853,7 +853,7 @@ export default function Shipment() {
                 <div className="absolute inset-x-0 bottom-32 flex justify-center pointer-events-none">
                   <div className="bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full flex items-center gap-3">
                     <Loader className="w-4 h-4 text-gray-900 animate-spin" />
-                    <span className="text-xs font-bold text-gray-900">Updating full details...</span>
+                    <span className="text-xs font-bold text-gray-900">Loading...</span>
                   </div>
                 </div>
               )}

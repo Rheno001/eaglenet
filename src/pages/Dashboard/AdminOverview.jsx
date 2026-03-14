@@ -84,7 +84,7 @@ export default function Overview() {
       }
     };
     fetchStats();
-    
+
     // Auto-refresh stats every 60 seconds
     const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
@@ -120,7 +120,7 @@ export default function Overview() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Home</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
           <p className="text-gray-500 text-sm">Real-time logistics analytics & command</p>
         </div>
         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 text-sm font-semibold text-gray-700">
@@ -131,40 +131,40 @@ export default function Overview() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <StatCard 
-          icon={Users} 
-          label="Total Users" 
-          value={stats.totalUsers || 0} 
-          trend="+5%" 
-          colorClass="bg-blue-600" 
+        <StatCard
+          icon={Users}
+          label="Total Users"
+          value={stats.totalUsers || 0}
+          trend="+5%"
+          colorClass="bg-blue-600"
         />
-        <StatCard 
-          icon={CreditCard} 
-          label="Total Revenue" 
-          value={`₦${(stats.totalRevenue || 0).toLocaleString()}`} 
-          trend="+12%" 
-          colorClass="bg-emerald-600" 
+        <StatCard
+          icon={CreditCard}
+          label="Total Revenue"
+          value={`₦${(stats.totalRevenue || 0).toLocaleString()}`}
+          trend="+12%"
+          colorClass="bg-emerald-600"
         />
-        <StatCard 
-          icon={Clock} 
-          label="Pending" 
-          value={stats.pending || 0} 
-          trend={`${stats.pending > 5 ? "+" : "-"}${Math.abs(stats.pending - 2)}`} 
-          colorClass="bg-amber-600" 
+        <StatCard
+          icon={Clock}
+          label="Pending"
+          value={stats.pending || 0}
+          trend={`${stats.pending > 5 ? "+" : "-"}${Math.abs(stats.pending - 2)}`}
+          colorClass="bg-amber-600"
         />
-        <StatCard 
-          icon={Truck} 
-          label="In Transit" 
-          value={stats.inTransit || 0} 
-          trend="+1" 
-          colorClass="bg-indigo-600" 
+        <StatCard
+          icon={Truck}
+          label="In Transit"
+          value={stats.inTransit || 0}
+          trend="+1"
+          colorClass="bg-indigo-600"
         />
-        <StatCard 
-          icon={CheckCircle} 
-          label="Delivered" 
-          value={stats.delivered || 0} 
-          trend="+0" 
-          colorClass="bg-purple-600" 
+        <StatCard
+          icon={CheckCircle}
+          label="Delivered"
+          value={stats.delivered || 0}
+          trend="+0"
+          colorClass="bg-purple-600"
         />
       </div>
 
@@ -179,14 +179,14 @@ export default function Overview() {
           <div className="flex-1 min-h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie 
-                  data={stats.pieChart || []} 
-                  cx="50%" 
-                  cy="50%" 
-                  innerRadius={60} 
-                  outerRadius={85} 
-                  paddingAngle={5} 
-                  dataKey="value" 
+                <Pie
+                  data={stats.pieChart || []}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={85}
+                  paddingAngle={5}
+                  dataKey="value"
                   nameKey="label"
                   stroke="none"
                 >
@@ -221,18 +221,18 @@ export default function Overview() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.barChart || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="label" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} 
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: '#f8fafc' }}
                   content={({ active, payload }) => {
                     if (active && payload && payload.length) {
@@ -245,10 +245,10 @@ export default function Overview() {
                     return null;
                   }}
                 />
-                <Bar 
-                  dataKey="value" 
-                  fill="#6366f1" 
-                  radius={[4, 4, 0, 0]} 
+                <Bar
+                  dataKey="value"
+                  fill="#6366f1"
+                  radius={[4, 4, 0, 0]}
                   barSize={30}
                 />
               </BarChart>
