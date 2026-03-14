@@ -427,7 +427,7 @@ export default function MonthlyReport() {
             <div className="relative">
               <div className="aspect-square bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between overflow-hidden">
                 <div className="z-10">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Live System Health</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Live System Check</p>
                   <div className="space-y-8">
                     <div>
                       <div className="flex justify-between text-xs font-bold mb-2">
