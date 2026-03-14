@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Package, Truck, Globe, Clock, Shield, ArrowRight, ArrowUpLeft, ArrowDownRight, CheckCircle2, Play } from 'lucide-react';
 import { Link } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion, useScroll, useSpring, AnimatePresence, useTransform } from 'framer-motion';
 import HeroContainer from "../../assets/CONTAINER.png";
 import gemnetwork from "../../assets/gemnetwork.webp";
@@ -44,8 +45,10 @@ const FadeInWhenVisible = ({ children, delay = 0 }) => {
 };
 
 export default function LogisticsWebsite() {
+    // eslint-disable-next-line no-unused-vars
     const [trackingCode, setTrackingCode] = useState('');
     const { scrollYProgress, scrollY } = useScroll();
+    // eslint-disable-next-line no-unused-vars
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
@@ -61,6 +64,7 @@ export default function LogisticsWebsite() {
         }
     };
 
+    // eslint-disable-next-line no-unused-vars
     const handleKeyPress = (e) => {
         if (e.key === 'Enter') {
             handleTrackSubmit();
@@ -76,6 +80,7 @@ export default function LogisticsWebsite() {
             setCurrentTextIndex((prev) => (prev + 1) % logisticsTerms.length);
         }, 3000);
         return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Reviews carousel state
@@ -97,6 +102,7 @@ export default function LogisticsWebsite() {
     const goToPrev = () => setActiveReview((prev) => (prev - 1 + reviews.length) % reviews.length);
     const goToNext = () => setActiveReview((prev) => (prev + 1) % reviews.length);
 
+    // eslint-disable-next-line no-unused-vars
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {

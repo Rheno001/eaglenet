@@ -20,7 +20,7 @@ export default function Orders() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(text);
       setTimeout(() => setCopiedId(null), 2000);
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -164,7 +164,7 @@ export default function Orders() {
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/price`, {
         method: "PATCH",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
@@ -279,7 +279,7 @@ export default function Orders() {
                     <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">
                       <div className="flex items-center gap-2">
                         <span>{order.trackingId}</span>
-                        <button 
+                        <button
                           onClick={() => copyToClipboard(order.trackingId)}
                           className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
                           title="Copy Tracking ID"
@@ -377,7 +377,7 @@ export default function Orders() {
                   <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-gray-500 text-sm">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
-                    <button 
+                    <button
                       onClick={() => copyToClipboard(selectedOrder.trackingId)}
                       className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
                       title="Copy Tracking ID"
@@ -435,13 +435,13 @@ export default function Orders() {
                         <dt className="text-sm font-medium text-gray-500">Amount Paid / Quote</dt>
                         <dd className="mt-1 flex flex-col gap-2">
                           <div className="flex items-center gap-2">
-                            <input 
-                              type="number" 
+                            <input
+                              type="number"
                               defaultValue={selectedOrder.amount || 0}
                               id="priceUpdateInput"
                               className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            <button 
+                            <button
                               onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
                               className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
                             >
@@ -465,7 +465,7 @@ export default function Orders() {
                             {selectedOrder.weight || 0} KG
                           </span>
                         </div>
-                        <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic">
+                        <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic whitespace-pre-wrap">
                           {selectedOrder.packageDetails || "—"}
                         </dd>
                       </div>
@@ -512,25 +512,40 @@ export default function Orders() {
                     <label className="block text-sm font-bold text-gray-900 mb-3">Update Status</label>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { key: "ORDER_PLACED", label: "Ordered" },
-                        { key: "PENDING_CONFIRMATION", label: "Confirm" },
-                        { key: "WAITING_TO_BE_SHIPPED", label: "Process" },
-                        { key: "SHIPPED", label: "Ship" },
-                        { key: "AVAILABLE_FOR_PICKUP", label: "Arrived" },
-                        { key: "DELIVERED", label: "Deliver" }
-                      ].map(status => (
-                        <button
-                          key={status.key}
-                          onClick={() => updateStatus(status.key)}
-                          disabled={selectedOrder.status === status.key}
-                          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${selectedOrder.status === status.key
-                            ? `${statusConfig[status.key]?.color} cursor-not-allowed`
-                            : "bg-white border-gray-200 hover:border-blue-500 hover:text-blue-600"
+                        { key: "ORDER_PLACED", label: "ORDER " },
+                        { key: "PENDING_CONFIRMATION", label: "CONFIRMED" },
+                        { key: "WAITING_TO_BE_SHIPPED", label: "PROCESSING" },
+                        { key: "SHIPPED", label: "SHIPPED" },
+                        { key: "AVAILABLE_FOR_PICKUP", label: "ARRIVED" },
+                        { key: "DELIVERED", label: "DELIVERED" }
+                      ].map((status, index, array) => {
+                        const sequence = array.map(a => a.key);
+                        const currentIdx = sequence.indexOf(selectedOrder.status);
+                        
+                        // Handle unmapped current status (default to -1 so next is 0)
+                        const effectiveIdx = currentIdx >= 0 ? currentIdx : -1;
+                        
+                        const isPast = index <= effectiveIdx;
+                        const isNext = index === effectiveIdx + 1;
+                        const disabled = !isNext;
+
+                        return (
+                          <button
+                            key={status.key}
+                            onClick={() => updateStatus(status.key)}
+                            disabled={disabled}
+                            className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${
+                              isPast
+                                ? `${statusConfig[status.key]?.color} opacity-70 cursor-not-allowed`
+                                : isNext
+                                ? "bg-white border-blue-500 text-blue-600 hover:bg-blue-50"
+                                : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
                             }`}
-                        >
-                          {status.label}
-                        </button>
-                      ))}
+                          >
+                            {status.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

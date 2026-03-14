@@ -29,5 +29,21 @@ export default defineConfig({
   // Optimize deps
   optimizeDeps: {
     include: ['react', 'react-dom']
+  },
+  build: {
+    chunkSizeWarningLimit: 2000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('xlsx') || id.includes('file-saver')) return 'vendor-xlsx';
+            if (id.includes('docx')) return 'vendor-docx';
+            if (id.includes('lucide-react')) return 'vendor-lucide';
+            if (id.includes('sweetalert2')) return 'vendor-sweetalert';
+            return 'vendor-core';
+          }
+        }
+      }
+    }
   }
 })

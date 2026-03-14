@@ -1,6 +1,7 @@
 import React from "react";
 import { Truck, Package, Globe, Shield, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 export default function Solutions() {

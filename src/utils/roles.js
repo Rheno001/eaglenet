@@ -6,14 +6,14 @@ export const ROLES = {
 
 export const MENU_ITEMS = {
   [ROLES.USER]: [
-    { name: 'Home', path: '/customer-dashboard' },
+    { name: 'Dashboard', path: '/customer-dashboard' },
     { name: 'Shipment', path: '/customer-dashboard/shipments' },
     { name: 'Booking', path: '/customer-dashboard/booking' },
     { name: 'Track Shipment', path: '/customer-dashboard/track' },
     { name: 'Payment', path: '/customer-dashboard/payment' },
   ],
   [ROLES.ADMIN]: [
-    { name: 'Home', path: '/admin-dashboard' },
+    { name: 'Dashboard', path: '/admin-dashboard' },
     { name: 'Order', path: '/admin-dashboard/orders' },
     { name: 'Booking', path: '/admin-dashboard/booking' },
     { name: 'User', path: '/admin-dashboard/users' },
@@ -24,7 +24,7 @@ export const MENU_ITEMS = {
     { name: 'Settings', path: '/admin-dashboard/settings' },
   ],
   [ROLES.SUPER_ADMIN]: [
-    { name: 'Home', path: '/admin-dashboard' },
+    { name: 'Dashboard', path: '/admin-dashboard' },
     { name: 'Order', path: '/admin-dashboard/orders' },
     { name: 'Booking', path: '/admin-dashboard/booking' },
     { name: 'User', path: '/admin-dashboard/users' },

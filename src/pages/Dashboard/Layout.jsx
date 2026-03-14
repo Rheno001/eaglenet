@@ -3,7 +3,7 @@ import { Outlet, useLocation, Navigate } from "react-router-dom";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Navbar from "../../components/admin/Navbar"; // Shared navbar
 import { AuthContext } from "../../context/AuthContext";
-import PaymentWatcher from "../../components/Admin/PaymentWatcher";
+import PaymentWatcher from "../../components/admin/PaymentWatcher";
 
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(false);

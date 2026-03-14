@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, UserPlus, Trash2, Loader2, ArrowDownCircle, Mail, Calendar, User as UserIcon, ShieldCheck } from 'lucide-react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 
 export default function SuperAdminAdmins() {
@@ -20,8 +19,8 @@ export default function SuperAdminAdmins() {
       if (result.status === "success") {
         setAdmins(result.data || []);
       }
-    } catch (err) {
-      console.error("Error fetching admins:", err);
+    } catch {
+      console.error("Error fetching admins");
     } finally {
       setLoading(false);
     }
@@ -80,7 +79,7 @@ export default function SuperAdminAdmins() {
         } else {
           Swal.fire('Error', data.message || 'Operation failed', 'error');
         }
-      } catch (err) {
+      } catch {
         Swal.fire('Error', 'Network error occurred', 'error');
       }
     }

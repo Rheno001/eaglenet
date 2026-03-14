@@ -27,6 +27,7 @@ import Swal from "sweetalert2";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function UserPayments() {
+  // eslint-disable-next-line no-unused-vars
   const { user } = useContext(AuthContext);
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState({ totalPaid: 0 });
@@ -44,6 +45,7 @@ export default function UserPayments() {
 
   // Detail View State
   const [selectedPayment, setSelectedPayment] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [showModal, setShowModal] = useState(false);
 

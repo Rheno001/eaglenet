@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   UserPlus, 
   Search, 
@@ -10,7 +10,6 @@ import {
   ArrowUpRight,
   UserCheck
 } from 'lucide-react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 
 export default function PromoteUser() {
@@ -39,8 +38,8 @@ export default function PromoteUser() {
         setUsers([]);
         setError(result.message || 'No users found matched your search.');
       }
-    } catch (err) {
-      console.error("Search error:", err);
+    } catch {
+      console.error("Search error");
       setError('An error occurred while searching. Please try again.');
     } finally {
       setLoading(false);
@@ -91,7 +90,7 @@ export default function PromoteUser() {
         } else {
           Swal.fire('Error', result.message || 'Failed to upgrade user', 'error');
         }
-      } catch (err) {
+      } catch {
         Swal.fire('Error', 'A network error occurred. Please try again.', 'error');
       }
     }

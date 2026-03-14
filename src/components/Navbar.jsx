@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from "framer-motion";
 import logo from "../assets/eaglenet-logo-removebg-preview.png";
 import { AuthContext } from "../context/AuthContext";
