@@ -306,14 +306,14 @@ export default function AdminPayments() {
                   className="group flex items-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 text-sm"
                >
                   <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
-                  Export Word
+                  Word
                </button>
                <button
                   onClick={handleExportExcel}
                   className="group flex items-center gap-2 px-6 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 text-sm"
                >
                   <Download className="w-4 h-4 group-hover:translate-y-0.5 transition" />
-                  Excel Audit
+                  Excel
                </button>
             </div>
          </header>
