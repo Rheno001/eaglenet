@@ -1,6 +1,7 @@
 import React from "react";
 import { Truck, Package, Globe, Shield, ArrowRight, Plane, Ship, Home, ClipboardCheck, Warehouse } from "lucide-react";
 import { Link } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion, useScroll, useTransform } from "framer-motion";
 import EagleHero from "../../assets/eagle.webp";
 

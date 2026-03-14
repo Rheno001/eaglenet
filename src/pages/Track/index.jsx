@@ -22,6 +22,7 @@ import {
   Activity,
   XCircle
 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 const MILESTONES = [

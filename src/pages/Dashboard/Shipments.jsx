@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useContext } from "react";
+import { useEffect, useState, useCallback, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import Swal from "sweetalert2";
@@ -14,13 +14,11 @@ import {
   Truck,
   User,
   X,
-  ChevronRight,
+
   Activity,
   Warehouse,
   Box,
-  Home,
-  ShieldCheck,
-  TrendingUp,
+
   XCircle,
   Copy,
   Check
@@ -276,23 +274,26 @@ export default function Shipment() {
     }
     return false;
   };
-
   const handlePay = async (item) => {
-    const { value: amount } = await Swal.fire({
+    if (!item.amount || parseFloat(item.amount) <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Amount Not Set',
+        text: 'The admin has not yet assigned a payment amount to this shipment. Please check back later.',
+        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+      });
+      return;
+    }
+
+    const { isConfirmed } = await Swal.fire({
       title: 'Authorize Payment',
       html: `
         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-left">
           <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-1">Tracking ID</p>
           <p class="text-lg font-black text-slate-900 font-mono mb-4">${item.trackingId}</p>
           <div class="h-px bg-slate-200 mb-4"></div>
-          <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Enter Amount (₦)</p>
-          <input 
-            type="number" 
-            id="swal-input-amount" 
-            class="swal2-input w-full m-0 rounded-xl border-slate-200 font-black" 
-            placeholder="0.00"
-            value="${item.amount || ""}"
-          >
+          <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Amount to Pay</p>
+          <p class="text-3xl font-black text-slate-900">₦${parseFloat(item.amount).toLocaleString()}</p>
         </div>
       `,
       focusConfirm: false,
@@ -302,24 +303,17 @@ export default function Shipment() {
       customClass: {
         confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold',
         cancelButton: 'bg-slate-100 text-slate-500 px-8 py-3 rounded-xl font-bold'
-      },
-      preConfirm: () => {
-        const inputAmount = document.getElementById('swal-input-amount').value;
-        if (!inputAmount || parseFloat(inputAmount) <= 0) {
-          Swal.showValidationMessage('Please enter a valid amount');
-          return false;
-        }
-        return inputAmount;
       }
     });
 
-    if (!amount) return;
+    if (!isConfirmed) return;
+    const amount = item.amount;
 
     try {
       setPaying(true);
       Swal.fire({
         title: 'Initializing Secure Link',
-        text: 'Syncing with logistics settlement hub...',
+        text: 'Processing...',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -780,7 +774,7 @@ export default function Shipment() {
                         <p className="text-sm text-gray-600 font-medium">Package Details</p>
                       </div>
                       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
-                        <p className="text-gray-700 leading-relaxed italic">
+                        <p className="text-gray-700 leading-relaxed italic whitespace-pre-wrap">
                           {selectedShipment.packageDetails || "No specific details provided."}
                         </p>
                       </div>

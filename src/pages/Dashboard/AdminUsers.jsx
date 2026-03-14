@@ -35,6 +35,7 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState("");
 
   // Pagination state
@@ -121,6 +122,7 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e) => {
@@ -240,7 +242,7 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {currentUsers.map((user, idx) => (
+                {currentUsers.map((user) => (
                   <tr key={user.id} className="group hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">

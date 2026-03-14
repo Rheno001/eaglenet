@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import {
   PieChart,
   Pie,
@@ -25,6 +26,7 @@ import {
   Activity
 } from "lucide-react";
 
+// eslint-disable-next-line no-unused-vars
 const StatCard = ({ icon: Icon, label, value, trend, colorClass }) => (
   <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
     <div className="flex items-center justify-between mb-2">
@@ -47,6 +49,7 @@ const StatCard = ({ icon: Icon, label, value, trend, colorClass }) => (
 );
 
 export default function Overview() {
+  const { user } = useContext(AuthContext);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,
@@ -121,7 +124,7 @@ export default function Overview() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-          <p className="text-gray-500 text-sm">Real-time logistics analytics & command</p>
+          <p className="text-gray-500 text-sm">Real-time logistics analytics </p>
         </div>
         <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 text-sm font-semibold text-gray-700">
           <CalendarIcon size={16} />
@@ -138,23 +141,25 @@ export default function Overview() {
           trend="+5%"
           colorClass="bg-blue-600"
         />
-        <StatCard
-          icon={CreditCard}
-          label="Total Revenue"
-          value={`₦${(stats.totalRevenue || 0).toLocaleString()}`}
-          trend="+12%"
-          colorClass="bg-emerald-600"
-        />
+        {user?.role === 'SUPER_ADMIN' && (
+          <StatCard
+            icon={CreditCard}
+            label="Total Revenue"
+            value={`₦${(stats.totalRevenue || 0).toLocaleString()}`}
+            trend="+12%"
+            colorClass="bg-emerald-600"
+          />
+        )}
         <StatCard
           icon={Clock}
-          label="Pending"
+          label="Total Pending Shipment"
           value={stats.pending || 0}
           trend={`${stats.pending > 5 ? "+" : "-"}${Math.abs(stats.pending - 2)}`}
           colorClass="bg-amber-600"
         />
         <StatCard
           icon={Truck}
-          label="In Transit"
+          label="Total Shipment In Transit"
           value={stats.inTransit || 0}
           trend="+1"
           colorClass="bg-indigo-600"

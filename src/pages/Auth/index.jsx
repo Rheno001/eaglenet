@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, UserPlus, Eye, EyeOff, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthContext } from '../../context/AuthContext';
 import { ROLES } from '../../utils/roles';

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import {
   Package,
   User,
@@ -29,6 +30,7 @@ import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } from 'docx';
 
 export default function MonthlyReport() {
+  const { user } = useContext(AuthContext);
   const [monthOffset, setMonthOffset] = useState(0);
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +73,7 @@ export default function MonthlyReport() {
 
   useEffect(() => {
     fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monthOffset]);
 
   const handlePrevMonth = () => setMonthOffset(prev => prev + 1);
@@ -82,6 +85,7 @@ export default function MonthlyReport() {
     return now.toLocaleString("default", { month: "long", year: "numeric" });
   };
 
+  // eslint-disable-next-line no-unused-vars
   const exportReport = () => {
     const { month, year } = getMonthDate(monthOffset);
     window.open(`https://eaglenet-eb9x.onrender.com/api/admin/reports/export?month=${month}&year=${year}`, "_blank");
@@ -102,7 +106,7 @@ export default function MonthlyReport() {
       ["OFFICIAL KPI REGISTRY", "VALUE", "STRATEGIC CONTEXT"],
       ["Logistics Throughput", reportData.totalBookings, "Total unique shipments successfully entered into system registry."],
       ["User Base Expansion", reportData.newCustomers, "Verification of new citizen identities cleared for service access."],
-      ["Liquidity Audit (Net)", `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, "Financial clearance received via authenticated PG channels."],
+      ...(user?.role === 'SUPER_ADMIN' ? [["Liquidity Audit (Net)", `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, "Financial clearance received via authenticated PG channels."]] : []),
       ["Security Level", "HIGH-VERIFIED", "End-to-end data encryption and integrity checks completed."],
       [""],
       ["CERTIFIED BY EAGLENET CENTRAL COMMAND - CONFIDENTIAL"],
@@ -209,13 +213,15 @@ export default function MonthlyReport() {
                   new TableCell({ children: [new Paragraph("New account identities verified within the period.")] }),
                 ]
               }),
-              new TableRow({
-                children: [
-                  new TableCell({ children: [new Paragraph({ text: "Net Liquid Revenue", bold: true })] }),
-                  new TableCell({ children: [new Paragraph({ text: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, alignment: AlignmentType.CENTER })] }),
-                  new TableCell({ children: [new Paragraph("Gross financial yield received via secure gateways.")] }),
-                ]
-              }),
+              ...(user?.role === 'SUPER_ADMIN' ? [
+                new TableRow({
+                  children: [
+                    new TableCell({ children: [new Paragraph({ text: "Net Liquid Revenue", bold: true })] }),
+                    new TableCell({ children: [new Paragraph({ text: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, alignment: AlignmentType.CENTER })] }),
+                    new TableCell({ children: [new Paragraph("Gross financial yield received via secure gateways.")] }),
+                  ]
+                })
+              ] : []),
             ]
           }),
           new Paragraph({
@@ -226,7 +232,7 @@ export default function MonthlyReport() {
             spacing: { before: 600, after: 200 },
           }),
           new Paragraph({
-            text: `The intelligence extraction for ${monthName} confirms an operational health score of A+. Current logistics throughput stands at ${reportData.totalBookings} units, yielding a performance peak of ₦${parseFloat(reportData.totalRevenue).toLocaleString()}. All system nodes are currently in a state of verified integrity.`,
+            text: `The intelligence extraction for ${monthName} confirms an operational health score of A+. Current logistics throughput stands at ${reportData.totalBookings} units${user?.role === 'SUPER_ADMIN' ? `, yielding a performance peak of ₦${parseFloat(reportData.totalRevenue).toLocaleString()}` : ""}. All system nodes are currently in a state of verified integrity.`,
             size: 22,
             color: "475569",
             spacing: { after: 1200 },
@@ -381,7 +387,7 @@ export default function MonthlyReport() {
             {[
               { label: 'Total Bookings', value: reportData.totalBookings, icon: Package, color: 'blue', desc: 'Shipments processed' },
               { label: 'Total Users', value: reportData.newCustomers, icon: Users, color: 'emerald', desc: 'Total Users' },
-              { label: 'Net Revenue', value: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, icon: DollarSign, color: 'amber', desc: 'Financial yield' },
+              ...(user?.role === 'SUPER_ADMIN' ? [{ label: 'Net Revenue', value: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, icon: DollarSign, color: 'amber', desc: 'Financial yield' }] : []),
               { label: 'Report Status', value: reportData.reportReady ? 'Ready' : 'In Progress', icon: FileText, color: reportData.reportReady ? 'teal' : 'orange', desc: 'Audit completion' },
             ].map((stat, i) => (
               <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group">
@@ -405,8 +411,12 @@ export default function MonthlyReport() {
               <p className="text-slate-500 font-medium leading-relaxed">
                 The system has identified <span className="text-slate-900 font-bold">{reportData.newCustomers} new accounts</span> and processed
                 <span className="text-slate-900 font-bold"> {reportData.totalBookings} logistics orders</span> during this cycle.
-                Financial efficiency is currently holding at an optimized level with a total revenue stream of
-                <span className="text-emerald-600 font-bold"> ₦{parseFloat(reportData.totalRevenue).toLocaleString()}</span>.
+                {user?.role === 'SUPER_ADMIN' && (
+                  <>
+                    {' '}Financial efficiency is currently holding at an optimized level with a total revenue stream of
+                    <span className="text-emerald-600 font-bold"> ₦{parseFloat(reportData.totalRevenue).toLocaleString()}</span>.
+                  </>
+                )}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl">

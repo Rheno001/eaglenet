@@ -42,7 +42,7 @@ export default function ResetPassword() {
       } else {
         setMessage(`${data.message}`);
       }
-    } catch (err) {
+    } catch {
       setMessage("Network error. Please try again.");
     } finally {
       setLoading(false);

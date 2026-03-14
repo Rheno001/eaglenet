@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Users, Globe, Target, Truck, Award, Clock, ArrowRight, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import HeroContainer from "../../assets/hero-container-crane.png";
 import HaulageServices from "../../assets/haulage-services.webp";

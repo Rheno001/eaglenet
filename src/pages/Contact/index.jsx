@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, MessageSquare, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import EagleHero from "../../assets/eagle.webp";

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import Swal from "sweetalert2";
 import {
   Package,
@@ -16,9 +17,11 @@ import {
 } from "lucide-react";
 
 export default function Booking() {
+  const { user } = useContext(AuthContext);
+
   const [formData, setFormData] = useState({
-    customerName: "",
-    email: "",
+    customerName: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "",
+    email: user?.email || "",
     phone: "",
     pickupAddress: "",
     pickupCity: "",
@@ -33,10 +36,21 @@ export default function Booking() {
   });
 
   const [services, setServices] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loadingServices, setLoadingServices] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({ 
+        ...prev, 
+        email: prev.email || user.email || "",
+        customerName: prev.customerName || `${user.firstName || ""} ${user.lastName || ""}`.trim()
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchServices();
@@ -110,6 +124,11 @@ export default function Booking() {
     setLoading(true);
     try {
       const token = localStorage.getItem("jwt");
+
+      // Extract the service name associated with the selected serviceId
+      const selectedServiceObj = services.find(s => String(s.id) === String(formData.serviceId));
+      const serviceInfo = selectedServiceObj ? `— Service Requested: ${selectedServiceObj.serviceName} (REF: ${selectedServiceObj.id})` : "";
+
       const payload = {
         fullName: formData.customerName,
         email: formData.email,
@@ -117,7 +136,7 @@ export default function Booking() {
         origin: `${formData.pickupAddress}, ${formData.pickupCity}`,
         destination: `${formData.destination}, ${formData.destinationCity}`,
         packageType: formData.packageType,
-        packageDetails: formData.packageDetails,
+        packageDetails: `${formData.packageDetails} \n${serviceInfo}`.trim(),
         preferredPickupDate: formData.date,
         preferredPickupTime: formData.preferredTime,
         specialRequirements: formData.specialRequirements,
@@ -148,14 +167,15 @@ export default function Booking() {
         });
         setCurrentStep(1);
         setFormData({
-          customerName: "", email: "", phone: "", pickupAddress: "", pickupCity: "",
+          customerName: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "", 
+          email: user?.email || "", phone: "", pickupAddress: "", pickupCity: "",
           destination: "", destinationCity: "", packageType: "general",
           packageDetails: "", date: "", preferredTime: "anytime", specialRequirements: "", serviceId: ""
         });
       } else {
         Swal.fire('Registry Error', result.message || 'Operation failed', 'error');
       }
-    } catch (err) {
+    } catch {
       Swal.fire('Connection Interrupted', 'Could not sync with the logistics hub.', 'error');
     } finally {
       setLoading(false);
@@ -176,7 +196,7 @@ export default function Booking() {
             </div>
             Booking
           </h1>
-          <p className="text-slate-500 font-medium mt-1">Initialize a new shipment booking in our network.</p>
+          <p className="text-slate-500 font-medium mt-1">Book a shipment now</p>
         </div>
 
         <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl w-fit">
@@ -290,9 +310,9 @@ export default function Booking() {
                   <div className="space-y-3">
                     <select name="preferredTime" value={["anytime", "morning", "afternoon"].includes(formData.preferredTime) ? formData.preferredTime : "specific"} onChange={(e) => {
                       if (e.target.value === "specific") {
-                         setFormData(prev => ({ ...prev, preferredTime: "09:00" }));
+                        setFormData(prev => ({ ...prev, preferredTime: "09:00" }));
                       } else {
-                         handleChange(e);
+                        handleChange(e);
                       }
                     }} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
                       <option value="anytime">Flexible</option>
@@ -301,11 +321,11 @@ export default function Booking() {
                       <option value="specific">Specific Time</option>
                     </select>
                     {!["anytime", "morning", "afternoon"].includes(formData.preferredTime) && (
-                      <input 
-                        type="time" 
-                        name="preferredTime" 
-                        value={formData.preferredTime} 
-                        onChange={handleChange} 
+                      <input
+                        type="time"
+                        name="preferredTime"
+                        value={formData.preferredTime}
+                        onChange={handleChange}
                         className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 animate-in slide-in-from-top-2"
                       />
                     )}

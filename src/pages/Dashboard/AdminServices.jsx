@@ -16,7 +16,6 @@ import {
   Plus
 } from 'lucide-react';
 import Swal from 'sweetalert2';
-import axios from 'axios';
 
 export default function AdminServices() {
   const [services, setServices] = useState([]);
@@ -43,8 +42,8 @@ export default function AdminServices() {
       } else {
         setError(result.message || 'Failed to sync with service registry.');
       }
-    } catch (err) {
-      console.error("Registry fetch error:", err);
+    } catch {
+      console.error("Registry fetch error");
       setError('Connection with logistics hub interrupted.');
     } finally {
       setLoading(false);
@@ -106,7 +105,7 @@ export default function AdminServices() {
         } else {
           Swal.fire('Registry Error', result.message || 'Failed to create service', 'error');
         }
-      } catch (err) {
+      } catch {
         Swal.fire('Hub Timeout', 'Could not broadcast new service to the network.', 'error');
       }
     }
