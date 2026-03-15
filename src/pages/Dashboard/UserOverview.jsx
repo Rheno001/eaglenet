@@ -73,7 +73,7 @@ export default function UserOverview() {
           </div>
         </div>
         <Link
-          to="/dashboard/booking"
+          to="/customer-dashboard/booking"
           className="bg-slate-900 text-white px-8 py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-slate-800 transition-all shadow-2xl shadow-slate-200 active:scale-95 group"
         >
           <PlusCircle size={20} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -163,7 +163,7 @@ export default function UserOverview() {
           <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-4">REAL-TIME SHIPMENT TRACKING</h3>
           <p className="text-slate-500 font-medium mb-10 max-w-xs">Enter your high-fidelity tracking ID to monitor your consignment movements.</p>
           <Link
-            to="/dashboard/track"
+            to="/customer-dashboard/track"
             className="w-full flex items-center justify-center gap-3 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all duration-500 active:scale-95"
           >
             Access Tracker <ArrowRight size={18} />

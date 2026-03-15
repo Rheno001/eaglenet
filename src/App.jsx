@@ -69,7 +69,6 @@ function App() {
           <Route path="/signup" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/track/:trackingId?" element={<Track />} />
 
           {/* ✅ CUSTOMER DASHBOARD SYSTEM */}
           <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>

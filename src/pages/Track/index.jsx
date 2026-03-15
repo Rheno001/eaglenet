@@ -115,7 +115,8 @@ export default function TrackShipment() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (trackingId.trim()) {
-      navigate(`/track/${trackingId.trim()}`);
+      const basePath = isDashboard ? "/customer-dashboard/track" : "/track";
+      navigate(`${basePath}/${trackingId.trim()}`);
       fetchTrackingDetails(trackingId.trim());
     }
   };
@@ -146,18 +147,18 @@ export default function TrackShipment() {
     }
   };
 
-  const isDashboard = window.location.pathname.startsWith("/dashboard");
+  const isDashboard = window.location.pathname.includes("dashboard");
 
   return (
     <div className={`min-h-screen bg-gray-50 pb-20 px-4 ${isDashboard ? "pt-6" : "pt-24"}`}>
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <button 
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-8 group"
+          onClick={() => navigate(isDashboard ? "/customer-dashboard" : "/")}
+          className="flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors mb-8 group bg-white/50 w-fit px-4 py-2 rounded-xl border border-gray-100"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          Back to Home
+          {isDashboard ? "Back to Dashboard" : "Back to Home"}
         </button>
 
         {/* Search Section */}

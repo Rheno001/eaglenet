@@ -92,6 +92,42 @@ export default function Shipment() {
   const [sortBy, setSortBy] = useState("date");
   const [copiedId, setCopiedId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [services, setServices] = useState([]);
+  const [loadingServices, setLoadingServices] = useState(false);
+
+  const fetchServices = useCallback(async () => {
+    setLoadingServices(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const response = await fetch(`${baseUrl}/api/shipments/services`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const result = await response.json();
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setServices(result.data);
+      }
+    } catch (err) {
+      console.error("Registry fetch error:", err);
+      // Resilience fallback
+      setServices([
+        { id: "s1", serviceName: "Household & Office Removals" },
+        { id: "s2", serviceName: "Air Freight" },
+        { id: "s3", serviceName: "Ocean Freight" },
+        { id: "s4", serviceName: "Haulage & Distribution" },
+        { id: "s5", serviceName: "Customs Clearing" },
+        { id: "s6", serviceName: "Warehousing" }
+      ]);
+    } finally {
+      setLoadingServices(false);
+    }
+  }, []);
+
+  const getServiceName = (serviceId) => {
+    if (!serviceId) return "Standard Logistics";
+    const service = services.find(s => String(s.id) === String(serviceId));
+    return service ? service.serviceName : "Standard Logistics";
+  };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -225,7 +261,8 @@ export default function Shipment() {
 
   useEffect(() => {
     fetchShipments();
-  }, [fetchShipments]);
+    fetchServices();
+  }, [fetchShipments, fetchServices]);
 
   useEffect(() => {
     applyFilters();
@@ -531,6 +568,9 @@ export default function Shipment() {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden lg:table-cell">
                       Route
                     </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 hidden md:table-cell">
+                      Service
+                    </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                       Status
                     </th>
@@ -566,6 +606,11 @@ export default function Shipment() {
                       <td className="px-6 py-4 text-sm text-gray-600 hidden lg:table-cell">
                         <MapPin className="w-4 h-4 text-gray-400 inline mr-1" />
                         {item.pickupCity} → {item.destinationCity}
+                      </td>
+                      <td className="px-6 py-4 text-sm hidden md:table-cell">
+                        <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                          {getServiceName(item.serviceId)}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-sm">{getStatusBadge(item.status)}</td>
                       <td className="px-6 py-4 text-sm">
@@ -766,16 +811,20 @@ export default function Shipment() {
                   </h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                      <p className="text-sm text-gray-600 font-medium">Package Type</p>
-                      <p className="text-lg text-gray-900 font-bold mt-1">{selectedShipment.packageType || "General"}</p>
+                      <p className="text-sm text-gray-600 font-medium">Service Type</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1 text-blue-600">{getServiceName(selectedShipment.serviceId)}</p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                      <p className="text-sm text-gray-600 font-medium">Package Category</p>
+                      <p className="text-lg text-gray-900 font-bold mt-1 capitalize">{selectedShipment.packageType || "General"}</p>
                     </div>
                     <div className="lg:col-span-2">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-gray-600 font-medium">Package Details</p>
                       </div>
-                      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-inner">
-                        <p className="text-gray-700 leading-relaxed italic whitespace-pre-wrap">
-                          {selectedShipment.packageDetails || "No specific details provided."}
+                      <div className={`bg-white p-4 rounded-xl border shadow-inner ${!selectedShipment.packageDetails ? 'border-amber-100' : 'border-gray-200'}`}>
+                        <p className={`text-sm leading-relaxed italic whitespace-pre-wrap ${!selectedShipment.packageDetails ? 'text-amber-600 font-medium' : 'text-gray-700'}`}>
+                          {selectedShipment.packageDetails || "No specific packing list or item details provided for this consignment."}
                         </p>
                       </div>
                     </div>

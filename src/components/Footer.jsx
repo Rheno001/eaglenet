@@ -29,7 +29,7 @@ export default function Footer() {
       links: [
         { name: "Contact Us", path: "/contact" },
         { name: "Get a Quote", path: "/quote" },
-        { name: "Tracking", path: "/track" },
+        { name: "Tracking", path: "/customer-dashboard/track" },
         { name: "Site Planning", path: "/planning" },
       ],
     },
