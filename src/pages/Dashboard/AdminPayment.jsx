@@ -186,7 +186,7 @@ export default function AdminPayments() {
       const s = String(status || '').toUpperCase();
       switch (s) {
          case "ORDER_PLACED": return "Order Placed";
-         case "PENDING_CONFIRMATION": return "Confirmation Pending";
+         case "PENDING_CONFIRMATION": return "Confirmed";
          case "WAITING_TO_BE_SHIPPED": return "Processing";
          case "SHIPPED": return "In Transit";
          case "AVAILABLE_FOR_PICKUP": return "At Terminal";

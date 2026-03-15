@@ -29,7 +29,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const MILESTONES = [
   { key: 'ORDER_PLACED', label: 'Order Received', icon: Clock, desc: 'Booking received.' },
-  { key: 'PENDING_CONFIRMATION', label: 'Reviewing', icon: Activity, desc: 'Reviewing details.' },
+  { key: 'PENDING_CONFIRMATION', label: 'Confirmed', icon: Activity, desc: 'Reviewing details.' },
   { key: 'WAITING_TO_BE_SHIPPED', label: 'Processing', icon: Box, desc: 'Being documented.' },
   { key: 'SHIPPED', label: 'In Transit', icon: Truck, desc: 'Moving to destination.' },
   { key: 'AVAILABLE_FOR_PICKUP', label: 'At Terminal', icon: Warehouse, desc: 'Ready for collection.' },
@@ -199,30 +199,30 @@ export default function TrackShipment() {
       {isDashboard && !shipment && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
           <div className="max-w-3xl">
-             <h2 className="text-4xl font-black text-black uppercase tracking-tighter mb-4">Consignment Tracker</h2>
-             <p className="text-gray-500 font-medium mb-12">Monitor your high-fidelity logistics movements across our secure network.</p>
+            <h2 className="text-4xl font-black text-black uppercase tracking-tighter mb-4">Consignment Tracker</h2>
+            <p className="text-gray-500 font-medium mb-12">Monitor your high-fidelity logistics movements across our secure network.</p>
 
-             <form onSubmit={handleSearch} className="relative group max-w-2xl">
-                <div className="flex flex-col sm:flex-row bg-white border border-gray-100 focus-within:border-black transition-all">
-                  <div className="flex-1 flex items-center px-6 py-5">
-                    <Search className="w-5 h-5 text-gray-400 mr-4" />
-                    <input
-                      type="text"
-                      placeholder="TRACKING ID"
-                      className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-200 text-sm"
-                      value={trackingId}
-                      onChange={(e) => setTrackingId(e.target.value)}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-black text-white px-10 py-5 font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all disabled:opacity-50"
-                  >
-                    {loading ? "..." : "Retrieve"}
-                  </button>
+            <form onSubmit={handleSearch} className="relative group max-w-2xl">
+              <div className="flex flex-col sm:flex-row bg-white border border-gray-100 focus-within:border-black transition-all">
+                <div className="flex-1 flex items-center px-6 py-5">
+                  <Search className="w-5 h-5 text-gray-400 mr-4" />
+                  <input
+                    type="text"
+                    placeholder="TRACKING ID"
+                    className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-200 text-sm"
+                    value={trackingId}
+                    onChange={(e) => setTrackingId(e.target.value)}
+                  />
                 </div>
-              </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-black text-white px-10 py-5 font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all disabled:opacity-50"
+                >
+                  {loading ? "..." : "Retrieve"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

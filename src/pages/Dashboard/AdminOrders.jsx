@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp, Copy, Check
+  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp, Copy, Check, Shield
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -121,7 +121,38 @@ export default function Orders() {
     }
   };
 
+  const isPaid = (item) => {
+    if (!item) return false;
+    if (item.paymentStatus === "PAID" || item.isPaid === true || item.paid === true) return true;
+    if (item.payments && Array.isArray(item.payments)) {
+      return item.payments.some(p => p?.status?.toUpperCase() === "SUCCESS" || p?.status?.toUpperCase() === "COMPLETED");
+    }
+    return false;
+  };
+
   const updateStatus = async (newStatus) => {
+    // 1. Check if price is set
+    if (!selectedOrder.amount || parseFloat(selectedOrder.amount) <= 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Pricing Required',
+        text: 'You must set a shipment price before advancing the status.',
+        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+      });
+      return;
+    }
+
+    // 2. Check if payment is confirmed
+    if (!isPaid(selectedOrder)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Payment Required',
+        text: 'This shipment cannot be moved to the next status until payment is confirmed.',
+        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
@@ -193,9 +224,60 @@ export default function Orders() {
     }
   };
 
+  const confirmPaymentManually = async () => {
+    try {
+      const { isConfirmed } = await Swal.fire({
+        title: 'Confirm Payment',
+        text: "Are you sure you want to manually mark this shipment as PAID?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Confirm',
+        cancelButtonText: 'No',
+        customClass: {
+          confirmButton: 'bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold',
+          cancelButton: 'bg-slate-100 text-slate-500 px-8 py-3 rounded-xl font-bold'
+        }
+      });
+
+      if (!isConfirmed) return;
+
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ paymentStatus: "PAID" }),
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setOrders(prev =>
+          prev.map(o => o.id === selectedOrder.id ? { ...o, paymentStatus: "PAID" } : o)
+        );
+        setSelectedOrder(prev => ({ ...prev, paymentStatus: "PAID" }));
+        Swal.fire({
+          icon: 'success',
+          title: 'Payment Confirmed',
+          text: 'Shipment has been marked as PAID.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      } else {
+        Swal.fire('Error', result.message || 'Failed to update payment status', 'error');
+      }
+    } catch (err) {
+      console.error("Error confirming payment:", err);
+      Swal.fire('Error', 'Connection failed', 'error');
+    }
+  };
+
   const statusConfig = {
     ORDER_PLACED: { color: "bg-slate-100 text-slate-700 border-slate-300", icon: Clock, label: "Order Placed" },
-    PENDING_CONFIRMATION: { color: "bg-amber-100 text-amber-700 border-amber-300", icon: Activity, label: "Confirmation Pending" },
+    PENDING_CONFIRMATION: { color: "bg-amber-100 text-amber-700 border-amber-300", icon: Activity, label: "Confirmed" },
     WAITING_TO_BE_SHIPPED: { color: "bg-indigo-100 text-indigo-700 border-indigo-300", icon: Package, label: "Processing" },
     SHIPPED: { color: "bg-blue-100 text-blue-700 border-blue-300", icon: Truck, label: "In Transit" },
     AVAILABLE_FOR_PICKUP: { color: "bg-teal-100 text-teal-700 border-teal-300", icon: Warehouse, label: "At Terminal" },
@@ -315,14 +397,6 @@ export default function Orders() {
                       >
                         <Eye className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">View</span>
                       </button>
-                      {order.status !== "DELIVERED" && (
-                        <button
-                          onClick={() => confirmDelivered(order)}
-                          className="px-2 py-1 md:px-3 md:py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-1"
-                        >
-                          <CheckCircle className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">Deliver</span>
-                        </button>
-                      )}
                     </td>
                   </tr>
                 )
@@ -397,165 +471,197 @@ export default function Orders() {
               </div>
 
               {/* Modal Content */}
-              <div className="overflow-y-auto flex-1 p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column (Details) */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Customer Information */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><User className="w-6 h-6 text-blue-600" />Customer Details</h3>
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">Name</dt>
-                        <dd className="mt-1 text-gray-900 font-semibold">{selectedOrder.fullName || "—"}</dd>
+              <div className="flex-1 p-4 md:p-6 overflow-y-auto no-scrollbar">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left: Combined Details */}
+                  <div className="space-y-6">
+                    {/* Customer Info */}
+                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                        <User className="text-blue-600" size={20} />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Customer Protocols</h3>
                       </div>
-                      <div className="sm:col-span-1">
-                        <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.phoneNumber || "—"}</dd>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Entity Name</p>
+                          <p className="font-bold text-gray-900">{selectedOrder.fullName || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Contact Line</p>
+                          <p className="font-bold text-gray-900">{selectedOrder.phoneNumber || "—"}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Digital Identity</p>
+                          <p className="font-bold text-gray-900 truncate">{selectedOrder.email || "—"}</p>
+                        </div>
                       </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Email</dt>
-                        <dd className="mt-1 text-gray-900 break-all">{selectedOrder.email || "—"}</dd>
+                    </div>
+
+                    {/* Shipment Info */}
+                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Package className="text-blue-600" size={20} />
+                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Consignment Data</h3>
                       </div>
-                    </dl>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Service Logistics</p>
+                          <p className="font-bold text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Package Type</p>
+                          <p className="font-bold text-gray-900">{selectedOrder.packageType || "—"}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Manifest Description</p>
+                          <div className="bg-slate-50 p-4 rounded-xl text-xs font-medium text-gray-600 italic">
+                            {selectedOrder.packageDetails || "No specific instructions registered."}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Shipment Information */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Package className="w-6 h-6 text-blue-600" />Shipment Details</h3>
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Package Type</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.packageType || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Service Type</dt>
-                        <dd className="mt-1 text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Amount Paid / Quote</dt>
-                        <dd className="mt-1 flex flex-col gap-2">
+                  {/* Right: Route & Financials */}
+                  <div className="space-y-6">
+                    {/* Financial & Status Header */}
+                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
+                      <div className="flex items-center justify-between mb-10">
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financial Valuation</p>
                           <div className="flex items-center gap-2">
                             <input
                               type="number"
                               defaultValue={selectedOrder.amount || 0}
                               id="priceUpdateInput"
-                              className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-bold text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-24 bg-slate-50 border-none rounded-lg text-sm font-black text-blue-600 focus:ring-1 focus:ring-blue-500 py-1"
                             />
                             <button
                               onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
-                              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm"
+                              className="text-[9px] font-black uppercase tracking-widest bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all"
                             >
-                              Set Quote
+                              Set
                             </button>
                           </div>
-                          {selectedOrder.amount > 0 && (
-                            <p className="text-xs font-bold text-emerald-600">Current: ₦{parseFloat(selectedOrder.amount).toLocaleString()}</p>
-                          )}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Weight</dt>
-                        <dd className="mt-1 text-gray-900 font-bold">{selectedOrder.weight || 0} KG</dd>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <div className="flex items-center justify-between mb-2">
-                          <dt className="text-sm font-medium text-gray-500">Package Details</dt>
-                          <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                            <TrendingUp size={12} className="text-blue-100" />
-                            {selectedOrder.weight || 0} KG
-                          </span>
                         </div>
-                        <dd className="mt-1 text-gray-900 bg-gray-50 p-4 rounded-xl border border-gray-100 italic whitespace-pre-wrap">
-                          {selectedOrder.packageDetails || "—"}
-                        </dd>
+                        <div className="text-right space-y-2">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Status</p>
+                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusInfo(selectedOrder.status).color}`}>
+                              {getStatusInfo(selectedOrder.status).label}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financial Status</p>
+                            {isPaid(selectedOrder) ? (
+                              <span className="px-4 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-1 justify-center">
+                                <CheckCircle size={10} /> Paid
+                              </span>
+                            ) : (
+                              <div className="flex flex-col gap-1 items-end">
+                                <span className="px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 flex items-center gap-1 justify-center w-fit">
+                                  <Clock size={10} /> Unpaid
+                                </span>
+                                {selectedOrder.amount > 0 && (
+                                  <button
+                                    onClick={confirmPaymentManually}
+                                    className="text-[8px] font-black uppercase text-blue-600 hover:underline"
+                                  >
+                                    Confirm Manually
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </dl>
-                  </div>
-                </div>
 
-                {/* Right Column (Status & Route) */}
-                <div className="lg:col-span-1 space-y-6">
-                  {/* Status Card */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><Truck className="w-6 h-6 text-blue-600" />Status</h3>
-                    <div className={`p-3 rounded-lg flex items-center gap-3 ${getStatusInfo(selectedOrder.status).color}`}>
-                      {React.createElement(getStatusInfo(selectedOrder.status).icon, { className: "w-6 h-6" })}
-                      <span className="font-bold text-lg">{getStatusInfo(selectedOrder.status).label}</span>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm font-medium text-gray-500">Order Date</p>
-                      <p className="text-gray-900 font-semibold">{selectedOrder.preferredPickupDate?.split('T')[0] || selectedOrder.createdAt?.split('T')[0]}</p>
-                    </div>
-                  </div>
-
-                  {/* Shipment Route Timeline */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-3 text-lg"><MapPin className="w-6 h-6 text-blue-600" />Route</h3>
-                    <div className="relative border-l-2 border-dashed border-gray-300 ml-3">
-                      <div className="mb-8 pl-8 relative">
-                        <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-blue-500 rounded-full"></div>
-                        <p className="font-semibold text-blue-600">Origin</p>
-                        <p className="text-gray-800">{selectedOrder.pickupAddress || "—"}</p>
-                        <p className="text-sm text-gray-500">{selectedOrder.pickupCity || "—"}</p>
-                      </div>
-                      <div className="pl-8 relative">
-                        <div className="absolute -left-3.5 top-1 w-6 h-6 bg-white border-2 border-green-500 rounded-full"></div>
-                        <p className="font-semibold text-green-600">Destination</p>
-                        <p className="text-gray-800">{selectedOrder.deliveryAddress || "—"}</p>
-                        <p className="text-sm text-gray-500">{selectedOrder.destinationCity || "—"}</p>
+                      {/* Route Map */}
+                      <div className="relative pl-6 border-l border-dashed border-gray-200 ml-2 space-y-10">
+                        <div className="relative">
+                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-blue-500 bg-white shadow-sm shadow-blue-500/20"></div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1">Origin Node</p>
+                          <p className="text-xs font-bold text-gray-900">{selectedOrder.pickupAddress || selectedOrder.pickupCity}</p>
+                        </div>
+                        <div className="relative">
+                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-emerald-500 bg-white shadow-sm shadow-emerald-500/20"></div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-1">Destination Hub</p>
+                          <p className="text-xs font-bold text-gray-900">{selectedOrder.deliveryAddress || selectedOrder.destinationCity}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Status Update */}
-                  <div className="bg-white border border-gray-200 rounded-xl p-5">
-                    <label className="block text-sm font-bold text-gray-900 mb-3">Update Status</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { key: "ORDER_PLACED", label: "ORDER " },
-                        { key: "PENDING_CONFIRMATION", label: "CONFIRMED" },
-                        { key: "WAITING_TO_BE_SHIPPED", label: "PROCESSING" },
-                        { key: "SHIPPED", label: "SHIPPED" },
-                        { key: "AVAILABLE_FOR_PICKUP", label: "ARRIVED" },
-                        { key: "DELIVERED", label: "DELIVERED" }
-                      ].map((status, index, array) => {
-                        const sequence = array.map(a => a.key);
-                        const currentIdx = sequence.indexOf(selectedOrder.status);
-                        
-                        // Handle unmapped current status (default to -1 so next is 0)
-                        const effectiveIdx = currentIdx >= 0 ? currentIdx : -1;
-                        
-                        const isPast = index <= effectiveIdx;
-                        const isNext = index === effectiveIdx + 1;
-                        const disabled = !isNext;
-
-                        return (
-                          <button
-                            key={status.key}
-                            onClick={() => updateStatus(status.key)}
-                            disabled={disabled}
-                            className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all border-2 ${
-                              isPast
-                                ? `${statusConfig[status.key]?.color} opacity-70 cursor-not-allowed`
-                                : isNext
-                                ? "bg-white border-blue-500 text-blue-600 hover:bg-blue-50"
-                                : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            {status.label}
-                          </button>
-                        );
-                      })}
+                    <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden group">
+                      <Shield className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:text-white/10 transition-all" />
+                      <h4 className="text-xs font-black uppercase tracking-widest mb-2">Encryption Signature</h4>
+                      <p className="text-slate-400 text-[10px] font-medium leading-relaxed mb-4">Tracking code EGLN{selectedOrder.trackingId.slice(-4)} is verified and protected </p>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">Secure Connection</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* Status Update Protocol - Redesigned to be more spacious */}
+              <div className="p-6 md:p-8 bg-white border-t border-gray-100">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="h-px flex-1 bg-gray-50"></div>
+                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-black-300">Update Shipment Status</label>
+                    <div className="h-px flex-1 bg-gray-50"></div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    {[
+                      { key: "ORDER_PLACED", label: "ORDERED" },
+                      { key: "PENDING_CONFIRMATION", label: "CONFIRMED" },
+                      { key: "WAITING_TO_BE_SHIPPED", label: "PROCESSING" },
+                      { key: "SHIPPED", label: "SHIPPED" },
+                      { key: "AVAILABLE_FOR_PICKUP", label: "READY FOR PICKUP" },
+                      { key: "DELIVERED", label: "DELIVERED" }
+                    ].map((status, index, array) => {
+                      const sequence = array.map(a => a.key);
+                      let currentIdx = sequence.indexOf(selectedOrder.status);
+
+                      // If status is PENDING, treat it as ORDER_PLACED (index 0)
+                      if (selectedOrder.status === "PENDING") currentIdx = 0;
+
+                      const effectiveIdx = currentIdx >= 0 ? currentIdx : -1;
+
+                      const isCurrent = index === effectiveIdx;
+                      const isPast = index < effectiveIdx;
+                      const isNext = index === effectiveIdx + 1;
+                      const disabled = !isNext;
+
+                      return (
+                        <button
+                          key={status.key}
+                          onClick={() => updateStatus(status.key)}
+                          disabled={disabled}
+                          className={`flex-1 min-w-[100px] py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all border ${isCurrent
+                            ? "bg-slate-900 border-slate-900 text-white shadow-lg"
+                            : isPast
+                              ? "bg-slate-50 border-slate-100 text-slate-200 cursor-not-allowed"
+                              : isNext
+                                ? "bg-white border-blue-600 text-blue-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 shadow-sm"
+                                : "bg-gray-50/50 border-gray-50 text-gray-100 cursor-not-allowed"
+                            }`}
+                        >
+                          {status.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               {/* Modal Footer */}
-              <div className="bg-white border-t border-gray-200 px-6 py-4 flex justify-end">
+              <div className="bg-slate-50 border-t border-gray-100 px-6 py-4 flex justify-end">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition"
+                  className="px-8 py-3 bg-white border border-gray-200 hover:bg-slate-50 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all"
                 >
                   Close
                 </button>

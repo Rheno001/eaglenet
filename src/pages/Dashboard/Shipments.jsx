@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 const MILESTONES = [
   { key: 'ORDER_PLACED', label: 'Order Placed', icon: Clock, desc: 'Your booking has been received and registered.' },
-  { key: 'PENDING_CONFIRMATION', label: 'Pending Confirmation', icon: Activity, desc: 'Our agents are reviewing shipment details.' },
+  { key: 'PENDING_CONFIRMATION', label: 'Confirmed', icon: Activity, desc: 'Our agents are reviewing shipment details.' },
   { key: 'WAITING_TO_BE_SHIPPED', label: 'Waiting Shipping', icon: Box, desc: 'Package is being processed and documented.' },
   { key: 'SHIPPED', label: 'Shipped', icon: Truck, desc: 'Consignment is in transit to destination.' },
   { key: 'AVAILABLE_FOR_PICKUP', label: 'At Terminal', icon: Warehouse, desc: 'Arrived at destination and ready for pickup.' },
@@ -420,7 +420,7 @@ export default function Shipment() {
       case "PENDING_CONFIRMATION":
         return (
           <span className={`${base} bg-amber-100 text-amber-700 uppercase font-black text-[10px]`}>
-            <Activity className="w-3 h-3" /> Confirmation Pending
+            <Activity className="w-3 h-3" /> Confirmed
           </span>
         );
       case "WAITING_TO_BE_SHIPPED":
@@ -689,7 +689,7 @@ export default function Shipment() {
                 <div className="flex items-center gap-3">
                   <Package className="w-6 h-6 md:w-7 md:h-7 text-gray-300" />
                   <h2 id="modal-title" className="text-xl md:text-2xl font-bold">
-                    Consignment Manifest
+                    SHIPMENT DETAILS
                   </h2>
                 </div>
                 <button
@@ -824,7 +824,7 @@ export default function Shipment() {
                       </div>
                       <div className={`bg-white p-4 rounded-xl border shadow-inner ${!selectedShipment.packageDetails ? 'border-amber-100' : 'border-gray-200'}`}>
                         <p className={`text-sm leading-relaxed italic whitespace-pre-wrap ${!selectedShipment.packageDetails ? 'text-amber-600 font-medium' : 'text-gray-700'}`}>
-                          {selectedShipment.packageDetails || "No specific packing list or item details provided for this consignment."}
+                          {selectedShipment.packageDetails || "No specific packing list or item details provided for this Shipment."}
                         </p>
                       </div>
                     </div>

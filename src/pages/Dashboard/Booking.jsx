@@ -44,8 +44,8 @@ export default function Booking() {
 
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         email: prev.email || user.email || "",
         customerName: prev.customerName || `${user.firstName || ""} ${user.lastName || ""}`.trim()
       }));
@@ -141,6 +141,9 @@ export default function Booking() {
         preferredPickupTime: formData.preferredTime,
         specialRequirements: formData.specialRequirements,
         serviceId: formData.serviceId,
+        serviceName: selectedServiceObj?.serviceName || "",
+        packageType: selectedServiceObj?.serviceName || formData.packageType,
+        status: "ORDER_PLACED",
       };
 
       const response = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments", {
@@ -156,18 +159,18 @@ export default function Booking() {
       if (result.status === "success") {
         Swal.fire({
           icon: 'success',
-          title: 'Mission Initialized',
+          title: 'SHIPMENT CREATED',
           html: `<div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <p class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mb-2">Tracking ID</p>
                   <p class="text-2xl font-black text-slate-900 font-mono mb-4">${result.data.trackingId}</p>
-                  <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest">Shipment logged in high-priority registry</p>
+                  <p class="text-[10px] font-black text-teal-600 uppercase tracking-widest">successfull</p>
                 </div>`,
-          confirmButtonText: 'Book now',
+          confirmButtonText: 'DONE',
           customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
         });
         setCurrentStep(1);
         setFormData({
-          customerName: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "", 
+          customerName: user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "",
           email: user?.email || "", phone: "", pickupAddress: "", pickupCity: "",
           destination: "", destinationCity: "", packageType: "general",
           packageDetails: "", date: "", preferredTime: "anytime", specialRequirements: "", serviceId: ""
@@ -289,7 +292,21 @@ export default function Booking() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Service Type</label>
-                  <select name="serviceId" value={formData.serviceId} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
+                  <select
+                    name="serviceId"
+                    value={formData.serviceId}
+                    onChange={(e) => {
+                      const sId = e.target.value;
+                      const selected = services.find(s => String(s.id) === String(sId));
+                      setFormData(prev => ({
+                        ...prev,
+                        serviceId: sId,
+                        packageType: selected ? selected.serviceName : prev.packageType
+                      }));
+                      if (errors.serviceId) setErrors(prev => ({ ...prev, serviceId: "" }));
+                    }}
+                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner"
+                  >
                     <option value="">Select Service Type</option>
                     {services.map(s => <option key={s.id} value={s.id}>{s.serviceName}</option>)}
                   </select>
@@ -316,9 +333,9 @@ export default function Booking() {
                       }
                     }} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
                       <option value="anytime">Flexible</option>
-                      <option value="morning">Morning (08:00 - 12:00)</option>
-                      <option value="afternoon">Afternoon (12:00 - 17:00)</option>
-                      <option value="specific">Specific Time</option>
+                      <option value="morning">Morning </option>
+                      <option value="afternoon">Afternoon </option>
+
                     </select>
                     {!["anytime", "morning", "afternoon"].includes(formData.preferredTime) && (
                       <input
