@@ -221,7 +221,7 @@ export default function Booking() {
           {currentStep === 1 && (
             <div className="space-y-8 animate-in slide-in-from-right-4">
               <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
-                <User className="text-teal-500" /> User Information
+                <User className="text-teal-500" /> Customer Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">

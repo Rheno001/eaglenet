@@ -91,7 +91,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
         <button
           onClick={toggleSidebar}
           className={`
-            absolute -right-4 top-10 z-[70] 
+            absolute -right-4 top-10 z-70 
             bg-slate-800 border border-slate-700 text-teal-400 w-8 h-8 
             rounded-full flex items-center justify-center shadow-2xl 
             hover:bg-teal-500 hover:text-white hover:border-teal-400
@@ -104,14 +104,13 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
         {/* HEADER */}
         <div className={`${isCollapsed ? "p-2 md:p-3" : "p-4 md:p-6"} space-y-4 transition-all duration-300 overflow-x-hidden`}>
           {/* Logo Section */}
-          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} mb-6`}>
-            <div className="bg-white p-1.5 rounded-xl shadow-inner">
-              <img src={logo} alt="EagleNet" className="w-8 h-8 object-contain" />
+          <div className="flex flex-col items-center justify-center mb-4">
+            <div className="bg-white p-2 rounded-2xl shadow-inner mb-2 transition-transform hover:scale-110 duration-300">
+              <img src={logo} alt="EagleNet" className="w-10 h-10 object-contain" />
             </div>
             {!isCollapsed && (
-              <div className="min-w-0">
-                <h1 className="text-lg font-black tracking-tighter bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">EAGLENET</h1>
-                <p className="text-[9px] font-bold text-teal-500 uppercase tracking-widest leading-none">{user?.role}</p>
+              <div className="text-center">
+                <h1 className="text-xl font-black tracking-[0.2em] bg-linear-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">EAGLENET</h1>
               </div>
             )}
           </div>
@@ -119,14 +118,13 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
           {/* USER INFO */}
           {!isCollapsed && (
             <div className="bg-slate-800/50 p-3 rounded-2xl border border-slate-700/50 flex items-center gap-3 group hover:border-teal-500/30 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 shrink-0 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-teal-500/20">
+              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-teal-500 to-emerald-600 shrink-0 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-teal-500/20">
                 {user?.firstName?.[0]?.toUpperCase() || user?.name?.[0] || user?.email?.[0]?.toUpperCase()}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-white truncate group-hover:text-teal-400 transition-colors">
                   {user?.firstName || user?.name || 'Account'}
                 </p>
-                <p className="text-[10px] text-slate-500 truncate font-semibold uppercase tracking-wider">{user?.role}</p>
               </div>
             </div>
           )}
@@ -144,7 +142,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
                 className={linkClass}
                 onClick={() => isMobile && toggleSidebar()}
               >
-                <Icon size={18} className="flex-shrink-0" />
+                <Icon size={18} className="shrink-0" />
                 {!isCollapsed && <span>{item.name}</span>}
               </NavLink>
             );
@@ -162,7 +160,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
               ${isCollapsed ? "justify-center px-2" : ""}
             `}
           >
-            <LogOut size={18} className="flex-shrink-0" />
+            <LogOut size={18} className="shrink-0" />
             {!isCollapsed && <span>Logout</span>}
           </button>
         </div>

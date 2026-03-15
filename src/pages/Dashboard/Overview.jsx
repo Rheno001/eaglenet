@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
-import UserOverview from './UserOverview';
+import CustomerOverview from './CustomerOverview';
 import AdminOverview from './AdminOverview';
 
 export default function Overview() {
@@ -10,5 +10,5 @@ export default function Overview() {
     return <AdminOverview />;
   }
 
-  return <UserOverview />;
+  return <CustomerOverview />;
 }

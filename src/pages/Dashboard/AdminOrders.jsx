@@ -369,7 +369,7 @@ export default function Orders() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600 font-semibold">Loading orders...</p>
@@ -378,16 +378,21 @@ export default function Orders() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl font-bold mb-2 text-gray-900">Order</h2>
-        <p className="text-gray-600 mb-6">Manage and monitor all shipment orders</p>
+        <h1 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
+          <div className="p-3 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200">
+            <Package className="text-white" size={28} />
+          </div>
+          Shipments
+        </h1>
+        <p className="text-slate-500 font-medium mt-3 text-lg">Track and manage all shipments.</p>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Search Orders</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-widest text-[10px]">Search</label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <input
@@ -400,13 +405,13 @@ export default function Orders() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Status</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-widest text-[10px]">Status Filter</label>
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="all">All Status</option>
+                <option value="all">All</option>
                 <option value="PENDING">Pending</option>
                 <option value="TRANSIT">In Transit</option>
                 <option value="ARRIVED">Arrived</option>
@@ -531,7 +536,7 @@ export default function Orders() {
               {/* Modal Header */}
               <div className="bg-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between border-b border-gray-200">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Shipment Details</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-gray-500 text-sm">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
                     <button
@@ -562,19 +567,19 @@ export default function Orders() {
                     <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <User className="text-blue-600" size={20} />
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Customer Protocols</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Customer Info</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Entity Name</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Name</p>
                           <p className="font-bold text-gray-900">{selectedOrder.fullName || "—"}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Contact Line</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone</p>
                           <p className="font-bold text-gray-900">{selectedOrder.phoneNumber || "—"}</p>
                         </div>
                         <div className="col-span-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Digital Identity</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email</p>
                           <p className="font-bold text-gray-900 truncate">{selectedOrder.email || "—"}</p>
                         </div>
                       </div>
@@ -584,25 +589,25 @@ export default function Orders() {
                     <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <Package className="text-blue-600" size={20} />
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Service detail</h3>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Service</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Service Logistics</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Service Logistics</p>
                           <p className="font-bold text-gray-900">{getServiceName(selectedOrder.serviceId)}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Package Type</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Package Type</p>
                           <p className="font-bold text-gray-900">{selectedOrder.packageType || "—"}</p>
                         </div>
                         <div className="col-span-2">
                           <div className="flex items-center justify-between mb-2">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Package details</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Package details</p>
                             <button
                               onClick={() => updatePackageDetails(document.getElementById('packageDetailsInput').value)}
-                              className="text-[9px] font-black uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded hover:bg-slate-700 transition-all"
+                              className="text-[9px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 px-3 py-1 rounded-lg hover:bg-slate-900 hover:text-white transition-all"
                             >
-                              Update
+                              Save
                             </button>
                           </div>
                           <textarea
@@ -623,7 +628,7 @@ export default function Orders() {
                     <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
                       <div className="flex items-center justify-between mb-10">
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financial Valuation</p>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Price</p>
                           <div className="flex items-center gap-2">
                             <input
                               type="number"
@@ -641,20 +646,20 @@ export default function Orders() {
                         </div>
                         <div className="text-right space-y-2">
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Status</p>
-                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusInfo(selectedOrder.status).color}`}>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Status</p>
+                            <span className={`px-4 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border ${getStatusInfo(selectedOrder.status).color}`}>
                               {getStatusInfo(selectedOrder.status).label}
                             </span>
                           </div>
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Financial Status</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Payment</p>
                             {isPaid(selectedOrder) ? (
-                              <span className="px-4 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-1 justify-center">
+                              <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-emerald-100 flex items-center gap-1 justify-center">
                                 <CheckCircle size={10} /> Paid
                               </span>
                             ) : (
                               <div className="flex flex-col gap-1 items-end">
-                                <span className="px-4 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-100 flex items-center gap-1 justify-center w-fit">
+                                <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-amber-100 flex items-center gap-1 justify-center w-fit">
                                   <Clock size={10} /> Unpaid
                                 </span>
                                 {selectedOrder.amount > 0 && (
@@ -674,13 +679,13 @@ export default function Orders() {
                       {/* Route Map */}
                       <div className="relative pl-6 border-l border-dashed border-gray-200 ml-2 space-y-10">
                         <div className="relative">
-                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-blue-500 bg-white shadow-sm shadow-blue-500/20"></div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-blue-500 mb-1">Origin Node</p>
+                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-white shadow-sm shadow-slate-200"></div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Pickup</p>
                           <p className="text-xs font-bold text-gray-900">{selectedOrder.pickupAddress || selectedOrder.pickupCity}</p>
                         </div>
                         <div className="relative">
-                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-emerald-500 bg-white shadow-sm shadow-emerald-500/20"></div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-1">Destination Hub</p>
+                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-white shadow-sm shadow-slate-200"></div>
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Destination</p>
                           <p className="text-xs font-bold text-gray-900">{selectedOrder.deliveryAddress || selectedOrder.destinationCity}</p>
                         </div>
                       </div>
@@ -688,7 +693,7 @@ export default function Orders() {
 
                     <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden group">
                       <Shield className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:text-white/10 transition-all" />
-                      <h4 className="text-xs font-black uppercase tracking-widest mb-2">Encryption Signature</h4>
+                      <h4 className="text-xs font-bold uppercase tracking-widest mb-2">Secure Shipment</h4>
                       <p className="text-slate-400 text-[10px] font-medium leading-relaxed mb-4">Tracking code EGLN{selectedOrder.trackingId.slice(-4)} is verified and protected </p>
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -704,7 +709,7 @@ export default function Orders() {
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-4 mb-5">
                     <div className="h-px flex-1 bg-gray-50"></div>
-                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-black-300">Update Shipment Status</label>
+                    <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Update Status</label>
                     <div className="h-px flex-1 bg-gray-50"></div>
                   </div>
 
@@ -735,13 +740,13 @@ export default function Orders() {
                           key={status.key}
                           onClick={() => updateStatus(status.key)}
                           disabled={disabled}
-                          className={`flex-1 min-w-[100px] py-3 text-[9px] font-black uppercase tracking-widest rounded-xl transition-all border ${isCurrent
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg"
+                          className={`flex-1 min-w-[100px] py-4 text-[9px] font-bold uppercase tracking-widest rounded-xl transition-all border ${isCurrent
+                            ? "bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200"
                             : isPast
                               ? "bg-slate-50 border-slate-100 text-slate-200 cursor-not-allowed"
                               : isNext
-                                ? "bg-white border-blue-600 text-blue-600 hover:bg-slate-900 hover:text-white hover:border-slate-900 shadow-sm"
-                                : "bg-gray-50/50 border-gray-50 text-gray-100 cursor-not-allowed"
+                                ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900"
+                                : "bg-gray-50/30 border-gray-100 text-gray-200 cursor-not-allowed"
                             }`}
                         >
                           {status.label}

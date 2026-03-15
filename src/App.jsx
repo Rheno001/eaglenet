@@ -30,7 +30,7 @@ import AdminPayment from "./pages/Dashboard/AdminPayment";
 import AdminNotifications from "./pages/Dashboard/AdminNotifications";
 import AdminSettings from "./pages/Dashboard/AdminSettings";
 import AdminServices from "./pages/Dashboard/AdminServices";
-import UserPayments from "./pages/Dashboard/UserPayments";
+import CustomerPayments from "./pages/Dashboard/CustomerPayments";
 
 // SUPER ADMIN Dashboard
 import SuperAdminDashboard from "./pages/superAdmin/index";
@@ -77,7 +77,7 @@ function App() {
               <Route path="shipments" element={<Shipments />} />
               <Route path="booking" element={<Booking />} />
               <Route path="track/:trackingId?" element={<Track />} />
-              <Route path="payment" element={<UserPayments />} />
+              <Route path="payment" element={<CustomerPayments />} />
             </Route>
           </Route>
 
@@ -93,7 +93,7 @@ function App() {
               <Route path="payment" element={<AdminPayment />} />
               <Route path="notifications" element={<AdminNotifications />} />
               <Route path="settings" element={<AdminSettings />} />
-              
+
               {/* Specialized nesting */}
               <Route path="admins" element={<SuperAdminAdmins />} />
               <Route path="promote" element={<SuperAdminPromote />} />

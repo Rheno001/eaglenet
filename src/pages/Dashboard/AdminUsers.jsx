@@ -122,7 +122,7 @@ export default function Users() {
 
   useEffect(() => {
     fetchUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSearch = (e) => {
@@ -157,13 +157,13 @@ export default function Users() {
       {/* Premium Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-            <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
+            <div className="p-3 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200">
               <UsersIcon className="text-white" size={28} />
             </div>
-            User
+            Customers
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">Manage and monitor all registered accounts in the Eaglenet ecosystem.</p>
+          <p className="text-slate-500 font-medium mt-3 text-lg">Manage all registered customer accounts.</p>
         </div>
 
         {currentUser?.role === 'superadmin' && (
@@ -172,7 +172,7 @@ export default function Users() {
             className="flex items-center gap-2 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 text-sm"
           >
             <UserPlus size={18} />
-            Promote to Staff
+            Add Admin
           </Link>
         )}
       </header>
@@ -184,7 +184,7 @@ export default function Users() {
             <UsersIcon size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Users</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customers</p>
             <p className="text-xl font-bold text-slate-900">{users.length}</p>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function Users() {
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
             <input
               type="text"
-              placeholder="Filter by name, email, or user ID..."
+              placeholder="Search by name, email, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 transition-all font-bold text-slate-900"
@@ -228,17 +228,17 @@ export default function Users() {
         {loading ? (
           <div className="p-32 flex flex-col items-center justify-center">
             <Loader2 className="animate-spin text-slate-900 mb-4" size={48} />
-            <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Syncing Directory...</p>
+            <p className="text-slate-400 font-bold tracking-widest uppercase text-xs">Loading Customers...</p>
           </div>
         ) : users.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-slate-50">
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Registry Date</th>
-                  <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Name</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined Date</th>
+                  <th className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -297,7 +297,7 @@ export default function Users() {
             {totalPages > 1 && (
               <div className="px-8 py-6 bg-slate-50/30 flex items-center justify-between border-t border-slate-50">
                 <p className="text-sm font-bold text-slate-400">
-                  Showing <span className="text-slate-900">{indexOfFirstUser + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastUser, users.length)}</span> of {users.length} residents
+                  Showing <span className="text-slate-900">{indexOfFirstUser + 1}</span> to <span className="text-slate-900">{Math.min(indexOfLastUser, users.length)}</span> of {users.length} customers
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -337,8 +337,8 @@ export default function Users() {
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <UsersIcon size={32} className="text-slate-300" />
             </div>
-            <p className="text-slate-600 font-bold text-lg">Empty Directory</p>
-            <p className="text-slate-400 font-medium">No accounts were found matching your current filters.</p>
+            <p className="text-slate-600 font-bold text-lg">No customers found</p>
+            <p className="text-slate-400 font-medium">Try adjusting your search filters.</p>
           </div>
         )}
       </div>
@@ -350,7 +350,7 @@ export default function Users() {
             <div className="px-10 py-8 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <History size={28} className="text-slate-900" />
-                <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">User details</h2>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Customer Details</h2>
               </div>
               <button
                 onClick={() => {
@@ -367,7 +367,7 @@ export default function Users() {
               {loadingDetail ? (
                 <div className="py-24 flex flex-col items-center justify-center">
                   <Loader2 className="animate-spin text-slate-900 mb-6" size={56} />
-                  <p className="text-slate-400 font-black uppercase text-xs tracking-widest">Searching</p>
+                  <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Loading...</p>
                 </div>
               ) : selectedUser ? (
                 <>
@@ -402,7 +402,7 @@ export default function Users() {
                           <TrendingUp className="text-indigo-600" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Amount Paid </p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Paid</p>
                           <p className="text-4xl font-black text-slate-900 tracking-tight">₦{parseFloat(selectedUser.stats?.totalSpent || 0).toLocaleString()}</p>
                           <div className="mt-4 flex items-center gap-2 text-indigo-500 font-black text-[10px] uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full w-fit">
                             <ShieldCheck size={12} />
@@ -422,9 +422,9 @@ export default function Users() {
                             <stat.icon size={24} />
                           </div>
                           <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
                             <p className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</p>
-                            <p className="text-xs font-bold text-slate-400 mt-1">{stat.desc}</p>
+                            <p className="text-xs font-semibold text-slate-400 mt-1">{stat.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -436,7 +436,7 @@ export default function Users() {
                     {/* Logistic Streams */}
                     <div className="space-y-6">
                       <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-indigo-500 pl-4 flex items-center justify-between">
-                        Total Shipment
+                        Shipments
                         <span className="text-[10px] font-bold text-slate-400">{selectedUser.recentShipments?.length || 0} RECENT</span>
                       </h3>
                       <div className="space-y-4">
@@ -486,8 +486,8 @@ export default function Users() {
                     {/* Financial Registry */}
                     <div className="space-y-6">
                       <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] border-l-4 border-amber-500 pl-4 flex items-center justify-between">
-                        Payment
-                        <span className="text-[10px] font-bold text-slate-400">{selectedUser.recentPayments?.length || 0} AUDITED</span>
+                        Payments
+                        <span className="text-[10px] font-bold text-slate-400">{selectedUser.recentPayments?.length || 0} TOTAL</span>
                       </h3>
                       <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-sm">
                         <div className="divide-y divide-slate-100">
@@ -525,8 +525,8 @@ export default function Users() {
               ) : (
                 <div className="py-24 text-center text-slate-400">
                   <History size={64} className="mx-auto mb-6 opacity-10" />
-                  <p className="text-xl font-bold">Registry Hit Failed</p>
-                  <p className="text-sm font-medium">The requested identity dossier could not be retrieved from the central registry.</p>
+                  <p className="text-xl font-bold">Failed to load</p>
+                  <p className="text-sm font-medium">Customer information could not be retrieved.</p>
                 </div>
               )}
             </div>
