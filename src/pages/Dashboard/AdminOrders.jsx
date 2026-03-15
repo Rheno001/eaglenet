@@ -215,6 +215,18 @@ export default function Orders() {
   };
 
   const updatePrice = async (amount) => {
+    // Check if packageDetails is filled before allowing price update
+    const details = selectedOrder.packageDetails || selectedOrder.packagedetails;
+    if (!details || details.trim() === "") {
+      Swal.fire({
+        icon: 'warning',
+        title: 'REQUIRED ACTION',
+        text: 'You must provide package details before setting the shipment price.',
+        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem("jwt");
       const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/price`, {
@@ -266,13 +278,13 @@ export default function Orders() {
       if (!isConfirmed) return;
 
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}`, {
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ paymentStatus: "PAID" }),
+        body: JSON.stringify({ id: selectedOrder.id, paymentStatus: "PAID" }),
       });
       const result = await response.json();
       if (result.status === "success") {
@@ -296,6 +308,47 @@ export default function Orders() {
     } catch (err) {
       console.error("Error confirming payment:", err);
       Swal.fire('Error', 'Connection failed', 'error');
+    }
+  };
+
+  const updatePackageDetails = async (details) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: selectedOrder.status === "PENDING" ? "ORDER_PLACED" : selectedOrder.status,
+          packageDetails: details
+        }),
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setOrders(prev =>
+          prev.map(o => o.id === selectedOrder.id ? { ...o, packageDetails: details, packagedetails: details } : o)
+        );
+        setSelectedOrder(prev => ({ ...prev, packageDetails: details, packagedetails: details }));
+        Swal.fire({
+          icon: 'success',
+          title: 'Manifest Updated',
+          text: 'Shipment package details have been saved.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      } else {
+        console.log("Update failed result:", result);
+        Swal.fire('Update Failed', result.message || 'Error occurred', 'error');
+      }
+    } catch (err) {
+      console.log("Update package details catch error:", err);
+      console.error("Error updating manifest:", err);
+      Swal.fire('Update Failed', 'Failed to update package details', 'error');
     }
   };
 
@@ -543,10 +596,22 @@ export default function Orders() {
                           <p className="font-bold text-gray-900">{selectedOrder.packageType || "—"}</p>
                         </div>
                         <div className="col-span-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Manifest Description</p>
-                          <div className="bg-slate-50 p-4 rounded-xl text-xs font-medium text-gray-600 italic">
-                            {selectedOrder.packageDetails || "No specific instructions registered."}
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Package details</p>
+                            <button
+                              onClick={() => updatePackageDetails(document.getElementById('packageDetailsInput').value)}
+                              className="text-[9px] font-black uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded hover:bg-slate-700 transition-all"
+                            >
+                              Update
+                            </button>
                           </div>
+                          <textarea
+                            id="packageDetailsInput"
+                            defaultValue={selectedOrder.packageDetails || selectedOrder.packagedetails || ""}
+                            rows="4"
+                            className="w-full bg-slate-50 border-none rounded-xl text-xs font-medium text-gray-600 italic p-4 focus:ring-1 focus:ring-blue-500"
+                            placeholder="Enter specific package details or instructions..."
+                          />
                         </div>
                       </div>
                     </div>

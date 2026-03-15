@@ -822,9 +822,9 @@ export default function Shipment() {
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm text-gray-600 font-medium">Package Details</p>
                       </div>
-                      <div className={`bg-white p-4 rounded-xl border shadow-inner ${!selectedShipment.packageDetails ? 'border-amber-100' : 'border-gray-200'}`}>
-                        <p className={`text-sm leading-relaxed italic whitespace-pre-wrap ${!selectedShipment.packageDetails ? 'text-amber-600 font-medium' : 'text-gray-700'}`}>
-                          {selectedShipment.packageDetails || "No specific packing list or item details provided for this Shipment."}
+                      <div className={`bg-white p-4 rounded-xl border shadow-inner ${!(selectedShipment.packageDetails || selectedShipment.packagedetails) ? 'border-amber-100' : 'border-gray-200'}`}>
+                        <p className={`text-sm leading-relaxed italic whitespace-pre-wrap ${!(selectedShipment.packageDetails || selectedShipment.packagedetails) ? 'text-amber-600 font-medium' : 'text-gray-700'}`}>
+                          {selectedShipment.packageDetails || selectedShipment.packagedetails || "No specific packing list or item details provided for this Shipment."}
                         </p>
                       </div>
                     </div>
