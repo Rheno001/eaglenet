@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-  Search, 
-  MapPin, 
-  Package, 
-  Truck, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Search,
+  MapPin,
+  Package,
+  Truck,
+  Clock,
+  CheckCircle2,
   AlertCircle,
   ArrowLeft,
   Calendar,
@@ -20,14 +20,16 @@ import {
   Warehouse,
   Box,
   Activity,
-  XCircle
+  XCircle,
+  ArrowUpLeft,
+  ArrowDownRight
 } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
 const MILESTONES = [
-  { key: 'ORDER_PLACED', label: 'Order Placed', icon: Clock, desc: 'Booking received.' },
-  { key: 'PENDING_CONFIRMATION', label: 'Confirmation Pending', icon: Activity, desc: 'Reviewing details.' },
+  { key: 'ORDER_PLACED', label: 'Order Received', icon: Clock, desc: 'Booking received.' },
+  { key: 'PENDING_CONFIRMATION', label: 'Reviewing', icon: Activity, desc: 'Reviewing details.' },
   { key: 'WAITING_TO_BE_SHIPPED', label: 'Processing', icon: Box, desc: 'Being documented.' },
   { key: 'SHIPPED', label: 'In Transit', icon: Truck, desc: 'Moving to destination.' },
   { key: 'AVAILABLE_FOR_PICKUP', label: 'At Terminal', icon: Warehouse, desc: 'Ready for collection.' },
@@ -36,35 +38,39 @@ const MILESTONES = [
 
 const MilestoneTracker = ({ currentStatus }) => {
   const currentIndex = MILESTONES.findIndex(m => m.key === currentStatus);
-  
+
   return (
-    <div className="py-8 px-4 overflow-x-auto">
-      <div className="min-w-[600px] lg:min-w-0 relative">
+    <div className="py-12 px-4 overflow-x-auto">
+      <div className="min-w-[800px] lg:min-w-0 relative">
         {/* Background Line */}
-        <div className="absolute left-0 top-[19px] right-0 h-0.5 bg-gray-100" />
-        
+        <div className="absolute left-0 top-[24px] right-0 h-[2px] bg-gray-100" />
+
         <div className="flex justify-between gap-4 relative">
           {MILESTONES.map((step, index) => {
             const isCompleted = index < currentIndex || currentStatus === 'DELIVERED';
             const isCurrent = index === currentIndex && currentStatus !== 'DELIVERED';
             const Icon = step.icon;
-            
+
             return (
               <div key={step.key} className="flex flex-col items-center text-center w-full group">
-                <div className="relative z-10 flex items-center justify-center mb-4">
+                <div className="relative z-10 flex items-center justify-center mb-6">
                   <div className={`
-                    w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg
-                    ${isCompleted ? 'bg-emerald-600 text-white scale-110' : 
-                      isCurrent ? 'bg-blue-600 text-white ring-4 ring-blue-100 scale-125 animate-pulse' : 
-                      'bg-white text-gray-300 border-2 border-gray-100 group-hover:border-gray-300'}
+                    w-12 h-12 flex items-center justify-center transition-all duration-500
+                    ${isCompleted ? 'bg-[#3B1350] text-white' :
+                      isCurrent ? 'bg-black text-white ring-8 ring-gray-50 scale-110' :
+                        'bg-white text-gray-300 border border-gray-100 group-hover:border-gray-900'}
                   `}>
-                    <Icon size={20} />
+                    <Icon size={24} />
                   </div>
+                  {isCompleted && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                      <CheckCircle2 size={12} className="text-white" />
+                    </div>
+                  )}
                 </div>
-                
-                <h4 className={`text-[9px] font-black uppercase tracking-widest mb-1 transition-colors leading-tight ${
-                  isCompleted ? 'text-emerald-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'
-                }`}>
+
+                <h4 className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 transition-colors leading-tight ${isCompleted ? 'text-black' : isCurrent ? 'text-[#3B1350]' : 'text-gray-400'
+                  }`}>
                   {step.label}
                 </h4>
               </div>
@@ -94,12 +100,11 @@ export default function TrackShipment() {
       if (result.status === "success" && result.data) {
         setShipment(result.data);
       } else {
-        setError(result.message || "Shipment not found. Please check your tracking ID.");
+        setError(result.message || "Shipment not found. Check ID.");
         setShipment(null);
       }
     } catch (err) {
-      console.error("Tracking fetch error:", err);
-      setError("Network error. Please try again later.");
+      setError("Network error. Try again.");
       setShipment(null);
     } finally {
       setLoading(false);
@@ -107,9 +112,7 @@ export default function TrackShipment() {
   };
 
   useEffect(() => {
-    if (urlTrackingId) {
-      fetchTrackingDetails(urlTrackingId);
-    }
+    if (urlTrackingId) fetchTrackingDetails(urlTrackingId);
   }, [urlTrackingId]);
 
   const handleSearch = (e) => {
@@ -121,272 +124,234 @@ export default function TrackShipment() {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyle = (status) => {
     switch (status?.toUpperCase()) {
-      case "ORDER_PLACED": return "text-slate-600 bg-slate-50 border-slate-200";
-      case "PENDING_CONFIRMATION": return "text-amber-600 bg-amber-50 border-amber-200";
-      case "WAITING_TO_BE_SHIPPED": return "text-indigo-600 bg-indigo-50 border-indigo-200";
-      case "SHIPPED": return "text-blue-600 bg-blue-50 border-blue-200";
-      case "AVAILABLE_FOR_PICKUP": return "text-teal-600 bg-teal-50 border-teal-200";
-      case "DELIVERED": return "text-green-600 bg-green-50 border-green-200";
-      case "CANCELLED": return "text-red-600 bg-red-50 border-red-200";
-      default: return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status?.toUpperCase()) {
-      case "ORDER_PLACED": return <Clock className="w-5 h-5" />;
-      case "PENDING_CONFIRMATION": return <Activity className="w-5 h-5" />;
-      case "WAITING_TO_BE_SHIPPED": return <Package className="w-5 h-5" />;
-      case "SHIPPED": return <Truck className="w-5 h-5" />;
-      case "AVAILABLE_FOR_PICKUP": return <Warehouse className="w-5 h-5" />;
-      case "DELIVERED": return <CheckCircle2 className="w-5 h-5" />;
-      case "CANCELLED": return <XCircle className="w-5 h-5" />;
-      default: return <Package className="w-5 h-5" />;
+      case "ORDER_PLACED": return "bg-gray-100 text-gray-900";
+      case "DELIVERED": return "bg-green-100 text-green-700";
+      case "CANCELLED": return "bg-red-100 text-red-700";
+      default: return "bg-[#3B1350] text-white";
     }
   };
 
   const isDashboard = window.location.pathname.includes("dashboard");
 
   return (
-    <div className={`min-h-screen bg-gray-50 pb-20 px-4 ${isDashboard ? "pt-6" : "pt-24"}`}>
-      <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
-        <button 
+    <div className="min-h-screen bg-white">
+      {/* Navigation & Contextual Header */}
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isDashboard ? "pt-10" : "pt-8"}`}>
+        <button
           onClick={() => navigate(isDashboard ? "/customer-dashboard" : "/")}
-          className="flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors mb-8 group bg-white/50 w-fit px-4 py-2 rounded-xl border border-gray-100"
+          className="flex items-center gap-3 text-black hover:text-[#3B1350] transition-all group mb-8"
         >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          {isDashboard ? "Back to Dashboard" : "Back to Home"}
-        </button>
-
-        {/* Search Section */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6 lg:p-10 mb-10 border border-gray-100">
-          <div className="max-w-2xl mx-auto text-center mb-8">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Track Your Shipment</h1>
-            <p className="text-gray-600">Enter your tracking ID to get real-time updates on your package location and delivery status.</p>
+          <div className="w-10 h-10 border border-gray-100 flex items-center justify-center group-hover:border-black transition-colors">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           </div>
-          
-          <form onSubmit={handleSearch} className="max-w-xl mx-auto relative">
-            <div className="flex flex-col sm:flex-row gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:ring-2 ring-gray-900/5 transition-all">
-              <div className="flex-1 flex items-center px-4">
-                <Search className="w-5 h-5 text-gray-400 mr-3" />
-                <input 
-                  type="text" 
-                  placeholder="Enter Tracking ID (e.g. EGLN...)"
-                  className="w-full bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 py-3"
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value)}
-                />
-              </div>
-              <button 
-                type="submit"
-                disabled={loading}
-                className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Track"}
-              </button>
-            </div>
-          </form>
-        </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+            {isDashboard ? "Return to Dashboard" : "Back to Home"}
+          </span>
+        </button>
+      </div>
 
+      {!isDashboard && (
+        <section className="relative pb-20 overflow-hidden border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center text-center space-y-8">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-[#3B1350]"></div>
+                <span className="text-sm font-black uppercase tracking-widest text-gray-900">Real-Time Tracking</span>
+              </div>
+              <h1 className="text-6xl lg:text-[8vw] font-black font-heading text-black uppercase tracking-tighter leading-none">
+                Track <br className="lg:hidden" /> Shipment
+              </h1>
+              <p className="max-w-xl text-lg text-gray-500 font-medium leading-relaxed">
+                Stay updated on your package journey with our advanced tracking system. Enter your ID below for instant status.
+              </p>
+            </div>
+
+            <div className="mt-16 max-w-4xl mx-auto">
+              <form onSubmit={handleSearch} className="relative group">
+                <div className="flex flex-col sm:flex-row bg-white border border-gray-200 focus-within:border-black transition-all">
+                  <div className="flex-1 flex items-center px-6 py-6">
+                    <Search className="w-6 h-6 text-gray-400 mr-4" />
+                    <input
+                      type="text"
+                      placeholder="ENTER TRACKING ID (E.G. EGLN...)"
+                      className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-300 text-sm"
+                      value={trackingId}
+                      onChange={(e) => setTrackingId(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-[#3B1350] text-white px-12 py-6 font-black uppercase tracking-widest text-sm hover:bg-[#4B1D66] transition-all disabled:opacity-50 flex items-center justify-center min-w-[180px]"
+                  >
+                    {loading ? "..." : "Track Now"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Dashboard Search Section (Compact) */}
+      {isDashboard && !shipment && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+          <div className="max-w-3xl">
+             <h2 className="text-4xl font-black text-black uppercase tracking-tighter mb-4">Consignment Tracker</h2>
+             <p className="text-gray-500 font-medium mb-12">Monitor your high-fidelity logistics movements across our secure network.</p>
+
+             <form onSubmit={handleSearch} className="relative group max-w-2xl">
+                <div className="flex flex-col sm:flex-row bg-white border border-gray-100 focus-within:border-black transition-all">
+                  <div className="flex-1 flex items-center px-6 py-5">
+                    <Search className="w-5 h-5 text-gray-400 mr-4" />
+                    <input
+                      type="text"
+                      placeholder="TRACKING ID"
+                      className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-200 text-sm"
+                      value={trackingId}
+                      onChange={(e) => setTrackingId(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-black text-white px-10 py-5 font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "..." : "Retrieve"}
+                  </button>
+                </div>
+              </form>
+          </div>
+        </div>
+      )}
+
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 ${isDashboard ? "pt-10" : ""}`}>
         <AnimatePresence mode="wait">
           {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="bg-red-50 border border-red-100 text-red-700 p-6 rounded-2xl flex items-center gap-4"
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+              className="bg-black text-white p-8 border-l-8 border-red-500 flex items-center gap-6"
             >
-              <AlertCircle className="w-8 h-8 flex-shrink-0" />
-              <p className="font-medium">{error}</p>
+              <AlertCircle size={32} />
+              <p className="font-black uppercase tracking-widest">{error}</p>
             </motion.div>
           )}
 
           {shipment && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-20"
             >
-              {/* status summary header */}
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
-                <div className="bg-gray-900 p-6 lg:p-8 text-white">
-                  <div className="flex flex-wrap justify-between items-center gap-6">
+              {/* Main Summary */}
+              <div className="grid lg:grid-cols-12 gap-12 items-start">
+                <div className="lg:col-span-8 bg-white border border-gray-100 p-8 lg:p-12">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 pb-12 border-b border-gray-100">
                     <div>
-                      <p className="text-gray-400 text-sm font-medium uppercase tracking-wider mb-1">Tracking ID</p>
-                      <h2 className="text-2xl lg:text-3xl font-bold font-mono">{shipment.trackingId}</h2>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Tracking ID</p>
+                      <h2 className="text-4xl lg:text-5xl font-black text-black tracking-tighter uppercase">{shipment.trackingId}</h2>
                     </div>
-                    <div className="flex flex-col items-end">
-                       <span className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border ${getStatusColor(shipment.status)}`}>
-                         {getStatusIcon(shipment.status)}
-                         {shipment.status}
-                       </span>
-                       <p className="text-gray-400 text-xs mt-2 uppercase tracking-wide">Shipment ID: {shipment.shippingId}</p>
+                    <div className={`px-6 py-2 font-black uppercase tracking-widest text-xs ${getStatusStyle(shipment.status)}`}>
+                      {shipment.status}
                     </div>
                   </div>
-                </div>
-                
-                <div className="p-6 lg:p-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                   <div className="space-y-1">
-                     <p className="text-gray-500 text-xs font-bold uppercase">Service Type</p>
-                     <div className="flex items-center gap-2 text-gray-900 font-bold">
-                       <Zap className="w-4 h-4 text-blue-500" />
-                       {shipment.service?.serviceName || "Standard Shipping"}
-                     </div>
-                   </div>
-                   <div className="space-y-1">
-                     <p className="text-gray-500 text-xs font-bold uppercase">Estimated Arrival</p>
-                     <div className="flex items-center gap-2 text-gray-900 font-bold">
-                       <Calendar className="w-4 h-4 text-orange-500" />
-                       {shipment.arrivalDate ? new Date(shipment.arrivalDate).toLocaleDateString() : "TBD"}
-                     </div>
-                   </div>
-                   <div className="space-y-1">
-                     <p className="text-gray-500 text-xs font-bold uppercase">Origin</p>
-                     <div className="flex items-center gap-2 text-gray-900 font-bold">
-                       <MapPin className="w-4 h-4 text-green-500" />
-                       {shipment.origin || shipment.pickupCity}
-                     </div>
-                   </div>
-                   <div className="space-y-1">
-                     <p className="text-gray-500 text-xs font-bold uppercase">Destination</p>
-                     <div className="flex items-center gap-2 text-gray-900 font-bold">
-                       <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center">
-                         <div className="w-2 h-2 rounded-full bg-red-500" />
-                       </div>
-                       {shipment.destination || shipment.destinationCity}
-                     </div>
-                   </div>
+
+                  <div className="grid md:grid-cols-3 gap-12 mb-12">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Service</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-50 flex items-center justify-center">
+                          <Zap size={18} className="text-[#3B1350]" />
+                        </div>
+                        <span className="font-black uppercase tracking-tighter text-black">{shipment.service?.serviceName || "Standard"}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Origin</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-50 flex items-center justify-center">
+                          <MapPin size={18} className="text-gray-900" />
+                        </div>
+                        <span className="font-black uppercase tracking-tighter text-black">{shipment.pickupCity}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Destination</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-50 flex items-center justify-center">
+                          <div className="w-3 h-3 bg-[#3B1350]" />
+                        </div>
+                        <span className="font-black uppercase tracking-tighter text-black">{shipment.destinationCity}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-6 lg:p-10">
+                    <MilestoneTracker currentStatus={shipment.status} />
+                  </div>
                 </div>
 
-                <div className="border-t border-gray-100 p-6 lg:p-8 bg-slate-50/50">
-                  <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Milestone Progress</h3>
-                  <MilestoneTracker currentStatus={shipment.status} />
+                <div className="lg:col-span-4 space-y-12">
+                  <div className="bg-white border border-gray-100 p-8 lg:p-10">
+                    <h3 className="text-xl font-black uppercase tracking-tighter mb-8 border-b border-gray-100 pb-4">Receiver Info</h3>
+                    <div className="space-y-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">FullName</p>
+                        <p className="font-black uppercase tracking-tighter text-black text-lg">{shipment.fullName}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Contact</p>
+                        <p className="font-black uppercase tracking-tighter text-black">{shipment.phoneNumber}</p>
+                        <p className="text-sm font-medium text-gray-500 break-all">{shipment.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-black p-8 lg:p-10 text-white group cursor-pointer">
+                    <ShieldCheck className="w-12 h-12 text-[#3B1350] mb-6" />
+                    <h3 className="text-2xl font-black uppercase tracking-tighter mb-4">Secure Logistics</h3>
+                    <p className="text-gray-400 text-sm font-medium leading-relaxed mb-8">Your Goods Are Protected By Our Global Security Network And Comprehensive Insurance Policy.</p>
+                    <div className="w-12 h-12 border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
+                      <ArrowUpLeft className="rotate-45" size={20} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* Timeline */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 lg:p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-                       <Truck className="w-6 h-6 text-gray-400" />
-                       Tracking History
-                    </h3>
-                    
-                    <div className="relative">
-                      {/* Timeline Line */}
-                      <div className="absolute left-[11px] top-2 bottom-0 w-0.5 bg-gray-100" />
-                      
-                      <div className="space-y-10 relative">
-                        {shipment.trackingUpdates?.length > 0 ? (
-                          shipment.trackingUpdates.map((update, index) => (
-                            <div key={update.id} className="flex gap-6">
-                              <div className={`z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm flex-shrink-0 mt-1 ${index === 0 ? "bg-gray-900 scale-125 ring-4 ring-gray-100" : "bg-gray-300"}`} />
-                              <div className="flex-1">
-                                <div className="flex flex-wrap justify-between items-start gap-2 mb-1">
-                                  <h4 className={`font-bold ${index === 0 ? "text-gray-900 text-lg" : "text-gray-600"}`}>
-                                    {update.checkpoint}
-                                  </h4>
-                                  <span className="text-xs font-bold text-gray-400 uppercase bg-gray-50 px-2 py-1 rounded">
-                                    {new Date(update.date).toLocaleDateString()} · {new Date(update.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                  </span>
-                                </div>
-                                <p className="text-gray-500 flex items-center gap-1 text-sm">
-                                  <MapPin className="w-3 h-3" />
-                                  {update.location}
-                                </p>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="flex gap-6">
-                            <div className="z-10 w-6 h-6 rounded-full border-4 border-white shadow-sm bg-gray-900 scale-125 ring-4 ring-gray-100 flex-shrink-0 mt-1" />
-                            <div className="flex-1">
-                              <h4 className="font-bold text-gray-900 text-lg">Order Processed</h4>
-                              <p className="text-gray-500 flex items-center gap-1 text-sm">
-                                <MapPin className="w-3 h-3" />
-                                {shipment.pickupCity}
-                              </p>
-                              <span className="text-xs font-bold text-gray-400 uppercase mt-2 block">
-                                {new Date(shipment.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+              {/* History Timeline */}
+              <div className="bg-white border-t border-gray-100 pt-20">
+                <div className="flex items-center gap-4 mb-16">
+                  <div className="w-10 h-1 bg-[#3B1350]"></div>
+                  <h3 className="text-3xl font-black uppercase tracking-tighter text-black">Tracking History</h3>
                 </div>
 
-                {/* Shipment Details Sidebar */}
-                <div className="space-y-8">
-                  <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 lg:p-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                       <User className="w-5 h-5 text-gray-400" />
-                       Receiver Info
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
-                          <User className="w-4 h-4 text-gray-500" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400 font-bold uppercase mt-0.5">Full Name</p>
-                          <p className="text-gray-900 font-bold">{shipment.fullName}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
-                          <Phone className="w-4 h-4 text-gray-500" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400 font-bold uppercase mt-0.5">Phone Number</p>
-                          <p className="text-gray-900 font-bold">{shipment.phoneNumber}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
-                          <Mail className="w-4 h-4 text-gray-500" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400 font-bold uppercase mt-0.5">Email</p>
-                          <p className="text-gray-900 font-bold break-all">{shipment.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="relative max-w-4xl">
+                  <div className="absolute left-[31px] top-4 bottom-0 w-px bg-gray-100" />
 
-                  <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 lg:p-8">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                       <Building className="w-5 h-5 text-gray-400" />
-                       Delivery Route
-                    </h3>
-                    <div className="space-y-6">
-                      <div className="relative pl-6">
-                        <div className="absolute left-0 top-1 bottom-0 w-0.5 bg-gray-100" />
-                        <div className="absolute left-[-4px] top-1 w-2.5 h-2.5 rounded-full bg-blue-500" />
-                        <p className="text-xs text-gray-400 font-bold uppercase">Pickup</p>
-                        <p className="text-gray-900 font-bold text-sm leading-tight mt-1">{shipment.pickupAddress}, {shipment.pickupCity}</p>
+                  <div className="space-y-16 relative">
+                    {(shipment.trackingUpdates?.length > 0 ? shipment.trackingUpdates : [{ id: 'init', checkpoint: 'Order Processed', location: shipment.pickupCity, date: shipment.createdAt }]).map((update, idx) => (
+                      <div key={update.id} className="flex gap-12">
+                        <div className={`z-10 w-16 h-16 flex items-center justify-center shrink-0 ${idx === 0 ? "bg-black text-white" : "bg-gray-50 text-gray-300"}`}>
+                          <Package size={20} />
+                        </div>
+                        <div className="pt-2">
+                          <div className="flex flex-wrap items-center gap-4 mb-2">
+                            <h4 className={`text-2xl font-black uppercase tracking-tighter ${idx === 0 ? "text-black" : "text-gray-400"}`}>
+                              {update.checkpoint}
+                            </h4>
+                            <span className="text-[10px] font-black uppercase tracking-widest bg-gray-50 px-3 py-1 text-gray-400">
+                              {new Date(update.date).toLocaleDateString()} · {new Date(update.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-gray-500 font-medium flex items-center gap-2">
+                            <MapPin size={14} />
+                            {update.location}
+                          </p>
+                        </div>
                       </div>
-                      <div className="relative pl-6">
-                        <div className="absolute left-[-4px] top-1 w-2.5 h-2.5 rounded-full bg-red-500" />
-                        <p className="text-xs text-gray-400 font-bold uppercase">Destination</p>
-                        <p className="text-gray-900 font-bold text-sm leading-tight mt-1">{shipment.deliveryAddress}, {shipment.destinationCity}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-3xl p-6 lg:p-8 text-white shadow-xl shadow-gray-900/20">
-                    <ShieldCheck className="w-10 h-10 text-blue-400 mb-4" />
-                    <h4 className="text-lg font-bold mb-2">Secure Shipping</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-6">Your shipment is protected by our global security network and insurance policy.</p>
-                    <button className="w-full bg-white/10 hover:bg-white/20 text-white rounded-xl py-3 text-sm font-bold transition-all border border-white/10">
-                      View Protection Policy
-                    </button>
+                    ))}
                   </div>
                 </div>
               </div>

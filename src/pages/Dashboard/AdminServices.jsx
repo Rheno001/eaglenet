@@ -32,7 +32,7 @@ export default function AdminServices() {
     try {
       const token = localStorage.getItem("jwt");
       const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
-      const response = await fetch(`${baseUrl}/api/shipments/services`, {
+      const response = await fetch(`${baseUrl}/api/services`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const result = await response.json();
@@ -40,11 +40,11 @@ export default function AdminServices() {
       if (result.status === "success" && Array.isArray(result.data)) {
         setServices(result.data);
       } else {
-        setError(result.message || 'Failed to sync with service registry.');
+        setError(result.message || 'Failed to fetch services.');
       }
     } catch {
-      console.error("Registry fetch error");
-      setError('Connection with logistics hub interrupted.');
+      console.error("Fetch error");
+      setError('Connection interrupted.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export default function AdminServices() {
     if (serviceName) {
       try {
         Swal.fire({
-          title: 'Syncing with Hub...',
+          title: 'Creating Service..',
           didOpen: () => Swal.showLoading(),
           allowOutsideClick: false
         });
@@ -126,22 +126,6 @@ export default function AdminServices() {
     return <Package className="text-slate-400" />;
   };
 
-  const getServiceDescription = (name) => {
-    const n = name.toLowerCase();
-    if (n.includes('removal') || n.includes('relocation') || n.includes('household'))
-      return "Efficient household and office relocation services, handling, transportation, and delivery solutions.";
-    if (n.includes('air freight'))
-      return "Fast, reliable global shipping with secure handling and tailored solutions for urgent needs.";
-    if (n.includes('ocean freight'))
-      return "Reliable ocean freight with flexible schedules and cost-effective solutions for global transport.";
-    if (n.includes('haulage'))
-      return "Timely transportation of goods nationwide using a modern fleet and skilled drivers.";
-    if (n.includes('customs'))
-      return "Fast customs clearing with accurate documentation, duty processing, and compliance.";
-    if (n.includes('warehousing'))
-      return "Secure, organized warehousing with inventory management and efficient distribution.";
-    return "Comprehensive logistics infrastructure to power your business growth across global markets.";
-  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -160,12 +144,9 @@ export default function AdminServices() {
             onClick={handleCreateService}
             className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 text-[10px] uppercase tracking-widest"
           >
-            <Plus size={20} /> Register Service
+            <Plus size={20} /> Create  Service
           </button>
-          <div className="flex items-center gap-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-            <Activity size={16} />
-            System Registry Live
-          </div>
+
         </div>
       </header>
 
@@ -175,7 +156,7 @@ export default function AdminServices() {
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input
             type="text"
-            placeholder="Search service registry..."
+            placeholder="Search service ..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 transition-all font-bold text-slate-900"
@@ -185,7 +166,7 @@ export default function AdminServices() {
           onClick={fetchServices}
           className="bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all"
         >
-          Refresh Registry
+          Refresh
         </button>
       </section>
 
@@ -194,7 +175,7 @@ export default function AdminServices() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-4">
             <Loader2 className="w-12 h-12 text-slate-900 animate-spin" />
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hydrating Catalog...</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">loading...</p>
           </div>
         ) : error ? (
           <div className="bg-rose-50 border border-rose-100 rounded-[2rem] p-8 flex items-center gap-6 text-rose-900">
@@ -230,9 +211,9 @@ export default function AdminServices() {
                   <div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight leading-tight">{service.serviceName}</h3>
                     <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed h-12 overflow-hidden line-clamp-2">
-                      {getServiceDescription(service.serviceName)}
+                      Created  {new Date(service.createdAt).toLocaleDateString()} at {new Date(service.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
                     </p>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-3">Registry ID: {service.id.substring(0, 8)}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-3">Service ID: {service.id.substring(0, 12)}...</p>
                   </div>
 
                   <div className="pt-6 border-t border-slate-50 flex items-center justify-between">

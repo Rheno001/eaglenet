@@ -56,12 +56,12 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
   };
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 
+    `flex items-center gap-3 py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 
      text-xs md:text-sm font-bold tracking-tight whitespace-nowrap
+     ${isCollapsed ? "justify-center px-2 md:px-3" : "px-4 md:px-5"}
      ${isActive
       ? "bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20"
-      : "text-slate-400 hover:bg-slate-800 hover:text-white"}
-     ${isCollapsed ? "justify-center px-2 md:px-3" : ""}`;
+      : "text-slate-400 hover:bg-slate-800 hover:text-white"}`;
 
   const sidebarWidth = isCollapsed ? "w-14 md:w-16" : "w-56 md:w-64";
   const mobileTranslate = isMobile && !isOpen ? "-translate-x-full" : "translate-x-0";
@@ -91,19 +91,20 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
         <button
           onClick={toggleSidebar}
           className={`
-            absolute -right-3.5 top-6 z-[60] 
-            bg-slate-900 border border-slate-700 text-white w-7 h-7 
-            rounded-full flex items-center justify-center shadow-xl 
-            hover:bg-slate-800 transition-all
+            absolute -right-4 top-10 z-[70] 
+            bg-slate-800 border border-slate-700 text-teal-400 w-8 h-8 
+            rounded-full flex items-center justify-center shadow-2xl 
+            hover:bg-teal-500 hover:text-white hover:border-teal-400
+            transition-all duration-300 group/btn
           `}
         >
-          {isCollapsed ? <Menu size={14} /> : <X size={14} />}
+          {isCollapsed ? <Menu size={16} /> : <X size={16} />}
         </button>
 
         {/* HEADER */}
-        <div className="p-4 md:p-6 space-y-4">
+        <div className={`${isCollapsed ? "p-2 md:p-3" : "p-4 md:p-6"} space-y-4 transition-all duration-300 overflow-x-hidden`}>
           {/* Logo Section */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} mb-6`}>
             <div className="bg-white p-1.5 rounded-xl shadow-inner">
               <img src={logo} alt="EagleNet" className="w-8 h-8 object-contain" />
             </div>
@@ -132,7 +133,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
         </div>
 
         {/* NAV LINKS */}
-        <nav className="p-3 md:p-4 space-y-1.5 flex-1 overflow-y-auto custom-scrollbar">
+        <nav className={`${isCollapsed ? "p-2" : "p-3 md:p-4"} space-y-1.5 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-300`}>
           {menuItems.map((item) => {
             const Icon = iconMap[item.name] || Package;
             return (
@@ -151,7 +152,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
         </nav>
 
         {/* FOOTER */}
-        <div className="p-4 bg-slate-900/50 backdrop-blur-xl border-t border-slate-800">
+        <div className="p-4 bg-slate-900/50 backdrop-blur-xl border-t border-slate-800 overflow-x-hidden">
           <button
             onClick={handleLogout}
             className={`
@@ -162,7 +163,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
             `}
           >
             <LogOut size={18} className="flex-shrink-0" />
-            {!isCollapsed && <span>Logout Session</span>}
+            {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
