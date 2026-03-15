@@ -15,6 +15,29 @@ export default function Orders() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
+  const [services, setServices] = useState([]);
+
+  const fetchServices = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const response = await fetch(`${apiBase}/api/shipments/services`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const result = await response.json();
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setServices(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching services:", err);
+    }
+  }, []);
+
+  const getServiceName = (serviceId) => {
+    if (!serviceId) return "—";
+    const service = services.find(s => String(s.id) === String(serviceId));
+    return service ? service.serviceName : "Standard Logistics";
+  };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -87,7 +110,8 @@ export default function Orders() {
 
   useEffect(() => {
     fetchBookings();
-  }, [fetchBookings]);
+    fetchServices();
+  }, [fetchBookings, fetchServices]);
 
   const confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
@@ -348,6 +372,7 @@ export default function Orders() {
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Tracking ID</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Customer</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Route</th>
+                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden md:table-cell">Service</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Status</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Amount</th>
                 <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Date</th>
@@ -376,6 +401,11 @@ export default function Orders() {
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-gray-600 hidden lg:table-cell">
                       {order.pickupCity} → {order.destinationCity}
+                    </td>
+                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden md:table-cell">
+                      <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                        {getServiceName(order.serviceId)}
+                      </span>
                     </td>
                     <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm">
                       <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold border flex items-center gap-1 w-fit ${getStatusInfo(order.status).color}`}>
@@ -501,12 +531,12 @@ export default function Orders() {
                     <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
                       <div className="flex items-center gap-3 mb-4">
                         <Package className="text-blue-600" size={20} />
-                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Consignment Data</h3>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Service detail</h3>
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Service Logistics</p>
-                          <p className="font-bold text-gray-900">{selectedOrder.serviceName || selectedOrder.Service?.serviceName || "—"}</p>
+                          <p className="font-bold text-gray-900">{getServiceName(selectedOrder.serviceId)}</p>
                         </div>
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Package Type</p>
