@@ -135,7 +135,6 @@ export default function Booking() {
         phoneNumber: formData.phone,
         origin: `${formData.pickupAddress}, ${formData.pickupCity}`,
         destination: `${formData.destination}, ${formData.destinationCity}`,
-        packageType: formData.packageType,
         packageDetails: `${formData.packageDetails} \n${serviceInfo}`.trim(),
         preferredPickupDate: formData.date,
         preferredPickupTime: formData.preferredTime,

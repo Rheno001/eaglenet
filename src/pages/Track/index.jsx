@@ -202,14 +202,14 @@ export default function TrackShipment() {
             <h2 className="text-4xl font-black text-black uppercase tracking-tighter mb-4">Consignment Tracker</h2>
             <p className="text-gray-500 font-medium mb-12">Monitor your high-fidelity logistics movements across our secure network.</p>
 
-            <form onSubmit={handleSearch} className="relative group max-w-2xl">
+            <form onSubmit={handleSearch} className="relative group">
               <div className="flex flex-col sm:flex-row bg-white border border-gray-100 focus-within:border-black transition-all">
                 <div className="flex-1 flex items-center px-6 py-5">
-                  <Search className="w-5 h-5 text-gray-400 mr-4" />
+                  <Search className="w-5 h-5 text-gray-400 mr-4 shrink-0" />
                   <input
                     type="text"
-                    placeholder="TRACKING ID"
-                    className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-200 text-sm"
+                    placeholder="ENTER YOUR TRACKING ID (E.G. EGLN...)"
+                    className="w-full bg-transparent border-none focus:ring-0 text-black font-black uppercase tracking-widest placeholder-gray-300 text-sm"
                     value={trackingId}
                     onChange={(e) => setTrackingId(e.target.value)}
                   />

@@ -149,7 +149,7 @@ export default function Services() {
       {/* Call to action */}
       <section className="py-24 lg:py-40 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
-          <h2 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
+          <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
             Not sure which solution <br /> is right for you?
           </h2>
           <p className="text-xl text-gray-500 font-medium">

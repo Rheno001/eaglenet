@@ -86,7 +86,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-0 items-start">
             <div className="lg:col-span-5 flex flex-col items-start gap-8">
-              <h2 className="text-6xl lg:text-8xl font-black font-heading text-black leading-none uppercase tracking-tighter">
+              <h2 className="text-4xl lg:text-8xl font-black font-heading text-black leading-none uppercase tracking-tighter">
                 Our <br /> Story
               </h2>
               <div className="w-full overflow-hidden">
@@ -128,7 +128,7 @@ export default function About() {
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Mission</span>
               </div>
-              <h3 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
+              <h3 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
                 Total Logistics <br /> Management
               </h3>
               <p className="text-xl text-gray-500 font-bold leading-relaxed">
@@ -141,7 +141,7 @@ export default function About() {
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Vision</span>
               </div>
-              <h3 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
+              <h3 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter leading-none">
                 Excellence In <br /> Technology
               </h3>
               <p className="text-xl text-gray-500 font-bold leading-relaxed">
@@ -161,7 +161,7 @@ export default function About() {
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Why Choose Us</span>
               </div>
-              <h2 className="text-6xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
+              <h2 className="text-4xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
                 The EagleNet <br /> Difference
               </h2>
             </div>
@@ -214,7 +214,7 @@ export default function About() {
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                 <span className="text-sm font-black uppercase tracking-widest text-[#3B1350]">Experience Excellence</span>
               </div>
-              <h2 className="text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-none">
+              <h2 className="text-4xl lg:text-8xl font-black uppercase tracking-tighter leading-none">
                 Customer Comfort <br /> At Every Step
               </h2>
               <p className="text-xl text-white/60 font-medium leading-relaxed">
@@ -251,7 +251,7 @@ export default function About() {
               <div className="w-3 h-3 bg-[#3B1350]"></div>
               <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Core Value</span>
             </div>
-            <h2 className="text-6xl lg:text-8xl font-black uppercase tracking-tighter">
+            <h2 className="text-4xl lg:text-8xl font-black uppercase tracking-tighter">
               Built On Trust
             </h2>
             <p className="max-w-3xl mx-auto text-xl text-gray-500 font-bold leading-relaxed mt-6">
@@ -280,13 +280,13 @@ export default function About() {
       {/* Team Section (Premium Style) */}
       <section className="py-24 lg:py-40 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row justify-between items-end gap-12 mb-24">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-12 mb-24">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Team</span>
               </div>
-              <h2 className="text-6xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
+              <h2 className="text-4xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
                 Operational <br /> Experts
               </h2>
             </div>
@@ -323,7 +323,7 @@ export default function About() {
               <div className="w-3 h-3 bg-[#3B1350]"></div>
               <span className="text-sm font-black uppercase tracking-widest text-gray-900">FAQ</span>
             </div>
-            <h2 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter">
+            <h2 className="text-4xl lg:text-7xl font-black uppercase tracking-tighter">
               Frequently Asked Questions
             </h2>
           </div>
@@ -342,7 +342,7 @@ export default function About() {
       {/* CTA Section */}
       <section className="py-24 lg:py-40 bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
-          <h2 className="text-5xl lg:text-8xl font-black uppercase tracking-tighter leading-none">
+          <h2 className="text-4xl lg:text-8xl font-black uppercase tracking-tighter leading-none">
             World-Class <br /> Logistics Solutions
           </h2>
           <p className="max-w-2xl mx-auto text-xl text-white/60 font-medium leading-relaxed">

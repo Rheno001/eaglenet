@@ -31,7 +31,10 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, Ta
 
 export default function MonthlyReport() {
   const { user } = useContext(AuthContext);
+  const [viewType, setViewType] = useState('monthly'); // 'monthly' or 'quarterly'
   const [monthOffset, setMonthOffset] = useState(0);
+  const [currentQuarter, setCurrentQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,22 +49,43 @@ export default function MonthlyReport() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { month, year } = getMonthDate(monthOffset);
-
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/admin/reports?month=${month}&year=${year}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-      const result = await response.json();
+      const headers = {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      };
 
-      if (result.status === "success") {
-        setReportData(result.data);
+      if (viewType === 'monthly') {
+        const { month, year } = getMonthDate(monthOffset);
+        const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/admin/reports?month=${month}&year=${year}`, { headers });
+        const result = await response.json();
+        if (result.status === "success") {
+          setReportData(result.data);
+        } else {
+          setReportData(null);
+        }
       } else {
-        setReportData(null);
+        // Quarterly: Fetch 3 months of the quarter
+        const startMonth = (currentQuarter - 1) * 3 + 1;
+        const months = [startMonth, startMonth + 1, startMonth + 2];
+        const quarterlyResults = await Promise.all(months.map(async (m) => {
+          const res = await fetch(`https://eaglenet-eb9x.onrender.com/api/admin/reports?month=${m}&year=${currentYear}`, { headers });
+          return res.json();
+        }));
+
+        const successfulReports = quarterlyResults.filter(r => r.status === "success").map(r => r.data);
+        if (successfulReports.length > 0) {
+          const aggregated = successfulReports.reduce((acc, curr) => ({
+            totalBookings: acc.totalBookings + (curr.totalBookings || 0),
+            newCustomers: acc.newCustomers + (curr.newCustomers || 0),
+            totalRevenue: (parseFloat(acc.totalRevenue) + parseFloat(curr.totalRevenue || 0)).toString(),
+            reportReady: acc.reportReady && curr.reportReady
+          }), { totalBookings: 0, newCustomers: 0, totalRevenue: "0", reportReady: true });
+          setReportData(aggregated);
+        } else {
+          setReportData(null);
+        }
       }
     } catch (error) {
       console.error("Error fetching report data:", error);
@@ -71,18 +95,22 @@ export default function MonthlyReport() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monthOffset]);
-
   const handlePrevMonth = () => setMonthOffset(prev => prev + 1);
   const handleNextMonth = () => setMonthOffset(prev => Math.max(prev - 1, 0));
 
-  const formatMonth = (offset) => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - offset);
-    return now.toLocaleString("default", { month: "long", year: "numeric" });
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthOffset, viewType, currentQuarter, currentYear]);
+
+  const formatPeriod = () => {
+    if (viewType === 'monthly') {
+      const now = new Date();
+      now.setMonth(now.getMonth() - monthOffset);
+      return now.toLocaleString("default", { month: "long", year: "numeric" });
+    } else {
+      return `Quarterly: Q${currentQuarter} ${currentYear}`;
+    }
   };
 
   // eslint-disable-next-line no-unused-vars
@@ -94,13 +122,12 @@ export default function MonthlyReport() {
   const exportToExcel = () => {
     if (!reportData) return;
 
-    const { month, year } = getMonthDate(monthOffset);
-    const monthName = formatMonth(monthOffset);
+    const periodName = formatPeriod();
 
     const data = [
       ["EAGLENET LOGISTICS: GLOBAL BUSINESS INTELLIGENCE"],
-      ["Audit Identification", `REP-${year}-${month}-${Math.floor(Math.random() * 9000) + 1000}`],
-      ["Temporal Range", monthName],
+      ["Audit Identification", `REP-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000) + 1000}`],
+      ["Temporal Range", periodName],
       ["Extraction Metadata", new Date().toLocaleString()],
       [""],
       ["OFFICIAL KPI REGISTRY", "VALUE", "STRATEGIC CONTEXT"],
@@ -123,14 +150,13 @@ export default function MonthlyReport() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Financial intelligence");
 
-    XLSX.writeFile(wb, `Eaglenet_BI_Suite_${month}_${year}.xlsx`);
+    XLSX.writeFile(wb, `Eaglenet_BI_Suite_${periodName.replace(/[:\s]/g, '_')}.xlsx`);
   };
 
   const exportToWord = async () => {
     if (!reportData) return;
 
-    const { month, year } = getMonthDate(monthOffset);
-    const monthName = formatMonth(monthOffset);
+    const periodName = formatPeriod();
 
     const doc = new Document({
       sections: [{
@@ -168,14 +194,14 @@ export default function MonthlyReport() {
             spacing: { before: 300 },
             children: [
               new TextRun({ text: "AUDIT PERIOD: ", bold: true, size: 24, color: "0f172a" }),
-              new TextRun({ text: monthName.toUpperCase(), size: 24, color: "3b82f6" }),
+              new TextRun({ text: periodName.toUpperCase(), size: 24, color: "3b82f6" }),
             ],
           }),
           new Paragraph({
             spacing: { after: 200 },
             children: [
               new TextRun({ text: "REGISTRY ID: ", bold: true, size: 18, color: "94a3b8" }),
-              new TextRun({ text: `EGL-DOSS-X${month}${year}`, size: 18, color: "94a3b8" }),
+              new TextRun({ text: `EGL-DOSS-X${new Date().getTime()}`, size: 18, color: "94a3b8" }),
             ],
           }),
           new Table({
@@ -232,7 +258,7 @@ export default function MonthlyReport() {
             spacing: { before: 600, after: 200 },
           }),
           new Paragraph({
-            text: `The intelligence extraction for ${monthName} confirms an operational health score of A+. Current logistics throughput stands at ${reportData.totalBookings} units${user?.role === 'SUPER_ADMIN' ? `, yielding a performance peak of ₦${parseFloat(reportData.totalRevenue).toLocaleString()}` : ""}. All system nodes are currently in a state of verified integrity.`,
+            text: `The intelligence extraction for ${periodName} confirms an operational health score of A+. Current logistics throughput stands at ${reportData.totalBookings} units${user?.role === 'SUPER_ADMIN' ? `, yielding a performance peak of ₦${parseFloat(reportData.totalRevenue).toLocaleString()}` : ""}. All system nodes are currently in a state of verified integrity.`,
             size: 22,
             color: "475569",
             spacing: { after: 1200 },
@@ -254,21 +280,38 @@ export default function MonthlyReport() {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, `Eaglenet_Business_Dossier_${month}_${year}.docx`);
+    saveAs(blob, `Eaglenet_Business_Dossier_${periodName.replace(/[:\s]/g, '_')}.docx`);
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Premium Header */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-            <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
-              <BarChart3 className="text-white" size={28} />
-            </div>
-            Reports
-          </h1>
-          <p className="text-gray-500 mt-2 font-medium">Holistic performance and analytics.</p>
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+              <div className="p-2.5 bg-slate-900 rounded-2xl shadow-lg shadow-slate-200">
+                <BarChart3 className="text-white" size={28} />
+              </div>
+              Reports
+            </h1>
+            <p className="text-gray-500 mt-2 font-medium">Holistic performance and analytics.</p>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl">
+            <button
+              onClick={() => setViewType('monthly')}
+              className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${viewType === 'monthly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setViewType('quarterly')}
+              className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${viewType === 'quarterly' ? 'bg-white text-slate-900 shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              Quarterly
+            </button>
+          </div>
         </div>
       </header>
 
@@ -311,61 +354,88 @@ export default function MonthlyReport() {
       {/* Precise filtering Controls */}
       <section className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handlePrevMonth}
-              className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 shadow-sm"
-              title="Previous Month"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={handleNextMonth}
-              disabled={monthOffset === 0}
-              className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 disabled:opacity-20 shadow-sm"
-              title="Next Month"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
+          {viewType === 'monthly' && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrevMonth}
+                className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 shadow-sm"
+                title="Previous Month"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={handleNextMonth}
+                disabled={monthOffset === 0}
+                className="p-3 bg-slate-50 text-slate-600 rounded-2xl hover:bg-slate-900 hover:text-white transition-all active:scale-95 disabled:opacity-20 shadow-sm"
+                title="Next Month"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          )}
           <div className="h-8 w-px bg-slate-100 hidden md:block"></div>
           <div className="flex items-center gap-3 py-2.5 px-6 bg-slate-900 text-white rounded-2xl shadow-lg shadow-slate-200">
             <Calendar className="text-teal-400" size={18} />
-            <span className="font-black tracking-tight text-sm uppercase">{formatMonth(monthOffset)}</span>
+            <span className="font-black tracking-tight text-sm uppercase">{formatPeriod()}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <select
-            value={getMonthDate(monthOffset).month}
-            onChange={(e) => {
-              const targetMonth = parseInt(e.target.value);
-              const { year: currentYear } = getMonthDate(monthOffset);
-              const now = new Date();
-              const diffMonth = (now.getFullYear() - currentYear) * 12 + (now.getMonth() + 1 - targetMonth);
-              setMonthOffset(diffMonth);
-            }}
-            className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
-          >
-            {Array.from({ length: 12 }, (_, i) => (
-              <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
-            ))}
-          </select>
-          <select
-            value={getMonthDate(monthOffset).year}
-            onChange={(e) => {
-              const targetYear = parseInt(e.target.value);
-              const { month: currentMonth } = getMonthDate(monthOffset);
-              const now = new Date();
-              const diffMonth = (now.getFullYear() - targetYear) * 12 + (now.getMonth() + 1 - currentMonth);
-              setMonthOffset(diffMonth);
-            }}
-            className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
-          >
-            {[2024, 2025, 2026].map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
+          {viewType === 'monthly' ? (
+            <>
+              <select
+                value={getMonthDate(monthOffset).month}
+                onChange={(e) => {
+                  const targetMonth = parseInt(e.target.value);
+                  const { year: currentY } = getMonthDate(monthOffset);
+                  const now = new Date();
+                  const diffMonth = (now.getFullYear() - currentY) * 12 + (now.getMonth() + 1 - targetMonth);
+                  setMonthOffset(diffMonth);
+                }}
+                className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+              >
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>{new Date(2000, i).toLocaleString('default', { month: 'long' })}</option>
+                ))}
+              </select>
+              <select
+                value={getMonthDate(monthOffset).year}
+                onChange={(e) => {
+                  const targetYear = parseInt(e.target.value);
+                  const { month: currentM } = getMonthDate(monthOffset);
+                  const now = new Date();
+                  const diffMonth = (now.getFullYear() - targetYear) * 12 + (now.getMonth() + 1 - currentM);
+                  setMonthOffset(diffMonth);
+                }}
+                className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+              >
+                {[2024, 2025, 2026].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </>
+          ) : (
+            <>
+              <select
+                value={currentQuarter}
+                onChange={(e) => setCurrentQuarter(parseInt(e.target.value))}
+                className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+              >
+                {[1, 2, 3, 4].map(q => (
+                  <option key={q} value={q}>Quarter {q}</option>
+                ))}
+              </select>
+              <select
+                value={currentYear}
+                onChange={(e) => setCurrentYear(parseInt(e.target.value))}
+                className="flex-1 md:flex-none bg-slate-50 border-none rounded-2xl px-6 py-3.5 font-bold text-slate-700 focus:ring-2 focus:ring-slate-900 outline-none text-sm"
+              >
+                {[2024, 2025, 2026].map(y => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </>
+          )}
           <button
             onClick={fetchData}
             className="p-3.5 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-200"
@@ -390,7 +460,7 @@ export default function MonthlyReport() {
               ...(user?.role === 'SUPER_ADMIN' ? [{ label: 'Net Revenue', value: `₦${parseFloat(reportData.totalRevenue).toLocaleString()}`, icon: DollarSign, color: 'amber', desc: 'Financial yield' }] : []),
               { label: 'Report Status', value: reportData.reportReady ? 'Ready' : 'In Progress', icon: FileText, color: reportData.reportReady ? 'teal' : 'orange', desc: 'Audit completion' },
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group">
+              <div key={i} className="bg-white p-8 rounded-4xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group">
                 <div className={`p-4 bg-slate-50 text-slate-900 rounded-3xl w-fit mb-6 group-hover:bg-slate-900 group-hover:text-white transition-all`}>
                   <stat.icon size={24} />
                 </div>

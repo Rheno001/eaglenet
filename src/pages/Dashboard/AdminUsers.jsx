@@ -10,7 +10,7 @@ import {
   ChevronRight,
   ShieldCheck,
   UserPlus,
-  ExternalLink,
+  Eye,
   Filter,
   Trash2,
   X,
@@ -24,11 +24,13 @@ import {
   LayoutDashboard,
   DollarSign,
   Copy,
-  Check
+  Check,
+  FileSpreadsheet
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import Swal from "sweetalert2";
+import * as XLSX from 'xlsx';
 
 export default function Users() {
   const { user: currentUser } = useContext(AuthContext);
@@ -152,6 +154,42 @@ export default function Users() {
     }
   };
 
+  const exportToExcel = () => {
+    if (users.length === 0) {
+      Swal.fire('No Data', 'There are no customers to export.', 'info');
+      return;
+    }
+
+    const exportData = users.map(user => ({
+      'Customer ID': user.id,
+      'First Name': user.firstName,
+      'Last Name': user.lastName,
+      'Email': user.email,
+      'Phone': user.phoneNumber || 'N/A',
+      'Role': user.role,
+      'Joined Date': new Date(user.createdAt).toLocaleDateString(),
+      'Status': user.isActive ? 'Active' : 'Inactive'
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Customers");
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 30 }, // ID
+      { wch: 15 }, // First Name
+      { wch: 15 }, // Last Name
+      { wch: 30 }, // Email
+      { wch: 15 }, // Phone
+      { wch: 10 }, // Role
+      { wch: 15 }, // Joined Date
+      { wch: 10 }, // Status
+    ];
+
+    XLSX.writeFile(wb, `Eaglenet_Customers_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Premium Header */}
@@ -199,28 +237,38 @@ export default function Users() {
         </div>
       </div>
 
-      {/* Search Console */}
-      <section className="bg-white p-2 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search by name, email, or ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 transition-all font-bold text-slate-900"
-            />
-          </div>
+      {/* Search & Action Console */}
+      <section className="bg-white p-3 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="flex flex-col lg:flex-row gap-3">
+          <form onSubmit={handleSearch} className="flex-1 flex flex-col md:flex-row gap-2">
+            <div className="flex-1 relative">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search by name, email, or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-14 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 transition-all font-bold text-slate-900"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all disabled:opacity-50 shadow-lg shadow-slate-300"
+              title="Search"
+            >
+              {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
+              <span className="md:hidden lg:inline">Search</span>
+            </button>
+          </form>
           <button
-            type="submit"
-            disabled={loading}
-            className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all disabled:opacity-50 shadow-lg shadow-slate-300"
+            onClick={exportToExcel}
+            className="flex items-center justify-center gap-2 px-6 py-4 bg-emerald-50 text-emerald-700 font-bold rounded-2xl border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95 text-xs uppercase tracking-widest"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Filter size={20} />}
-            Search
+            <FileSpreadsheet size={18} />
+            <span>Export to Excel</span>
           </button>
-        </form>
+        </div>
       </section>
 
       {/* Main Content Area */}
@@ -276,7 +324,7 @@ export default function Users() {
                           onClick={() => fetchUserDetail(user.id)}
                           className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all active:scale-90"
                         >
-                          <ExternalLink size={18} />
+                          <Eye size={18} />
                         </button>
                         {currentUser?.role === 'superadmin' && (
                           <button
@@ -372,8 +420,8 @@ export default function Users() {
               ) : selectedUser ? (
                 <>
                   {/* Identity & Core Metrics */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-1 space-y-6">
+                  <div className="flex flex-col lg:flex-row gap-8 items-start">
+                    <div className="w-full lg:w-1/3 space-y-6">
                       <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white overflow-hidden relative">
                         <div className="z-10 relative space-y-6">
                           <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center text-3xl font-black">
@@ -397,8 +445,8 @@ export default function Users() {
                         <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-[60px] translate-x-1/2 -translate-y-1/2"></div>
                       </div>
 
-                      <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex flex-col justify-between aspect-square">
-                        <div className="p-4 bg-white rounded-2xl w-fit shadow-sm">
+                      <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex flex-col justify-between">
+                        <div className="p-4 bg-white rounded-2xl w-fit shadow-sm mb-6">
                           <TrendingUp className="text-indigo-600" />
                         </div>
                         <div>
@@ -412,12 +460,12 @@ export default function Users() {
                       </div>
                     </div>
 
-                    <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="w-full lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {[
                         { label: 'Shipment', value: selectedUser.stats?.totalBookings || 0, icon: Package, color: 'blue', desc: 'Total shipments requested' },
                         { label: 'Registration Date', value: new Date(selectedUser.createdAt).toLocaleDateString(), icon: Calendar, color: 'emerald', desc: 'Acquisition date' },
                       ].map((stat, i) => (
-                        <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col">
+                        <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col h-fit">
                           <div className={`p-4 bg-slate-50 text-slate-900 rounded-3xl w-fit mb-4`}>
                             <stat.icon size={24} />
                           </div>

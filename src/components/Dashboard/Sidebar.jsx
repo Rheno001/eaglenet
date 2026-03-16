@@ -38,7 +38,7 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
     'Booking': Package,
     'Track Shipment': Search,
     'Order': Package,
-    'User': Users,
+    'Customers': Users,
     'Services': Settings,
     'Reports': BarChart2,
     'Payment': CreditCard,

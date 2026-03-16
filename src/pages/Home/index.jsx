@@ -80,7 +80,7 @@ export default function LogisticsWebsite() {
             setCurrentTextIndex((prev) => (prev + 1) % logisticsTerms.length);
         }, 3000);
         return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Reviews carousel state
@@ -160,10 +160,10 @@ export default function LogisticsWebsite() {
                     {/* Middle Part: Info Columns */}
                     <div className="grid lg:grid-cols-12 gap-12 lg:gap-0 items-start py-20 border-t border-gray-100">
                         <div className="lg:col-span-5 flex flex-col items-start gap-8">
-                            <h2 className="text-6xl lg:text-8xl font-black font-heading text-black leading-none uppercase tracking-tighter">
+                            <h2 className="text-4xl lg:text-8xl font-black font-heading text-black leading-none uppercase tracking-tighter">
                                 Start <br /> Shipping
                             </h2>
-                            <Link to="/quote">
+                            <Link to="/login">
                                 <div className="w-20 h-20 bg-[#3B1350] flex items-center justify-center text-white hover:bg-[#4B1D66] transition-all group">
                                     <ArrowRight className="w-10 h-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform -rotate-45" />
                                 </div>
@@ -213,7 +213,7 @@ export default function LogisticsWebsite() {
                                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Solutions</span>
                             </div>
-                            <h2 className="text-6xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
+                            <h2 className="text-4xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
                                 Smart Logistics <br /> For All Businesses
                             </h2>
                         </div>
@@ -293,7 +293,7 @@ export default function LogisticsWebsite() {
                                 <div className="w-3 h-3 bg-[#3B1350]"></div>
                                 <span className="text-sm font-black uppercase tracking-widest text-gray-900">Our Services</span>
                             </div>
-                            <h2 className="text-6xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
+                            <h2 className="text-4xl lg:text-8xl font-black font-heading text-black uppercase tracking-tighter leading-[0.9]">
                                 Tailored Logistics <br /> Services For You
                             </h2>
                         </div>
@@ -363,9 +363,9 @@ export default function LogisticsWebsite() {
                             <p className="text-2xl text-gray-500 font-bold leading-relaxed">
                                 Partner With EagleNet For Fast, Reliable, And Transparent Logistics Solutions That Keep Your Supply Chain Running Smoothly.
                             </p>
-                            <Link to="/quote">
+                            <Link to="/contact">
                                 <div className="flex items-center gap-8 group">
-                                    <span className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">Get A Free Quote</span>
+                                    <span className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">Make A Request</span>
                                     <div className="w-16 h-16 bg-[#3B1350] flex items-center justify-center text-white hover:bg-[#4B1D66] transition-all group-hover:scale-110">
                                         <ArrowRight className="w-8 h-8 -rotate-45" />
                                     </div>

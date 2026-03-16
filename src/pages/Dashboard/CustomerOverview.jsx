@@ -1,33 +1,64 @@
 import React, { useState, useEffect, useContext } from "react";
 import {
     Package,
+    Box,
+    RotateCcw,
+    CheckCircle,
+    Clock,
     TrendingUp,
-    PlusCircle,
-    Wallet,
-    ShieldCheck,
-    ArrowRight,
-    CheckCircle as CheckCircleIcon,
-    Search,
-    Box
+    PlusCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import DashboardStats from "../../components/Dashboard/DashboardStats";
+import RecentOperations from "../../components/Dashboard/RecentOperations";
 
 export default function CustomerOverview() {
     const { user: authUser } = useContext(AuthContext);
-    const [dashboardData, setDashboardData] = useState(null);
+    const [stats, setStats] = useState({
+        pending: 0,
+        processing: 0,
+        inTransit: 0,
+        delivered: 0,
+        delayed: 0,
+        totalBookings: 0
+    });
+    const [recentOrders, setRecentOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchDashboard = async () => {
+        const fetchData = async () => {
             try {
                 const token = localStorage.getItem("jwt");
-                const response = await fetch("https://eaglenet-eb9x.onrender.com/api/users/me/dashboard", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.status === "success") {
-                    setDashboardData(result.data);
+                const headers = { Authorization: `Bearer ${token}` };
+
+                // Fetch Dashboard Stats (Specific endpoint for customer)
+                const statsRes = await fetch("https://eaglenet-eb9x.onrender.com/api/users/me/dashboard", { headers });
+                const statsResult = await statsRes.json();
+                if (statsResult.status === "success") {
+                    // Mapping customer stats to the cards
+                    setStats({
+                        pending: statsResult.data.pending || 0,
+                        processing: statsResult.data.processing || 0,
+                        inTransit: statsResult.data.inTransit || 0,
+                        delivered: statsResult.data.delivered || 0,
+                        delayed: statsResult.data.delayed || 0,
+                        totalBookings: statsResult.data.totalBookings || 0
+                    });
+                }
+
+                // Fetch Recent Orders
+                const ordersRes = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments?limit=10", { headers });
+                const ordersResult = await ordersRes.json();
+                if (ordersResult.status === "success") {
+                    setRecentOrders(ordersResult.data.map(order => ({
+                        orderId: order.trackingId.slice(-4),
+                        trackingNumber: order.trackingId,
+                        pickupDate: order.preferredPickupDate?.split('T')[0] || "—",
+                        deliveryDate: order.deliveryDate?.split('T')[0] || "TBD",
+                        parcelQty: order.packageType || "1",
+                        status: order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase().replace(/_/g, ' ')
+                    })));
                 }
             } catch (err) {
                 console.error("Dashboard fetch error:", err);
@@ -35,7 +66,7 @@ export default function CustomerOverview() {
                 setLoading(false);
             }
         };
-        fetchDashboard();
+        fetchData();
     }, []);
 
     if (loading) return (
@@ -45,20 +76,19 @@ export default function CustomerOverview() {
         </div>
     );
 
-    const stats = dashboardData || {
-        totalBookings: 0,
-        totalPaid: 0,
-        outstandingBalance: 0,
-        user: authUser
-    };
+    const dashboardStatsData = [
+        { label: "Pending Shipments", value: stats.pending, icon: Clock, bgColor: "bg-orange-50", textColor: "text-orange-600" },
+        { label: "Shipments In Transit", value: stats.inTransit, icon: Box, bgColor: "bg-indigo-50", textColor: "text-indigo-600" },
+        { label: "Total Delivered", value: stats.delivered, icon: CheckCircle, bgColor: "bg-emerald-50", textColor: "text-emerald-600" },
+    ];
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
-            {/* SIMPLE WELCOME HEADER */}
+        <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-500">
+            {/* WELCOME HEADER */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-                        Welcome, {stats.user?.firstName}
+                        Welcome, {authUser?.firstName || authUser?.name || "Customer"}
                     </h1>
                     <p className="text-slate-500 mt-1">Here's a quick look at your delivery status and account.</p>
                 </div>
@@ -71,90 +101,12 @@ export default function CustomerOverview() {
                 </Link>
             </div>
 
-            {/* STATS CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-                            <Package size={24} />
-                        </div>
-                        <span className="text-sm font-bold text-slate-500">Total Shipments</span>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                        <h3 className="text-3xl font-bold text-slate-900">{stats.totalBookings}</h3>
-                        <span className="text-emerald-500 text-xs font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Active</span>
-                    </div>
-                </div>
+            {/* Stats Cards */}
+            <DashboardStats stats={dashboardStatsData} />
 
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-                            <Wallet size={24} />
-                        </div>
-                        <span className="text-sm font-bold text-slate-500">Total Payments</span>
-                    </div>
-                    <h3 className="text-3xl font-bold text-slate-900">₦{parseFloat(stats.totalPaid || 0).toLocaleString()}</h3>
-                </div>
-
-                <div className="bg-slate-900 p-6 rounded-3xl text-white relative overflow-hidden group">
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="p-3 bg-white/10 text-white rounded-2xl">
-                                <Search size={24} />
-                            </div>
-                            <span className="text-sm font-bold text-slate-300">Track Package</span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-4">Monitor your movements in real-time.</p>
-                        <Link
-                            to="/customer-dashboard/track"
-                            className="inline-flex items-center gap-2 text-white font-bold text-sm group-hover:gap-3 transition-all"
-                        >
-                            Access Tracker <ArrowRight size={16} />
-                        </Link>
-                    </div>
-                    <Box className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:scale-110 transition-transform duration-500" />
-                </div>
-            </div>
-
-            {/* ACCOUNT & INFO SECTION */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-slate-50 text-slate-900 rounded-xl">
-                            <ShieldCheck size={20} />
-                        </div>
-                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Account Information</h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center py-3 border-b border-slate-50">
-                            <span className="text-slate-500 text-sm font-medium">Customer ID</span>
-                            <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded-md">{stats.user?.id?.substring(0, 12)}...</span>
-                        </div>
-                        <div className="flex justify-between items-center py-3 border-b border-slate-50">
-                            <span className="text-slate-500 text-sm font-medium">Verification Status</span>
-                            <span className="inline-flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full text-xs font-bold">
-                                <CheckCircleIcon size={14} /> Verified
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center py-3">
-                            <span className="text-slate-500 text-sm font-medium">Joined</span>
-                            <span className="font-bold text-slate-900 text-sm">{new Date(stats.user?.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-3xl p-8 flex flex-col justify-center border border-slate-100">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">Need Help?</h3>
-                    <p className="text-slate-500 mb-6">Our support team is available 24/7 to assist with your shipments and account queries.</p>
-                    <Link
-                        to="/contact"
-                        className="inline-flex items-center justify-center bg-white border border-slate-200 text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all"
-                    >
-                        Contact Support
-                    </Link>
-                </div>
-            </div>
+            {/* Recent Operations */}
+            <RecentOperations data={recentOrders} title="Your Recent Shipments" />
         </div>
     );
 }
+
