@@ -112,47 +112,48 @@ export default function UserOverview() {
           <TrendingUp className="absolute -right-4 -top-4 w-32 h-32 text-slate-50 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        {/* OUTSTANDING */}
-        {/* <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+        {/* DELIVERED SHIPMENTS */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
           <div className="relative z-10">
-            <div className={`p-4 rounded-2xl w-fit mb-6 transition-colors duration-300 ${parseFloat(stats.outstandingBalance) > 0 ? "bg-rose-50 text-rose-600 group-hover:bg-rose-600" : "bg-slate-50 text-slate-600 group-hover:bg-slate-600"} group-hover:text-white`}>
-              <CreditCard size={24} />
+            <div className="p-4 bg-teal-50 text-teal-600 rounded-2xl w-fit mb-6 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+               <CheckCircle size={24} />
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Outstanding Balance</p>
-            <h3 className="text-4xl font-black text-slate-900 tracking-tight">₦{parseFloat(stats.outstandingBalance || 0).toLocaleString()}</h3>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Delivered Shipment</p>
+            <div className="flex items-end gap-3">
+              <h3 className="text-4xl font-black text-slate-900 tracking-tight">{stats.delivered || stats.deliveredCount || 0}</h3>
+              <span className="text-emerald-500 font-bold text-xs mb-1 flex items-center">
+                 <ShieldCheck size={14} className="mr-1" /> VERIFIED
+              </span>
+            </div>
           </div>
-        </div> */}
+          <CheckCircle className="absolute -right-4 -top-4 w-32 h-32 text-slate-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* ACCOUNT INTEGRITY */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+        {/* PROFILE SUMMARY */}
+        <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
           <div className="relative z-10">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-teal-500/20 text-teal-400 rounded-2xl">
-                <ShieldCheck size={28} />
+              <div className="p-3 bg-teal-500/20 text-teal-400 rounded-2xl group-hover:bg-teal-500 group-hover:text-slate-900 transition-all duration-500">
+                <UserIcon size={28} />
               </div>
-              <h2 className="text-2xl font-black tracking-tight uppercase">Account Integrity</h2>
+              <h2 className="text-2xl font-black tracking-tight uppercase">Customer Profile</h2>
             </div>
             <div className="space-y-6">
               <div className="flex justify-between items-center py-4 border-b border-white/10">
-                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Account ID</span>
-                <span className="font-mono text-xs">{stats.user?.id?.substring(0, 12)}...</span>
-              </div>
-              <div className="flex justify-between items-center py-4 border-b border-white/10">
-                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Verification Status</span>
-                <span className="flex items-center gap-2 text-teal-400 font-black text-[10px] uppercase tracking-widest bg-teal-500/10 px-3 py-1 rounded-full">
-                  <CheckCircle size={12} /> Verified Profile
-                </span>
+                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Full Name</span>
+                <span className="font-bold text-sm tracking-tight">{stats.user?.firstName} {stats.user?.lastName}</span>
               </div>
               <div className="flex justify-between items-center py-4">
-                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Registry Date</span>
-                <span className="font-bold text-sm">{new Date(stats.user?.createdAt).toLocaleDateString()}</span>
+                <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Email Address</span>
+                <span className="font-bold text-sm">{stats.user?.email || "—"}</span>
               </div>
             </div>
           </div>
           {/* Decorative elements */}
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl group-hover:bg-teal-500/20 transition-all duration-700"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl"></div>
         </div>
 
         {/* QUICK TRACKER */}
@@ -161,7 +162,7 @@ export default function UserOverview() {
             <TrendingUp size={48} className="animate-pulse" />
           </div>
           <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-4">REAL-TIME SHIPMENT TRACKING</h3>
-          <p className="text-slate-500 font-medium mb-10 max-w-xs">Enter your high-fidelity tracking ID to monitor your consignment movements.</p>
+          <p className="text-slate-500 font-medium mb-10 max-w-xs">Enter  tracking ID to monitor your Shipment movement</p>
           <Link
             to="/customer-dashboard/track"
             className="w-full flex items-center justify-center gap-3 bg-slate-100 text-slate-900 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all duration-500 active:scale-95"
