@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import React, { useState, useEffect } from "react";
+
 import {
   Package,
   Truck,
@@ -14,7 +14,6 @@ import DashboardStats from "../../components/Dashboard/DashboardStats";
 import RecentOperations from "../../components/Dashboard/RecentOperations";
 
 export default function Overview() {
-  const { } = useContext(AuthContext);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,
