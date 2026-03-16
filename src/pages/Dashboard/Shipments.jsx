@@ -278,7 +278,19 @@ export default function Shipment() {
     }
   }, [searchParams, verifyPayment, setSearchParams]);
 
-  // 5. Details fetch
+  useEffect(() => {
+    const shipmentId = searchParams.get("id");
+    if (shipmentId && shipments.length > 0) {
+      const item = shipments.find(s => String(s.id) === String(shipmentId) || String(s._id) === String(shipmentId));
+      if (item) {
+        setSelectedShipment(item);
+        fetchShipmentDetails(shipmentId);
+        // Clean up URL to avoid re-opening on manual refresh if desired, 
+        // but often it's better to keep it for sharing links.
+        // For now, let's keep it to ensure it works on every load.
+      }
+    }
+  }, [searchParams, shipments]);
   const fetchShipmentDetails = async (id) => {
     try {
       setLoadingDetails(true);
