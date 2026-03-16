@@ -29,7 +29,6 @@ export default function Footer() {
       links: [
         { name: "Contact Us", path: "/contact" },
         { name: "Tracking", path: "/customer-dashboard/track" },
-        { name: "Site Planning", path: "/planning" },
       ],
     },
     {
