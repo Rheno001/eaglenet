@@ -29,7 +29,6 @@ import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, Width
 import { saveAs } from 'file-saver';
 
 export default function UserPayments() {
-   // eslint-disable-next-line no-unused-vars
    const { user } = useContext(AuthContext);
    const [payments, setPayments] = useState([]);
    const [summary, setSummary] = useState({ totalPaid: 0 });
@@ -274,7 +273,7 @@ export default function UserPayments() {
             </div>
 
             <div className="flex items-center gap-4">
-               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-6 group hover:shadow-xl transition-all">
+               <div className="bg-white p-6 rounded-4xl border border-slate-100 shadow-sm flex items-center gap-6 group hover:shadow-xl transition-all">
                   <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                      <TrendingUp size={24} />
                   </div>
@@ -315,17 +314,17 @@ export default function UserPayments() {
                      <option value="failed">Declined</option>
                   </select>
                </div>
-                <button
+               <button
                   onClick={exportToWord}
                   className="flex items-center gap-3 px-6 py-4 bg-blue-50 text-blue-700 font-bold rounded-2xl border border-blue-100 hover:bg-blue-100 transition-all active:scale-95 text-[10px] uppercase tracking-widest shadow-sm"
                   title="Export to Word"
-                >
-                   <Download size={16} />
-                   <span>DOCX</span>
-                </button>
-                <button className="p-4 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95">
-                   <Download size={20} />
-                </button>
+               >
+                  <Download size={16} />
+                  <span>DOCX</span>
+               </button>
+               <button className="p-4 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95">
+                  <Download size={20} />
+               </button>
             </div>
          </div>
 
@@ -338,7 +337,7 @@ export default function UserPayments() {
                </div>
             ) : payments.length === 0 ? (
                <div className="p-20 text-center">
-                  <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-slate-300">
+                  <div className="w-20 h-20 bg-slate-50 rounded-4xl flex items-center justify-center mx-auto mb-6 text-slate-300">
                      <Receipt size={40} />
                   </div>
                   <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">No Transactions Found</h3>
@@ -435,7 +434,7 @@ export default function UserPayments() {
 
          {/* DETAIL MODAL */}
          {showModal && selectedPayment && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in duration-300">
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6 z-100 animate-in fade-in duration-300">
                <div className="bg-white rounded-[3rem] w-full max-w-5xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-300">
                   {/* Modal Header */}
                   <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
@@ -486,7 +485,7 @@ export default function UserPayments() {
                      </div>
 
                      {/* Shipment Summary */}
-                     <div className="p-6 bg-slate-900 rounded-[2rem] text-white overflow-hidden relative group">
+                     <div className="p-6 bg-slate-900 rounded-4xl text-white overflow-hidden relative group">
                         <div className="relative z-10 flex items-center justify-between">
                            <div className="flex items-center gap-4">
                               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
@@ -507,7 +506,7 @@ export default function UserPayments() {
 
                      <button
                         onClick={() => window.print()}
-                        className="w-full py-5 bg-slate-100 text-slate-900 rounded-[2rem] font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center gap-3"
+                        className="w-full py-5 bg-slate-100 text-slate-900 rounded-4xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-95 flex items-center justify-center gap-3"
                      >
                         <Receipt size={18} />
                         Generate Receipt

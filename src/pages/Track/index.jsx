@@ -103,7 +103,7 @@ export default function TrackShipment() {
         setError(result.message || "Shipment not found. Check ID.");
         setShipment(null);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Network error. Try again.");
       setShipment(null);
     } finally {

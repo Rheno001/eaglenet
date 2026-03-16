@@ -113,7 +113,7 @@ export default function Orders() {
     fetchServices();
   }, [fetchBookings, fetchServices]);
 
-  const confirmDelivered = async (order) => {
+  const _confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
     const originalOrders = [...orders];
 

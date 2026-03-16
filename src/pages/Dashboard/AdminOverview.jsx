@@ -14,7 +14,7 @@ import DashboardStats from "../../components/Dashboard/DashboardStats";
 import RecentOperations from "../../components/Dashboard/RecentOperations";
 
 export default function Overview() {
-  const { user } = useContext(AuthContext);
+  const { } = useContext(AuthContext);
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalOrders: 0,

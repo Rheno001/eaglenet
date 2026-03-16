@@ -93,7 +93,7 @@ export default function Shipment() {
   const [copiedId, setCopiedId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [services, setServices] = useState([]);
-  const [loadingServices, setLoadingServices] = useState(false);
+  const [_loadingServices, setLoadingServices] = useState(false);
 
   const fetchServices = useCallback(async () => {
     setLoadingServices(true);
