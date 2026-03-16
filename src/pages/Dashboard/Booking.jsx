@@ -235,7 +235,7 @@ export default function Booking() {
                 </div>
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                  <input name="phone" value={formData.phone} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="+234 ..." />
+                  <input name="phone" type="number" value={formData.phone} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="+234 ..." />
                   {errors.phone && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.phone}</p>}
                 </div>
               </div>
@@ -323,29 +323,15 @@ export default function Booking() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Preferred Pickup Time</label>
-                  <div className="space-y-3">
-                    <select name="preferredTime" value={["anytime", "morning", "afternoon"].includes(formData.preferredTime) ? formData.preferredTime : "specific"} onChange={(e) => {
-                      if (e.target.value === "specific") {
-                        setFormData(prev => ({ ...prev, preferredTime: "09:00" }));
-                      } else {
-                        handleChange(e);
-                      }
-                    }} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner">
-                      <option value="anytime">Flexible</option>
-                      <option value="morning">Morning </option>
-                      <option value="afternoon">Afternoon </option>
-
-                    </select>
-                    {!["anytime", "morning", "afternoon"].includes(formData.preferredTime) && (
-                      <input
-                        type="time"
-                        name="preferredTime"
-                        value={formData.preferredTime}
-                        onChange={handleChange}
-                        className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 animate-in slide-in-from-top-2"
-                      />
-                    )}
-                  </div>
+                  <input
+                    type="text"
+                    name="preferredTime"
+                    value={formData.preferredTime}
+                    onChange={handleChange}
+                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900 shadow-inner"
+                    placeholder="e.g. 10:00 AM, Flexible, etc."
+                  />
+                  {errors.preferredTime && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.preferredTime}</p>}
                 </div>
               </div>
               <div className="space-y-2">
