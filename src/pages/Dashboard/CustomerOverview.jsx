@@ -478,7 +478,13 @@ export default function CustomerOverview() {
                             </button>
                         </div>
 
-                        <div className="p-6 md:p-8 space-y-8">
+                        <div className="p-6 md:p-8 space-y-8 relative min-h-[400px]">
+                            {loadingDetails && (
+                                <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center gap-3 animate-in fade-in duration-300">
+                                    <div className="w-10 h-10 border-4 border-slate-100 border-t-slate-900 rounded-full animate-spin"></div>
+                                    <p className="text-slate-500 font-bold text-[10px] uppercase tracking-[0.2em] animate-pulse">Syncing Details...</p>
+                                </div>
+                            )}
                             {/* Overview */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-lg shadow-sm border border-slate-100">
                                 <div>
