@@ -204,7 +204,7 @@ export default function Users() {
           <p className="text-slate-500 font-medium mt-3 text-lg">Manage all registered customer accounts.</p>
         </div>
 
-        {currentUser?.role === 'superadmin' && (
+        {/*{currentUser?.role === 'superadmin' && (
           <Link
             to="/dashboard/superadmin/promote"
             className="flex items-center gap-2 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 active:scale-95 text-sm"
@@ -212,7 +212,7 @@ export default function Users() {
             <UserPlus size={18} />
             Add Admin
           </Link>
-        )}
+        )}*/}
       </header>
 
       {/* Global Stats bar - Subtle */}
