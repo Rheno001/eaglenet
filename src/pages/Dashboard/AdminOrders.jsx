@@ -64,6 +64,9 @@ export default function Orders() {
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [departments, setDepartments] = useState([]);
+  const [workflowSteps, setWorkflowSteps] = useState([]);
+  const [loadingWorkflow, setLoadingWorkflow] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -108,10 +111,77 @@ export default function Orders() {
     }
   }, [currentPage, limit, debouncedSearch, filterStatus]);
 
+  const fetchDepartments = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
+      const response = await fetch(`${apiBase}/api/departments`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const result = await response.json();
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setDepartments(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching departments:", err);
+    }
+  }, []);
+
+  const fetchWorkflow = useCallback(async (shipmentId) => {
+    setLoadingWorkflow(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
+      const response = await fetch(`${apiBase}/api/workflows/${shipmentId}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const result = await response.json();
+      if (result.status === "success" && Array.isArray(result.data)) {
+        setWorkflowSteps(result.data);
+      }
+    } catch (err) {
+      console.error("Error fetching workflow:", err);
+    } finally {
+      setLoadingWorkflow(false);
+    }
+  }, []);
+
+  const advanceWorkflow = async (departmentId) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
+      const response = await fetch(`${apiBase}/api/workflows/${selectedOrder.id}/attach`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ departmentId }),
+      });
+      const result = await response.json();
+      if (result.status === "success") {
+        setWorkflowSteps(result.data);
+        Swal.fire({
+          icon: 'success',
+          title: 'Workflow Advanced',
+          text: 'The shipment has been moved to the next department.',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      }
+    } catch (err) {
+      console.error("Error advancing workflow:", err);
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
     fetchServices();
-  }, [fetchBookings, fetchServices]);
+    fetchDepartments();
+  }, [fetchBookings, fetchServices, fetchDepartments]);
 
   const _confirmDelivered = async (order) => {
     // Store the original state for potential rollback on error
@@ -333,8 +403,8 @@ export default function Orders() {
         setSelectedOrder(prev => ({ ...prev, packageDetails: details, packagedetails: details }));
         Swal.fire({
           icon: 'success',
-          title: 'Manifest Updated',
-          text: 'Shipment package details have been saved.',
+          title: 'Details Saved',
+          text: 'Shipment info has been updated.',
           toast: true,
           position: 'top-end',
           showConfirmButton: false,
@@ -384,9 +454,9 @@ export default function Orders() {
           <div className="p-3 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200">
             <Package className="text-white" size={28} />
           </div>
-          Shipments
+          Packages
         </h1>
-        <p className="text-slate-500 font-medium mt-3 text-lg">Track and manage all shipments.</p>
+        <p className="text-slate-500 font-medium mt-3 text-lg">View and manage all customer packages.</p>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -480,6 +550,7 @@ export default function Orders() {
                         onClick={() => {
                           setSelectedOrder(order);
                           setShowModal(true);
+                          fetchWorkflow(order.id);
                         }}
                         className="px-2 py-1 md:px-3 md:py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-gray-700"
                       >
@@ -536,7 +607,7 @@ export default function Orders() {
               {/* Modal Header */}
               <div className="bg-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between border-b border-gray-200">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Shipment Details</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Package Details</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-gray-500 text-sm">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
                     <button
@@ -699,6 +770,66 @@ export default function Orders() {
                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                         <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">Secure Connection</span>
                       </div>
+                    </div>
+
+                    {/* Progress Tracker */}
+                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm space-y-6">
+                       <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                             <TrendingUp className="text-blue-600" size={20} />
+                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Progress Tracker</h3>
+                          </div>
+                          {loadingWorkflow && <Loader className="animate-spin text-slate-300" size={16} />}
+                       </div>
+
+                       <div className="space-y-4">
+                          {workflowSteps.length > 0 ? (
+                            workflowSteps.map((step, idx) => {
+                              const isCompleted = step.status === "COMPLETED";
+                              const isNext = !isCompleted && (idx === 0 || workflowSteps[idx-1].status === "COMPLETED");
+                              
+                              return (
+                                <div key={step.id} className={`relative pl-8 pb-4 last:pb-0 ${idx !== workflowSteps.length - 1 ? 'border-l-2 border-slate-50' : ''}`}>
+                                   <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 bg-white flex items-center justify-center transition-all ${isCompleted ? 'border-emerald-500 bg-emerald-50' : isNext ? 'border-blue-600 animate-pulse' : 'border-slate-200'}`}>
+                                      {isCompleted && <Check className="text-emerald-500" size={10} />}
+                                   </div>
+                                   
+                                   <div className="flex items-center justify-between">
+                                      <div>
+                                         <p className={`text-[11px] font-bold tracking-tight ${isCompleted ? 'text-slate-400' : 'text-slate-800'}`}>{step.name}</p>
+                                         <p className="text-[9px] text-slate-400 font-medium uppercase">{isCompleted ? "Done" : step.status}</p>
+                                      </div>
+                                      
+                                      {isNext && (
+                                         <div className="flex items-center gap-2 animate-in slide-in-from-right duration-500">
+                                            <select 
+                                              onChange={(e) => advanceWorkflow(e.target.value)}
+                                              className="text-[9px] font-black uppercase bg-slate-50 border-none rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-blue-600"
+                                              defaultValue=""
+                                            >
+                                               <option value="" disabled>Assign Dept</option>
+                                               {departments.map(dept => (
+                                                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                                               ))}
+                                            </select>
+                                         </div>
+                                      )}
+                                      
+                                      {step.departmentId && (
+                                         <span className="bg-slate-900 text-white text-[8px] font-black uppercase px-2 py-1 rounded-md tracking-tighter">
+                                            {departments.find(d => d.id === step.departmentId)?.name || 'Processing Unit'}
+                                         </span>
+                                      )}
+                                   </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-6 bg-slate-50 rounded-xl">
+                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Waiting for setup</p>
+                            </div>
+                          )}
+                       </div>
                     </div>
                   </div>
                 </div>

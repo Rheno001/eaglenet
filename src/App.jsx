@@ -31,6 +31,8 @@ import AdminNotifications from "./pages/Dashboard/AdminNotifications";
 import AdminSettings from "./pages/Dashboard/AdminSettings";
 import AdminServices from "./pages/Dashboard/AdminServices";
 import CustomerPayments from "./pages/Dashboard/CustomerPayments";
+import VerifyStep from "./pages/Dashboard/VerifyStep";
+import UserDetails from "./pages/Dashboard/UserDetails";
 
 // SUPER ADMIN Dashboard
 import SuperAdminAdmins from "./pages/superAdmin/Admins";
@@ -90,6 +92,7 @@ function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="booking" element={<Booking />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="users/:userId" element={<UserDetails />} />
               <Route path="services" element={<AdminServices />} />
               <Route path="reports" element={<AdminReports />} />
               <Route path="payment" element={<AdminPayment />} />
@@ -103,6 +106,13 @@ function App() {
               <Route path="create-admin" element={<CreateAdmin />} />
               <Route path="assign-access" element={<SuperAdminAssign />} />
               <Route path="roles-permissions" element={<SuperAdminRolesPermissions />} />
+            </Route>
+          </Route>
+
+          {/* ✅ SUPERADMIN ONLY WORKFLOW VERIFICATION */}
+          <Route element={<ProtectedRoute allowedRoles={["superadmin"]} />}>
+            <Route path="/admin-dashboard" element={<DashboardLayout />}>
+              <Route path="verify-step/:stepId" element={<VerifyStep />} />
             </Route>
           </Route>
 

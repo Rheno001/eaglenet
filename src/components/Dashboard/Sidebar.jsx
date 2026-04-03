@@ -38,18 +38,18 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
 
   const iconMap = {
     'Home': LayoutDashboard,
-    'Shipment': Package,
-    'Booking': Package,
-    'Track Shipment': Search,
-    'Order': Package,
-    'Customers': Users,
-    'Roles & Permissions': Shield,
-    'Services': Settings,
+    'Dashboard': LayoutDashboard,
+    'My Shipments': Package,
+    'New Shipment': Package,
+    'Track': Search,
+    'All Shipments': Package,
+    'Users': Users,
+    'User Access': Shield,
+    'Our Services': Settings,
     'Reports': BarChart2,
-    'Payment': CreditCard,
-    'Global Networks': TrendingUp,
-    'Admin Management': ShieldAlert,
-    'Assign Access': ShieldCheck,
+    'Payments': CreditCard,
+    'Manage Admins': ShieldAlert,
+    'Give Access': ShieldCheck,
     'Departments': Building2,
     'Notifications': Bell,
     'Settings': Settings
@@ -132,6 +132,13 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
                 <p className="text-sm font-bold text-white truncate group-hover:text-teal-400 transition-colors">
                   {user?.firstName || user?.name || 'Account'}
                 </p>
+                {(user?.department?.name || user?.department) && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="px-1.5 py-0.5 bg-slate-700/50 text-slate-400 rounded-md text-[8px] font-black uppercase tracking-widest border border-slate-700/80">
+                      {user?.department?.name || user?.department}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -139,6 +146,25 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
 
         {/* NAV LINKS */}
         <nav className={`${isCollapsed ? "p-2" : "p-3 md:p-4"} space-y-1.5 flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar transition-all duration-300`}>
+          {/* Department Tag Header */}
+          {(user?.department?.name || user?.department) && (
+            <div className={`mb-6 pb-4 border-b border-slate-800/50 ${isCollapsed ? "flex justify-center" : "px-4"}`}>
+              <div className={`flex items-center gap-3 ${isCollapsed ? "" : "bg-slate-800/40 p-2 rounded-xl border border-slate-700/30"}`}>
+                <div className="p-2 bg-teal-500/10 rounded-lg shrink-0">
+                  <Building2 size={16} className="text-teal-400" />
+                </div>
+                {!isCollapsed && (
+                  <div className="min-w-0">
+                    <p className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] mb-0.5">Assigned Unit</p>
+                    <p className="text-[10px] font-bold text-teal-400 truncate uppercase">
+                      {user?.department?.name || user?.department}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {menuItems.map((item) => {
             const Icon = iconMap[item.name] || Package;
             return (

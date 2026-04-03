@@ -320,12 +320,12 @@ export default function Users() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => fetchUserDetail(user.id)}
+                        <Link
+                          to={`/admin-dashboard/users/${user.id}`}
                           className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all active:scale-90"
                         >
                           <Eye size={18} />
-                        </button>
+                        </Link>
                         {currentUser?.role === 'superadmin' && (
                           <button
                             onClick={() => handleDeleteUser(user)}
