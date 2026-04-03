@@ -82,7 +82,7 @@ export default function AdminPayments() {
       setLoading(true);
       try {
          const token = localStorage.getItem("jwt");
-         const url = new URL("https://eaglenet-eb9x.onrender.com/api/payments");
+         const url = new URL("https://eaglenet-backend.onrender.com/api/payments");
          url.searchParams.append("page", currentPage);
          url.searchParams.append("limit", 10);
          if (filterStatus !== "all") url.searchParams.append("status", filterStatus);
@@ -128,7 +128,7 @@ export default function AdminPayments() {
       setShowModal(true);
       try {
          const token = localStorage.getItem("jwt");
-         const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/${id}`, {
+         const response = await fetch(`https://eaglenet-backend.onrender.com/api/payments/${id}`, {
             headers: {
                "Authorization": `Bearer ${token}`,
                "Content-Type": "application/json"

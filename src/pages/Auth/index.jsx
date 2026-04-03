@@ -107,7 +107,7 @@ export default function Auth() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
+        phoneNumber: formData.phone,
         password: formData.password,
       };
 
@@ -127,7 +127,7 @@ export default function Auth() {
           email: source.email,
           firstName: source.firstName || 'User',
           lastName: source.lastName || '',
-          phone: source.phone || '',
+          phone: source.phoneNumber || source.phone || '',
           role: source.role || ROLES.USER,
           outstandingBalance: source.outstandingBalance || '0.00',
         };

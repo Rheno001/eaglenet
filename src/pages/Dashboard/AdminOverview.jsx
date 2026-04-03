@@ -39,14 +39,14 @@ export default function Overview() {
         };
 
         // Fetch Stats
-        const statsRes = await fetch("https://eaglenet-eb9x.onrender.com/api/admin/dashboard", { headers });
+        const statsRes = await fetch("https://eaglenet-backend.onrender.com/api/admin/dashboard", { headers });
         const statsResult = await statsRes.json();
         if (statsResult.status === "success") {
           setStats(statsResult.data);
         }
 
         // Fetch Recent Orders
-        const ordersRes = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments?limit=10", { headers });
+        const ordersRes = await fetch("https://eaglenet-backend.onrender.com/api/shipments?limit=10", { headers });
         const ordersResult = await ordersRes.json();
         if (ordersResult.status === "success") {
           setRecentOrders(ordersResult.data.map(order => ({

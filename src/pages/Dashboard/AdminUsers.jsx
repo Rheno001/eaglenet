@@ -75,7 +75,7 @@ export default function Users() {
     setError("");
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/users${searchTerm ? `?search=${searchTerm}` : ""}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/users${searchTerm ? `?search=${searchTerm}` : ""}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -105,7 +105,7 @@ export default function Users() {
     setShowModal(true);
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/users/${id}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/users/${id}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"

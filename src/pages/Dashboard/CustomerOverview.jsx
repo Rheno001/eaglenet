@@ -33,7 +33,7 @@ export default function CustomerOverview() {
                 const headers = { Authorization: `Bearer ${token}` };
 
                 // Fetch Dashboard Stats (Specific endpoint for customer)
-                const statsRes = await fetch("https://eaglenet-eb9x.onrender.com/api/users/me/dashboard", { headers });
+                const statsRes = await fetch("https://eaglenet-backend.onrender.com/api/users/me/dashboard", { headers });
                 const statsResult = await statsRes.json();
                 if (statsResult.status === "success") {
                     // Mapping customer stats to the cards
@@ -48,7 +48,7 @@ export default function CustomerOverview() {
                 }
 
                 // Fetch Recent Orders
-                const ordersRes = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments?limit=10", { headers });
+                const ordersRes = await fetch("https://eaglenet-backend.onrender.com/api/shipments?limit=10", { headers });
                 const ordersResult = await ordersRes.json();
                 if (ordersResult.status === "success") {
                     setRecentOrders(ordersResult.data.map(order => ({

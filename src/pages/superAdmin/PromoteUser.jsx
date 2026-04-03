@@ -26,7 +26,7 @@ export default function PromoteUser() {
       const token = localStorage.getItem("jwt");
       // Search for users - using the available user searching pattern
       // If there's a specific search endpoint we use that, otherwise we filter all users
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/users?search=${searchTerm}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/users?search=${searchTerm}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const result = await response.json();
@@ -66,7 +66,7 @@ export default function PromoteUser() {
         });
 
         const token = localStorage.getItem("jwt");
-        const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/users/${user.id}`, {
+        const response = await fetch(`https://eaglenet-backend.onrender.com/api/users/${user.id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -100,12 +100,12 @@ export default function PromoteUser() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Staff Promotion</h1>
-          <p className="text-gray-500 mt-1 font-medium">Search for customers and grant them administrative access.</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Add New Admin</h1>
+          <p className="text-gray-500 mt-1 font-medium">Search for users and make them admins.</p>
         </div>
         <div className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-2xl border border-emerald-100 flex items-center gap-2 text-sm font-bold">
            <Shield size={18} />
-           <span>Super Admin Privileges Active</span>
+           <span>Super Admin Mode</span>
         </div>
       </header>
 
@@ -129,7 +129,7 @@ export default function PromoteUser() {
             className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all disabled:opacity-50"
           >
             {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-            Search Residents
+            Search
           </button>
         </div>
       </section>
@@ -140,7 +140,7 @@ export default function PromoteUser() {
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start gap-4 text-amber-800">
              <AlertCircle className="shrink-0 mt-1" />
              <div>
-                <p className="font-bold">Attention</p>
+                <p className="font-bold">Note</p>
                 <p className="text-sm font-medium">{error}</p>
              </div>
           </div>
@@ -158,7 +158,7 @@ export default function PromoteUser() {
                 </div>
                 
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-black text-xl">
+                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-black text-xl">
                     {user.firstName?.[0]}
                   </div>
                   <div className="min-w-0">
@@ -172,7 +172,7 @@ export default function PromoteUser() {
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Status</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</p>
                       <span className="inline-flex px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-black">CUSTOMER</span>
                    </div>
                    <button 
@@ -191,8 +191,8 @@ export default function PromoteUser() {
              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search size={32} className="text-slate-300" />
              </div>
-             <p className="text-slate-400 font-bold">No results found for "{searchTerm}"</p>
-             <p className="text-sm text-slate-300 font-medium">Verify the email address and try again.</p>
+             <p className="text-slate-400 font-bold">No results for "{searchTerm}"</p>
+             <p className="text-sm text-slate-300 font-medium">Check the email and try again.</p>
           </div>
         ) : null}
       </div>
@@ -200,10 +200,10 @@ export default function PromoteUser() {
       {/* Info Card */}
       <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
          <div className="relative z-10 max-w-xl">
-            <h2 className="text-2xl font-bold mb-4">Granting Administrative access</h2>
+            <h2 className="text-2xl font-bold mb-4">Making a user an admin</h2>
             <p className="text-slate-400 font-medium text-sm leading-relaxed mb-6">
-               Promoting a user to Admin grants them full access to manage orders, view user data, and generate reports. 
-               This action should only be performed for trusted staff members. All administrative actions are logged in the system.
+               Changing a user to an admin gives them full access to manage orders, see user data, and view reports. 
+               Only do this for people you trust. Every action taken by an admin is recorded.
             </p>
             <div className="flex items-center gap-6">
                <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ export default function PromoteUser() {
                </div>
                <div className="flex items-center gap-2">
                   <CheckCircle2 size={18} className="text-emerald-500" />
-                  <span className="text-xs font-bold">Report Management</span>
+                  <span className="text-xs font-bold">Manage Reports</span>
                </div>
             </div>
          </div>

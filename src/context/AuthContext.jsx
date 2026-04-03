@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
       if (token) {
         try {
-          const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+          const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
           const response = await fetch(`${apiBase}/api/auth/me`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }

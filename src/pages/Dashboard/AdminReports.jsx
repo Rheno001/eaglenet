@@ -58,7 +58,7 @@ export default function MonthlyReport() {
 
       if (viewType === 'monthly') {
         const { month, year } = getMonthDate(monthOffset);
-        const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/admin/reports?month=${month}&year=${year}`, { headers });
+        const response = await fetch(`https://eaglenet-backend.onrender.com/api/admin/reports?month=${month}&year=${year}`, { headers });
         const result = await response.json();
         if (result.status === "success") {
           setReportData(result.data);
@@ -70,7 +70,7 @@ export default function MonthlyReport() {
         const startMonth = (currentQuarter - 1) * 3 + 1;
         const months = [startMonth, startMonth + 1, startMonth + 2];
         const quarterlyResults = await Promise.all(months.map(async (m) => {
-          const res = await fetch(`https://eaglenet-eb9x.onrender.com/api/admin/reports?month=${m}&year=${currentYear}`, { headers });
+          const res = await fetch(`https://eaglenet-backend.onrender.com/api/admin/reports?month=${m}&year=${currentYear}`, { headers });
           return res.json();
         }));
 
@@ -116,7 +116,7 @@ export default function MonthlyReport() {
   // eslint-disable-next-line no-unused-vars
   const exportReport = () => {
     const { month, year } = getMonthDate(monthOffset);
-    window.open(`https://eaglenet-eb9x.onrender.com/api/admin/reports/export?month=${month}&year=${year}`, "_blank");
+    window.open(`https://eaglenet-backend.onrender.com/api/admin/reports/export?month=${month}&year=${year}`, "_blank");
   };
 
   const exportToExcel = () => {

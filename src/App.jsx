@@ -33,10 +33,12 @@ import AdminServices from "./pages/Dashboard/AdminServices";
 import CustomerPayments from "./pages/Dashboard/CustomerPayments";
 
 // SUPER ADMIN Dashboard
-import SuperAdminDashboard from "./pages/superAdmin/index";
 import SuperAdminAdmins from "./pages/superAdmin/Admins";
 import SuperAdminPromote from "./pages/superAdmin/PromoteUser";
 import CreateAdmin from "./pages/superAdmin/CreateAdmin";
+import SuperAdminDepartments from "./pages/superAdmin/Departments";
+import SuperAdminRolesPermissions from "./pages/superAdmin/RolesAndPermissions";
+import SuperAdminAssign from "./pages/superAdmin/AssignRole";
 
 function App() {
   const location = useLocation();
@@ -96,8 +98,11 @@ function App() {
 
               {/* Specialized nesting */}
               <Route path="admins" element={<SuperAdminAdmins />} />
+              <Route path="departments" element={<SuperAdminDepartments />} />
               <Route path="promote" element={<SuperAdminPromote />} />
               <Route path="create-admin" element={<CreateAdmin />} />
+              <Route path="assign-access" element={<SuperAdminAssign />} />
+              <Route path="roles-permissions" element={<SuperAdminRolesPermissions />} />
             </Route>
           </Route>
 

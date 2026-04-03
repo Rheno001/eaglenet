@@ -20,7 +20,7 @@ export default function Orders() {
   const fetchServices = useCallback(async () => {
     try {
       const token = localStorage.getItem("jwt");
-      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
       const response = await fetch(`${apiBase}/api/shipments/services`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -87,7 +87,7 @@ export default function Orders() {
       if (debouncedSearch) params.append("search", debouncedSearch);
       if (filterStatus !== "all") params.append("status", filterStatus.toLowerCase());
 
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments?${params.toString()}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments?${params.toString()}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -125,7 +125,7 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${order.id}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${order.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -179,7 +179,7 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -229,7 +229,7 @@ export default function Orders() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/price`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/price`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -278,7 +278,7 @@ export default function Orders() {
       if (!isConfirmed) return;
 
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -314,7 +314,7 @@ export default function Orders() {
   const updatePackageDetails = async (details) => {
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${selectedOrder.id}/status`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

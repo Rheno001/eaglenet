@@ -95,7 +95,7 @@ export default function TrackShipment() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/track/${id}`);
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/track/${id}`);
       const result = await response.json();
       if (result.status === "success" && result.data) {
         setShipment(result.data);

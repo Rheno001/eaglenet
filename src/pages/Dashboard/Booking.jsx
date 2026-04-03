@@ -60,7 +60,7 @@ export default function Booking() {
     setLoadingServices(true);
     try {
       const token = localStorage.getItem("jwt");
-      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
       const response = await fetch(`${baseUrl}/api/shipments/services`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -133,19 +133,25 @@ export default function Booking() {
         fullName: formData.customerName,
         email: formData.email,
         phoneNumber: formData.phone,
+        pickupAddress: formData.pickupAddress,
+        pickupCity: formData.pickupCity,
+        deliveryAddress: formData.destination,
+        destinationCity: formData.destinationCity,
         origin: `${formData.pickupAddress}, ${formData.pickupCity}`,
         destination: `${formData.destination}, ${formData.destinationCity}`,
-        packageDetails: `${formData.packageDetails} \n${serviceInfo}`.trim(),
         preferredPickupDate: formData.date,
         preferredPickupTime: formData.preferredTime,
-        specialRequirements: formData.specialRequirements,
         serviceId: formData.serviceId,
+        // Optional tracking data
+        packageDetails: `${formData.packageDetails} \n${serviceInfo}`.trim(),
+        specialRequirements: formData.specialRequirements,
         serviceName: selectedServiceObj?.serviceName || "",
         packageType: selectedServiceObj?.serviceName || formData.packageType,
         status: "ORDER_PLACED",
       };
 
-      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/shipments", {
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
+      const response = await fetch(`${baseUrl}/api/shipments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -316,7 +322,7 @@ export default function Booking() {
                   <textarea name="packageDetails" value={formData.packageDetails} onChange={handleChange} rows="3" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" placeholder="List of items, fragility note..." />
                   {errors.packageDetails && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.packageDetails}</p>}
                 </div>
-                <div className="space-y-2">
+                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Desired Pickup Date</label>
                   <input name="date" type="date" value={formData.date} onChange={handleChange} className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-slate-900 font-bold text-slate-900" />
                   {errors.date && <p className="text-rose-500 text-[10px] font-bold uppercase ml-1">{errors.date}</p>}

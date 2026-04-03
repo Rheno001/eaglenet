@@ -11,18 +11,44 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ChevronDown, ShieldCheck, Building2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 export default function CreateAdmin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    role: 'ADMIN'
+    role: 'ADMIN',
+    departmentId: '',
+    roleId: ''
   });
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("jwt");
+        const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
+        
+        const [deptRes, rolesRes] = await Promise.all([
+          fetch(`${baseUrl}/api/departments`, { headers: { "Authorization": `Bearer ${token}` } }),
+          fetch(`${baseUrl}/api/roles`, { headers: { "Authorization": `Bearer ${token}` } })
+        ]);
+
+        const [depts, rs] = await Promise.all([deptRes.json(), rolesRes.json()]);
+        if (depts.status === "success") setDepartments(depts.data || []);
+        if (rs.status === "success") setRoles(rs.data || []);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,7 +60,7 @@ export default function CreateAdmin() {
 
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch("https://eaglenet-eb9x.onrender.com/api/users/admins", {
+      const response = await fetch("https://eaglenet-backend.onrender.com/api/users/admins", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,10 +72,24 @@ export default function CreateAdmin() {
       const result = await response.json();
 
       if (result.status === "success") {
+        const newUserId = result.data.id;
+        
+        // If department and role are selected, link them immediately
+        if (formData.departmentId && formData.roleId) {
+          const assignRes = await fetch(`${baseUrl}/api/users/${newUserId}/departments/${formData.departmentId}/roles/${formData.roleId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            }
+          });
+          await assignRes.json();
+        }
+
         await Swal.fire({
           icon: 'success',
-          title: 'Admin Created',
-          text: result.message || 'New administrative account has been provisioned.',
+          title: 'Staff Provisioned',
+          text: result.message || 'New administrative account has been fully integrated into the security registry.',
           timer: 2000,
           showConfirmButton: false
         });
@@ -139,6 +179,43 @@ export default function CreateAdmin() {
                       placeholder="john.doe@eaglenet.com"
                       className="w-full pl-12 pr-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-500 transition-all font-bold text-slate-900"
                     />
+                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Department</label>
+                    <div className="relative">
+                       <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                       <select 
+                        required
+                        name="departmentId"
+                        value={formData.departmentId}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-10 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-500 transition-all font-bold text-slate-900 appearance-none outline-none"
+                       >
+                          <option value="">Select Department</option>
+                          {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                       </select>
+                       <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                    </div>
+                 </div>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Functional Security Role</label>
+                    <div className="relative">
+                       <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                       <select 
+                        required
+                        name="roleId"
+                        value={formData.roleId}
+                        onChange={handleChange}
+                        className="w-full pl-12 pr-10 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-500 transition-all font-bold text-slate-900 appearance-none outline-none"
+                       >
+                          <option value="">Select Security Role</option>
+                          {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                       </select>
+                       <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                    </div>
                  </div>
               </div>
 

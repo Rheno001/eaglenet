@@ -32,7 +32,7 @@ export default function AdminServices() {
     setLoading(true);
     try {
       const token = localStorage.getItem("jwt");
-      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
       const response = await fetch(`${baseUrl}/api/services`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -81,7 +81,7 @@ export default function AdminServices() {
         });
 
         const token = localStorage.getItem("jwt");
-        const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+        const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
 
         const response = await fetch(`${baseUrl}/api/services`, {
           method: "POST",

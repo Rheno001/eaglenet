@@ -24,7 +24,7 @@ export default function UserOverview() {
     const fetchDashboard = async () => {
       try {
         const token = localStorage.getItem("jwt");
-        const response = await fetch("https://eaglenet-eb9x.onrender.com/api/users/me/dashboard", {
+        const response = await fetch("https://eaglenet-backend.onrender.com/api/users/me/dashboard", {
           headers: { Authorization: `Bearer ${token}` }
         });
         const result = await response.json();

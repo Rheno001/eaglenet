@@ -12,9 +12,13 @@ import {
   Users,
   BarChart2,
   Settings,
+  Shield,
   ShieldAlert,
+  ShieldCheck,
   Bell,
-  TrendingUp
+  TrendingUp,
+  Building2,
+  Lock
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { MENU_ITEMS, ROLES } from "../../utils/roles";
@@ -39,11 +43,14 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
     'Track Shipment': Search,
     'Order': Package,
     'Customers': Users,
+    'Roles & Permissions': Shield,
     'Services': Settings,
     'Reports': BarChart2,
     'Payment': CreditCard,
     'Global Networks': TrendingUp,
     'Admin Management': ShieldAlert,
+    'Assign Access': ShieldCheck,
+    'Departments': Building2,
     'Notifications': Bell,
     'Settings': Settings
   };

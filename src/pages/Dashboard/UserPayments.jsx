@@ -74,7 +74,7 @@ export default function UserPayments() {
       setLoading(true);
       try {
          const token = localStorage.getItem("jwt");
-         const url = new URL("https://eaglenet-eb9x.onrender.com/api/payments/mine");
+         const url = new URL("https://eaglenet-backend.onrender.com/api/payments/mine");
          url.searchParams.append("page", currentPage);
          url.searchParams.append("limit", 10);
          if (filterStatus !== "all") url.searchParams.append("status", filterStatus);

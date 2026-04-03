@@ -99,7 +99,7 @@ export default function Shipment() {
     setLoadingServices(true);
     try {
       const token = localStorage.getItem("jwt");
-      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+      const baseUrl = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
       const response = await fetch(`${baseUrl}/api/shipments/services`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -160,7 +160,7 @@ export default function Shipment() {
         setLoading(false);
         return;
       }
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/mine`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/mine`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -184,7 +184,7 @@ export default function Shipment() {
   const verifyPayment = useCallback(async (reference) => {
     try {
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/verify/${reference}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/payments/verify/${reference}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const result = await response.json();
@@ -283,7 +283,7 @@ export default function Shipment() {
     try {
       setLoadingDetails(true);
       const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/shipments/${id}`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -368,7 +368,7 @@ export default function Shipment() {
 
       console.log("💳 [Payment Protocol] Initializing with payload:", payload);
 
-      const response = await fetch(`https://eaglenet-eb9x.onrender.com/api/payments/initialize`, {
+      const response = await fetch(`https://eaglenet-backend.onrender.com/api/payments/initialize`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

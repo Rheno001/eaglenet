@@ -14,7 +14,7 @@ export default function PaymentWatcher({ user }) {
         const token = localStorage.getItem('jwt');
         if (!token) return;
 
-        const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-eb9x.onrender.com";
+        const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
         const res = await fetch(`${apiBase}/api/payments?limit=1&status=SUCCESS`, {
           headers: { 
             "Authorization": `Bearer ${token}`,
