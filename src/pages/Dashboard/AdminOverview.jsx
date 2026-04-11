@@ -92,12 +92,12 @@ export default function Overview() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight flex flex-wrap items-center gap-3">
-             {user?.firstName ? `Welcome, ${user.firstName}` : "Welcome Back"}
-             {(user?.department?.name || user?.department) && (
-               <span className="px-3 py-1 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200">
-                 {user?.department?.name || user?.department}
-               </span>
-             )}
+            {user?.firstName ? `Welcome, ${user.firstName}` : "Welcome Back"}
+            {(user?.department?.name || user?.department) && (
+              <span className="px-3 py-1 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200">
+                {user?.department?.name || user?.department}
+              </span>
+            )}
           </h1>
           <p className="text-slate-500 font-medium mt-1">Keep track of all your packages here.</p>
         </div>

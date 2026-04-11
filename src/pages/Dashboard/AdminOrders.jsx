@@ -1,21 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
-  Package, Search, CheckCircle, Clock, AlertCircle, Truck, Calendar, User, MapPin, Download, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp, Copy, Check, Shield
+  Package, Search, CheckCircle, Clock, Truck, Calendar, User, Eye, X, ChevronRight, ChevronLeft, Loader, Activity, Warehouse, TrendingUp, Copy, Check, Shield
 } from "lucide-react";
 import Swal from "sweetalert2";
 
-import { useCallback } from "react";
-
 export default function Orders() {
   const [orders, setOrders] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
   const [services, setServices] = useState([]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const fetchServices = useCallback(async () => {
     try {
@@ -43,30 +46,16 @@ export default function Orders() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedId(text);
       setTimeout(() => setCopiedId(null), 2000);
-
-      const Toast = Swal.mixin({
+      Swal.fire({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
         timer: 2000,
-        timerProgressBar: true,
-      });
-
-      Toast.fire({
         icon: 'success',
-        title: 'Tracking ID copied'
+        title: 'ID copied'
       });
     });
   };
-
-  // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [departments, setDepartments] = useState([]);
-  const [workflowSteps, setWorkflowSteps] = useState([]);
-  const [loadingWorkflow, setLoadingWorkflow] = useState(false);
 
   // Debounce search term
   useEffect(() => {
@@ -81,6 +70,7 @@ export default function Orders() {
     try {
       setLoading(true);
       const token = localStorage.getItem("jwt");
+      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
 
       const params = new URLSearchParams({
         page: currentPage,
@@ -90,10 +80,8 @@ export default function Orders() {
       if (debouncedSearch) params.append("search", debouncedSearch);
       if (filterStatus !== "all") params.append("status", filterStatus.toLowerCase());
 
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments?${params.toString()}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
+      const response = await fetch(`${apiBase}/api/shipments?${params.toString()}`, {
+        headers: { "Authorization": `Bearer ${token}` }
       });
       const result = await response.json();
       if (result && result.status === "success") {
@@ -111,316 +99,10 @@ export default function Orders() {
     }
   }, [currentPage, limit, debouncedSearch, filterStatus]);
 
-  const fetchDepartments = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("jwt");
-      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
-      const response = await fetch(`${apiBase}/api/departments`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const result = await response.json();
-      if (result.status === "success" && Array.isArray(result.data)) {
-        setDepartments(result.data);
-      }
-    } catch (err) {
-      console.error("Error fetching departments:", err);
-    }
-  }, []);
-
-  const fetchWorkflow = useCallback(async (shipmentId) => {
-    setLoadingWorkflow(true);
-    try {
-      const token = localStorage.getItem("jwt");
-      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
-      const response = await fetch(`${apiBase}/api/workflows/${shipmentId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const result = await response.json();
-      if (result.status === "success" && Array.isArray(result.data)) {
-        setWorkflowSteps(result.data);
-      }
-    } catch (err) {
-      console.error("Error fetching workflow:", err);
-    } finally {
-      setLoadingWorkflow(false);
-    }
-  }, []);
-
-  const advanceWorkflow = async (departmentId) => {
-    try {
-      const token = localStorage.getItem("jwt");
-      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
-      const response = await fetch(`${apiBase}/api/workflows/${selectedOrder.id}/attach`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ departmentId }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        setWorkflowSteps(result.data);
-        Swal.fire({
-          icon: 'success',
-          title: 'Workflow Advanced',
-          text: 'The shipment has been moved to the next department.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
-      }
-    } catch (err) {
-      console.error("Error advancing workflow:", err);
-    }
-  };
-
   useEffect(() => {
     fetchBookings();
     fetchServices();
-    fetchDepartments();
-  }, [fetchBookings, fetchServices, fetchDepartments]);
-
-  const _confirmDelivered = async (order) => {
-    // Store the original state for potential rollback on error
-    const originalOrders = [...orders];
-
-    // Optimistically update the UI
-    const updatedOrders = orders.map((o) =>
-      o.id === order.id ? { ...o, status: "DELIVERED" } : o
-    );
-    setOrders(updatedOrders);
-
-    try {
-      const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${order.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: "DELIVERED" }),
-      });
-
-      const result = await response.json();
-      if (result.status !== "success") {
-        throw new Error("Server failed to update status.");
-      }
-    } catch (err) {
-      console.error("Error updating delivery:", err);
-      // If the update fails, revert to the original state
-      setOrders(originalOrders);
-    }
-  };
-
-  const isPaid = (item) => {
-    if (!item) return false;
-    if (item.paymentStatus === "PAID" || item.isPaid === true || item.paid === true) return true;
-    if (item.payments && Array.isArray(item.payments)) {
-      return item.payments.some(p => p?.status?.toUpperCase() === "SUCCESS" || p?.status?.toUpperCase() === "COMPLETED");
-    }
-    return false;
-  };
-
-  const updateStatus = async (newStatus) => {
-    // 1. Check if price is set
-    if (!selectedOrder.amount || parseFloat(selectedOrder.amount) <= 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Pricing Required',
-        text: 'You must set a shipment price before advancing the status.',
-        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
-      });
-      return;
-    }
-
-    // 2. Check if payment is confirmed
-    if (!isPaid(selectedOrder)) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Payment Required',
-        text: 'This shipment cannot be moved to the next status until payment is confirmed.',
-        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
-      });
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        setOrders(prev =>
-          prev.map(o => o.id === selectedOrder.id ? { ...o, status: newStatus } : o)
-        );
-        setSelectedOrder(prev => ({ ...prev, status: newStatus }));
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Status Updated',
-          text: `Shipment status changed to ${newStatus}`,
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
-      } else {
-        Swal.fire('Update Failed', result.message || 'Error occurred', 'error');
-      }
-    } catch (err) {
-      console.error("Error updating status:", err);
-    } finally {
-      setShowModal(false);
-    }
-  };
-
-  const updatePrice = async (amount) => {
-    // Check if packageDetails is filled before allowing price update
-    const details = selectedOrder.packageDetails || selectedOrder.packagedetails;
-    if (!details || details.trim() === "") {
-      Swal.fire({
-        icon: 'warning',
-        title: 'REQUIRED ACTION',
-        text: 'You must provide package details before setting the shipment price.',
-        customClass: { confirmButton: 'bg-slate-900 text-white px-8 py-3 rounded-xl font-bold' }
-      });
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/price`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ amount: parseFloat(amount) }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        setOrders(prev =>
-          prev.map(o => o.id === selectedOrder.id ? { ...o, amount: parseFloat(amount) } : o)
-        );
-        setSelectedOrder(prev => ({ ...prev, amount: parseFloat(amount) }));
-        Swal.fire({
-          icon: 'success',
-          title: 'Price Updated',
-          text: 'Shipment price has been successfully set.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
-      }
-    } catch (err) {
-      console.error("Error updating price:", err);
-      Swal.fire('Update Failed', 'Failed to update shipment price', 'error');
-    }
-  };
-
-  const confirmPaymentManually = async () => {
-    try {
-      const { isConfirmed } = await Swal.fire({
-        title: 'Confirm Payment',
-        text: "Are you sure you want to manually mark this shipment as PAID?",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Confirm',
-        cancelButtonText: 'No',
-        customClass: {
-          confirmButton: 'bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold',
-          cancelButton: 'bg-slate-100 text-slate-500 px-8 py-3 rounded-xl font-bold'
-        }
-      });
-
-      if (!isConfirmed) return;
-
-      const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ id: selectedOrder.id, paymentStatus: "PAID" }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        setOrders(prev =>
-          prev.map(o => o.id === selectedOrder.id ? { ...o, paymentStatus: "PAID" } : o)
-        );
-        setSelectedOrder(prev => ({ ...prev, paymentStatus: "PAID" }));
-        Swal.fire({
-          icon: 'success',
-          title: 'Payment Confirmed',
-          text: 'Shipment has been marked as PAID.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
-      } else {
-        Swal.fire('Error', result.message || 'Failed to update payment status', 'error');
-      }
-    } catch (err) {
-      console.error("Error confirming payment:", err);
-      Swal.fire('Error', 'Connection failed', 'error');
-    }
-  };
-
-  const updatePackageDetails = async (details) => {
-    try {
-      const token = localStorage.getItem("jwt");
-      const response = await fetch(`https://eaglenet-backend.onrender.com/api/shipments/${selectedOrder.id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          status: selectedOrder.status === "PENDING" ? "ORDER_PLACED" : selectedOrder.status,
-          packageDetails: details
-        }),
-      });
-      const result = await response.json();
-      if (result.status === "success") {
-        setOrders(prev =>
-          prev.map(o => o.id === selectedOrder.id ? { ...o, packageDetails: details, packagedetails: details } : o)
-        );
-        setSelectedOrder(prev => ({ ...prev, packageDetails: details, packagedetails: details }));
-        Swal.fire({
-          icon: 'success',
-          title: 'Details Saved',
-          text: 'Shipment info has been updated.',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
-        });
-      } else {
-        console.log("Update failed result:", result);
-        Swal.fire('Update Failed', result.message || 'Error occurred', 'error');
-      }
-    } catch (err) {
-      console.log("Update package details catch error:", err);
-      console.error("Error updating manifest:", err);
-      Swal.fire('Update Failed', 'Failed to update package details', 'error');
-    }
-  };
+  }, [fetchBookings, fetchServices]);
 
   const statusConfig = {
     ORDER_PLACED: { color: "bg-slate-100 text-slate-700 border-slate-300", icon: Clock, label: "Order Placed" },
@@ -439,16 +121,13 @@ export default function Orders() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-gray-600 font-semibold">Loading orders...</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="w-16 h-16 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
           <div className="p-3 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200">
@@ -459,7 +138,7 @@ export default function Orders() {
         <p className="text-slate-500 font-medium mt-3 text-lg">View and manage all customer packages.</p>
 
         {/* Search & Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 mt-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-widest text-[10px]">Search</label>
@@ -470,7 +149,7 @@ export default function Orders() {
                   placeholder="Search by customer, tracking ID, email..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                 />
               </div>
             </div>
@@ -479,452 +158,98 @@ export default function Orders() {
               <select
                 value={filterStatus}
                 onChange={e => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               >
                 <option value="all">All</option>
                 <option value="PENDING">Pending</option>
                 <option value="TRANSIT">In Transit</option>
                 <option value="ARRIVED">Arrived</option>
                 <option value="DELIVERED">Delivered</option>
-                <option value="DELAY">Delayed</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50 border-b border-gray-200">
-              <tr>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Tracking ID</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Customer</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden lg:table-cell">Route</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold hidden md:table-cell">Service</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Status</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Phone Number</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-left text-xs md:text-sm font-semibold">Date</th>
-                <th className="px-3 py-3 md:px-6 md:py-4 text-center text-xs md:text-sm font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {orders.map(order => {
-                return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Tracking ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 hidden lg:table-cell">Customer</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900 hidden lg:table-cell">Route</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-slate-900">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Date</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {orders.map(order => (
                   <tr key={order.trackingId} className="hover:bg-slate-50 transition">
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-blue-600 font-mono font-semibold text-xs md:text-base">
+                    <td className="px-6 py-4 text-blue-600 font-mono font-semibold text-sm">
                       <div className="flex items-center gap-2">
                         <span>{order.trackingId}</span>
-                        <button
-                          onClick={() => copyToClipboard(order.trackingId)}
-                          className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
-                          title="Copy Tracking ID"
-                        >
+                        <button onClick={() => copyToClipboard(order.trackingId)} className="text-slate-300 hover:text-slate-900">
                           {copiedId === order.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                         </button>
                       </div>
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden lg:table-cell">
-                      <div className="font-medium text-gray-900">{order.fullName}</div>
-                      <div className="text-gray-500 text-xs">{order.email}</div>
+                    <td className="px-6 py-4 text-sm hidden lg:table-cell">
+                      <div className="font-bold text-slate-900">{order.fullName}</div>
+                      <div className="text-slate-400 text-xs">{order.email}</div>
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm text-gray-600 hidden lg:table-cell">
+                    <td className="px-6 py-4 text-sm text-slate-600 hidden lg:table-cell">
                       {order.pickupCity} → {order.destinationCity}
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-sm hidden md:table-cell">
-                      <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                        {getServiceName(order.serviceId)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm">
-                      <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[10px] md:text-xs font-semibold border flex items-center gap-1 w-fit ${getStatusInfo(order.status).color}`}>
-                        {React.createElement(getStatusInfo(order.status).icon, { className: "w-3 h-3 md:w-4 md:h-4" })}
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1 w-fit ${getStatusInfo(order.status).color}`}>
+                        {React.createElement(getStatusInfo(order.status).icon, { size: 12 })}
                         {getStatusInfo(order.status).label}
                       </span>
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-900 font-bold">
-                      {order.phoneNumber || "—"}
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm text-gray-600">{order.preferredPickupDate?.split('T')[0] || order.createdAt?.split('T')[0]}</td>
-                    <td className="px-3 py-3 md:px-6 md:py-4 text-xs md:text-sm flex justify-center gap-2">
-                      <button
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setShowModal(true);
-                          fetchWorkflow(order.id);
-                        }}
-                        className="px-2 py-1 md:px-3 md:py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1 text-gray-700"
+                    <td className="px-6 py-4 text-center">
+                      <Link
+                        to={`/admin-dashboard/orders/${order.id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 active:scale-95"
                       >
-                        <Eye className="w-3 h-3 md:w-4 md:h-4" /> <span className="hidden sm:inline">View</span>
-                      </button>
+                        <Eye size={14} /> View Details
+                      </Link>
                     </td>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Pagination UI */}
           <div className="px-6 py-4 bg-slate-50 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-500 font-medium">
-              Showing <span className="text-gray-900 font-bold">{Math.min((currentPage - 1) * limit + 1, total)}</span> to <span className="text-gray-900 font-bold">{Math.min(currentPage * limit, total)}</span> of <span className="text-gray-900 font-bold">{total}</span> results
+            <div className="text-sm text-slate-500 font-bold uppercase tracking-widest text-[10px]">
+              Showing {Math.min((currentPage - 1) * limit + 1, total)} - {Math.min(currentPage * limit, total)} of {total}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-50 transition-colors"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft size={20} />
               </button>
-
-              <div className="flex items-center gap-1">
-                {[...Array(totalPages)].map((_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`w-10 h-10 text-sm font-bold rounded-lg transition-all ${currentPage === i + 1 ? 'bg-blue-600 text-white shadow-md' : 'bg-white border border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'}`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-
+              <span className="text-sm font-black text-slate-900 mx-2">{currentPage} / {totalPages}</span>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="p-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 border border-slate-200 rounded-lg hover:bg-white disabled:opacity-50 transition-colors"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight size={20} />
               </button>
             </div>
           </div>
         </div>
-
-        {/* Detail Modal */}
-        {showModal && selectedOrder && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col animate-slideUp">
-              {/* Modal Header */}
-              <div className="bg-white px-4 py-4 md:px-6 md:py-5 flex items-center justify-between border-b border-gray-200">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Package Details</h2>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-gray-500 text-sm">Tracking ID: <span className="font-mono text-blue-600">{selectedOrder.trackingId}</span></p>
-                    <button
-                      onClick={() => copyToClipboard(selectedOrder.trackingId)}
-                      className="p-1 hover:bg-blue-50 rounded transition-colors text-blue-400"
-                      title="Copy Tracking ID"
-                    >
-                      {copiedId === selectedOrder.trackingId ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                  }}
-                  className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              {/* Modal Content */}
-              <div className="flex-1 p-4 md:p-6 overflow-y-auto no-scrollbar">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left: Combined Details */}
-                  <div className="space-y-6">
-                    {/* Customer Info */}
-                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <User className="text-blue-600" size={20} />
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Customer Info</h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Name</p>
-                          <p className="font-bold text-gray-900">{selectedOrder.fullName || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone</p>
-                          <p className="font-bold text-gray-900">{selectedOrder.phoneNumber || "—"}</p>
-                        </div>
-                        <div className="col-span-2">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email</p>
-                          <p className="font-bold text-gray-900 truncate">{selectedOrder.email || "—"}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Shipment Info */}
-                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Package className="text-blue-600" size={20} />
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Service</h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Service Logistics</p>
-                          <p className="font-bold text-gray-900">{getServiceName(selectedOrder.serviceId)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Package Type</p>
-                          <p className="font-bold text-gray-900">{selectedOrder.packageType || "—"}</p>
-                        </div>
-                        <div className="col-span-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Package details</p>
-                            <button
-                              onClick={() => updatePackageDetails(document.getElementById('packageDetailsInput').value)}
-                              className="text-[9px] font-bold uppercase tracking-widest bg-slate-100 text-slate-600 px-3 py-1 rounded-lg hover:bg-slate-900 hover:text-white transition-all"
-                            >
-                              Save
-                            </button>
-                          </div>
-                          <textarea
-                            id="packageDetailsInput"
-                            defaultValue={selectedOrder.packageDetails || selectedOrder.packagedetails || ""}
-                            rows="4"
-                            className="w-full bg-slate-50 border-none rounded-xl text-xs font-medium text-gray-600 italic p-4 focus:ring-1 focus:ring-blue-500"
-                            placeholder="Enter specific package details or instructions..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Route & Financials */}
-                  <div className="space-y-6">
-                    {/* Financial & Status Header */}
-                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm">
-                      <div className="flex items-center justify-between mb-10">
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Price</p>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              defaultValue={selectedOrder.amount || 0}
-                              id="priceUpdateInput"
-                              className="w-24 bg-slate-50 border-none rounded-lg text-sm font-black text-blue-600 focus:ring-1 focus:ring-blue-500 py-1"
-                            />
-                            <button
-                              onClick={() => updatePrice(document.getElementById('priceUpdateInput').value)}
-                              className="text-[9px] font-black uppercase tracking-widest bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all"
-                            >
-                              Set
-                            </button>
-                          </div>
-                        </div>
-                        <div className="text-right space-y-2">
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Status</p>
-                            <span className={`px-4 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-widest border ${getStatusInfo(selectedOrder.status).color}`}>
-                              {getStatusInfo(selectedOrder.status).label}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Payment</p>
-                            {isPaid(selectedOrder) ? (
-                              <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-emerald-100 flex items-center gap-1 justify-center">
-                                <CheckCircle size={10} /> Paid
-                              </span>
-                            ) : (
-                              <div className="flex flex-col gap-1 items-end">
-                                <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-amber-100 flex items-center gap-1 justify-center w-fit">
-                                  <Clock size={10} /> Unpaid
-                                </span>
-                                {selectedOrder.amount > 0 && (
-                                  <button
-                                    onClick={confirmPaymentManually}
-                                    className="text-[8px] font-black uppercase text-blue-600 hover:underline"
-                                  >
-                                    Confirm Manually
-                                  </button>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Route Map */}
-                      <div className="relative pl-6 border-l border-dashed border-gray-200 ml-2 space-y-10">
-                        <div className="relative">
-                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-white shadow-sm shadow-slate-200"></div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Pickup</p>
-                          <p className="text-xs font-bold text-gray-900">{selectedOrder.pickupAddress || selectedOrder.pickupCity}</p>
-                        </div>
-                        <div className="relative">
-                          <div className="absolute -left-8 top-1 w-4 h-4 rounded-full border-2 border-slate-900 bg-white shadow-sm shadow-slate-200"></div>
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Destination</p>
-                          <p className="text-xs font-bold text-gray-900">{selectedOrder.deliveryAddress || selectedOrder.destinationCity}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-slate-900 rounded-2xl p-6 text-white relative overflow-hidden group">
-                      <Shield className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:text-white/10 transition-all" />
-                      <h4 className="text-xs font-bold uppercase tracking-widest mb-2">Secure Shipment</h4>
-                      <p className="text-slate-400 text-[10px] font-medium leading-relaxed mb-4">Tracking code EGLN{selectedOrder.trackingId.slice(-4)} is verified and protected </p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">Secure Connection</span>
-                      </div>
-                    </div>
-
-                    {/* Progress Tracker */}
-                    <div className="bg-white border border-gray-100 p-6 rounded-2xl shadow-sm space-y-6">
-                       <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                             <TrendingUp className="text-blue-600" size={20} />
-                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 border-l-4 border-slate-900 pl-3">Progress Tracker</h3>
-                          </div>
-                          {loadingWorkflow && <Loader className="animate-spin text-slate-300" size={16} />}
-                       </div>
-
-                       <div className="space-y-4">
-                          {workflowSteps.length > 0 ? (
-                            workflowSteps.map((step, idx) => {
-                              const isCompleted = step.status === "COMPLETED";
-                              const isNext = !isCompleted && (idx === 0 || workflowSteps[idx-1].status === "COMPLETED");
-                              
-                              return (
-                                <div key={step.id} className={`relative pl-8 pb-4 last:pb-0 ${idx !== workflowSteps.length - 1 ? 'border-l-2 border-slate-50' : ''}`}>
-                                   <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 bg-white flex items-center justify-center transition-all ${isCompleted ? 'border-emerald-500 bg-emerald-50' : isNext ? 'border-blue-600 animate-pulse' : 'border-slate-200'}`}>
-                                      {isCompleted && <Check className="text-emerald-500" size={10} />}
-                                   </div>
-                                   
-                                   <div className="flex items-center justify-between">
-                                      <div>
-                                         <p className={`text-[11px] font-bold tracking-tight ${isCompleted ? 'text-slate-400' : 'text-slate-800'}`}>{step.name}</p>
-                                         <p className="text-[9px] text-slate-400 font-medium uppercase">{isCompleted ? "Done" : step.status}</p>
-                                      </div>
-                                      
-                                      {isNext && (
-                                         <div className="flex items-center gap-2 animate-in slide-in-from-right duration-500">
-                                            <select 
-                                              onChange={(e) => advanceWorkflow(e.target.value)}
-                                              className="text-[9px] font-black uppercase bg-slate-50 border-none rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-blue-600"
-                                              defaultValue=""
-                                            >
-                                               <option value="" disabled>Assign Dept</option>
-                                               {departments.map(dept => (
-                                                  <option key={dept.id} value={dept.id}>{dept.name}</option>
-                                               ))}
-                                            </select>
-                                         </div>
-                                      )}
-                                      
-                                      {step.departmentId && (
-                                         <span className="bg-slate-900 text-white text-[8px] font-black uppercase px-2 py-1 rounded-md tracking-tighter">
-                                            {departments.find(d => d.id === step.departmentId)?.name || 'Processing Unit'}
-                                         </span>
-                                      )}
-                                   </div>
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="text-center py-6 bg-slate-50 rounded-xl">
-                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Waiting for setup</p>
-                            </div>
-                          )}
-                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Update Protocol - Redesigned to be more spacious */}
-              <div className="p-6 md:p-8 bg-white border-t border-gray-100">
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="h-px flex-1 bg-gray-50"></div>
-                    <label className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">Update Status</label>
-                    <div className="h-px flex-1 bg-gray-50"></div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    {[
-                      { key: "ORDER_PLACED", label: "ORDERED" },
-                      { key: "PENDING_CONFIRMATION", label: "CONFIRMED" },
-                      { key: "WAITING_TO_BE_SHIPPED", label: "PROCESSING" },
-                      { key: "SHIPPED", label: "SHIPPED" },
-                      { key: "AVAILABLE_FOR_PICKUP", label: "READY FOR PICKUP" },
-                      { key: "DELIVERED", label: "DELIVERED" }
-                    ].map((status, index, array) => {
-                      const sequence = array.map(a => a.key);
-                      let currentIdx = sequence.indexOf(selectedOrder.status);
-
-                      // If status is PENDING, treat it as ORDER_PLACED (index 0)
-                      if (selectedOrder.status === "PENDING") currentIdx = 0;
-
-                      const effectiveIdx = currentIdx >= 0 ? currentIdx : -1;
-
-                      const isCurrent = index === effectiveIdx;
-                      const isPast = index < effectiveIdx;
-                      const isNext = index === effectiveIdx + 1;
-                      const disabled = !isNext;
-
-                      return (
-                        <button
-                          key={status.key}
-                          onClick={() => updateStatus(status.key)}
-                          disabled={disabled}
-                          className={`flex-1 min-w-[100px] py-4 text-[9px] font-bold uppercase tracking-widest rounded-xl transition-all border ${isCurrent
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg shadow-slate-200"
-                            : isPast
-                              ? "bg-slate-50 border-slate-100 text-slate-200 cursor-not-allowed"
-                              : isNext
-                                ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-900 hover:text-white hover:border-slate-900"
-                                : "bg-gray-50/30 border-gray-100 text-gray-200 cursor-not-allowed"
-                            }`}
-                        >
-                          {status.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="bg-slate-50 border-t border-gray-100 px-6 py-4 flex justify-end">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-8 py-3 bg-white border border-gray-200 hover:bg-slate-50 text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-
-      {/* Keep animations for modal */}
-      <style>{` 
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

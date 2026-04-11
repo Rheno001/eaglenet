@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Package, 
-  User, 
-  Bell, 
-  CheckCircle, 
-  Clock, 
+import {
+  Package,
+  User,
+  Bell,
+  CheckCircle,
+  Clock,
   AlertCircle,
   ChevronLeft,
   ChevronRight
@@ -21,7 +21,7 @@ export default function Notifications() {
       const res = await fetch("https://eaglenet-backend.onrender.com/get-notifications.php");
       const data = await res.json();
       if (data.status === "success") {
-        const sorted = data.notifications.sort((a, b) => 
+        const sorted = data.notifications.sort((a, b) =>
           new Date(b.date) - new Date(a.date)
         );
         setNotifications(sorted);

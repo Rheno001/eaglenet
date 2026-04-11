@@ -33,6 +33,7 @@ import AdminServices from "./pages/Dashboard/AdminServices";
 import CustomerPayments from "./pages/Dashboard/CustomerPayments";
 import VerifyStep from "./pages/Dashboard/VerifyStep";
 import UserDetails from "./pages/Dashboard/UserDetails";
+import OrderDetails from "./pages/Dashboard/OrderDetails";
 
 // SUPER ADMIN Dashboard
 import SuperAdminAdmins from "./pages/superAdmin/Admins";
@@ -90,6 +91,7 @@ function App() {
             <Route path="/admin-dashboard" element={<DashboardLayout />}>
               <Route index element={<Overview />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="orders/:orderId" element={<OrderDetails />} />
               <Route path="booking" element={<Booking />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="users/:userId" element={<UserDetails />} />

@@ -116,13 +116,13 @@ export default function UserOverview() {
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
           <div className="relative z-10">
             <div className="p-4 bg-teal-50 text-teal-600 rounded-2xl w-fit mb-6 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
-               <CheckCircle size={24} />
+              <CheckCircle size={24} />
             </div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Delivered Shipment</p>
             <div className="flex items-end gap-3">
               <h3 className="text-4xl font-black text-slate-900 tracking-tight">{stats.delivered || stats.deliveredCount || 0}</h3>
               <span className="text-emerald-500 font-bold text-xs mb-1 flex items-center">
-                 <ShieldCheck size={14} className="mr-1" /> VERIFIED
+                <ShieldCheck size={14} className="mr-1" /> VERIFIED
               </span>
             </div>
           </div>
