@@ -261,8 +261,8 @@ export default function Booking() {
           <React.Fragment key={step.id}>
             <div className="flex flex-col items-center gap-3 relative z-10 group">
               <div className={`w-14 h-14 rounded-full flex items-center justify-center font-black transition-all duration-300 border-4 ${currentStep >= step.id
-                  ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/20"
-                  : "bg-slate-100 border-slate-100 text-slate-400"
+                ? "bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/20"
+                : "bg-slate-100 border-slate-100 text-slate-400"
                 }`}>
                 {currentStep > step.id ? <CheckCircle size={24} /> : step.id}
               </div>
@@ -361,7 +361,7 @@ export default function Booking() {
                       {loadingCustomers ? (
                         <tr>
                           <td colSpan="3" className="px-6 py-12 text-center text-slate-400 font-bold">
-                            Loading secure registry...
+                            Loading.....
                           </td>
                         </tr>
                       ) : paginatedCustomers.length > 0 ? (
@@ -374,8 +374,8 @@ export default function Booking() {
                           >
                             <td className="px-6 py-5">
                               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${formData.customerId === c.id
-                                  ? "border-emerald-500 bg-emerald-500 shadow-lg shadow-emerald-500/20"
-                                  : "border-slate-200 group-hover:border-emerald-300"
+                                ? "border-emerald-500 bg-emerald-500 shadow-lg shadow-emerald-500/20"
+                                : "border-slate-200 group-hover:border-emerald-300"
                                 }`}>
                                 {formData.customerId === c.id && <div className="w-2 h-2 rounded-full bg-white" />}
                               </div>
@@ -454,8 +454,8 @@ export default function Booking() {
                   <div className="flex gap-4">
                     {["Export", "Import"].map(type => (
                       <label key={type} className={`flex-1 flex items-center justify-center gap-3 h-16 rounded-2xl border-2 cursor-pointer transition-all font-bold ${formData.shipmentType === type
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-lg shadow-emerald-500/10"
-                          : "border-slate-100 bg-white text-slate-400 hover:border-emerald-200"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-lg shadow-emerald-500/10"
+                        : "border-slate-100 bg-white text-slate-400 hover:border-emerald-200"
                         }`}>
                         <input
                           type="radio"
@@ -498,7 +498,7 @@ export default function Booking() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 ml-1">Document Title</label>
-                    <input 
+                    <input
                       type="text"
                       value={tempDocTitle}
                       onChange={(e) => setTempDocTitle(e.target.value)}
@@ -508,7 +508,7 @@ export default function Booking() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 ml-1">Document Description</label>
-                    <input 
+                    <input
                       type="text"
                       value={tempDocDescription}
                       onChange={(e) => setTempDocDescription(e.target.value)}
@@ -634,8 +634,8 @@ export default function Booking() {
               onClick={prevStep}
               disabled={currentStep === 1 || loading}
               className={`flex items-center gap-2 px-8 h-16 rounded-2xl font-black transition-all ${currentStep === 1
-                  ? "text-slate-200 cursor-not-allowed"
-                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                ? "text-slate-200 cursor-not-allowed"
+                : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
             >
               <ChevronLeft size={20} /> Back
