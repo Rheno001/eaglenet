@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import logo from '../../assets/eaglenet-logo-removebg-preview.png'
 import {
   LogOut,
@@ -18,7 +18,10 @@ import {
   Bell,
   TrendingUp,
   Building2,
-  Lock
+  Lock,
+  ChevronDown,
+  ChevronUp,
+  UserCheck
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { MENU_ITEMS, ROLES } from "../../utils/roles";
@@ -26,7 +29,30 @@ import { MENU_ITEMS, ROLES } from "../../utils/roles";
 export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed }) {
   const { user, logout } = useContext(AuthContext);
   const [isMobile, setIsMobile] = useState(false);
+  const [openSubMenus, setOpenSubMenus] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const menuItems = MENU_ITEMS[user?.role] || [];
+
+  // Auto-expand sub-menu if child is active
+  useEffect(() => {
+    menuItems.forEach(item => {
+      if (item.subItems) {
+        const isActive = item.subItems.some(sub => location.pathname === sub.path);
+        if (isActive) {
+          setOpenSubMenus(prev => ({ ...prev, [item.name]: true }));
+        }
+      }
+    });
+  }, [location.pathname, menuItems]);
+
+  const toggleSubMenu = (name) => {
+    setOpenSubMenus(prev => ({
+      ...prev,
+      [name]: !prev[name]
+    }));
+  };
 
   // Track screen size
   useEffect(() => {
@@ -52,10 +78,17 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
     'Give Access': ShieldCheck,
     'Departments': Building2,
     'Notifications': Bell,
-    'Settings': Settings
+    'Settings': Settings,
+    'Staff-Management': UserCheck,
+    'Admins': ShieldAlert,
+    'Assign-Access': ShieldCheck,
+    'Role-Permission': Shield,
+    'Shipment-Management': Package,
+    'Booking': Package,
+    'Orders': Package
   };
 
-  const menuItems = MENU_ITEMS[user?.role] || [];
+
 
   const handleLogout = async () => {
     await logout();
@@ -167,6 +200,58 @@ export default function DashboardSidebar({ isOpen, toggleSidebar, isCollapsed })
 
           {menuItems.map((item) => {
             const Icon = iconMap[item.name] || Package;
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isOpen = openSubMenus[item.name];
+
+            if (hasSubItems) {
+              return (
+                <div key={item.name} className="space-y-1">
+                  <button
+                    onClick={() => toggleSubMenu(item.name)}
+                    className={`
+                      w-full flex items-center justify-between gap-3 py-2.5 md:py-3 rounded-lg md:rounded-xl transition-all duration-200 
+                      text-xs md:text-sm font-bold tracking-tight whitespace-nowrap
+                      ${isCollapsed ? "justify-center px-2 md:px-3" : "px-4 md:px-5"}
+                      ${isOpen ? "bg-slate-800 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon size={18} className="shrink-0" />
+                      {!isCollapsed && <span>{item.name}</span>}
+                    </div>
+                    {!isCollapsed && (
+                      isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    )}
+                  </button>
+
+                  {isOpen && !isCollapsed && (
+                    <div className="ml-4 pl-4 border-l border-slate-800 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                      {item.subItems.map((subItem) => {
+                        const SubIcon = iconMap[subItem.name] || Package;
+                        return (
+                          <NavLink
+                            key={subItem.path}
+                            to={subItem.path}
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 py-2 rounded-lg transition-all duration-200 
+                               text-[11px] md:text-xs font-semibold tracking-tight whitespace-nowrap px-4
+                               ${isActive
+                                ? "text-teal-400 bg-teal-500/5"
+                                : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"}`
+                            }
+                            onClick={() => isMobile && toggleSidebar()}
+                          >
+                            <SubIcon size={14} className="shrink-0" />
+                            <span>{subItem.name}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <NavLink
                 key={item.path}

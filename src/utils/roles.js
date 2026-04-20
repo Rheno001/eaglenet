@@ -14,8 +14,13 @@ export const MENU_ITEMS = {
   ],
   [ROLES.ADMIN]: [
     { name: 'Dashboard', path: '/admin-dashboard' },
-    { name: 'All Shipments', path: '/admin-dashboard/orders' },
-    { name: 'New Shipment', path: '/admin-dashboard/booking' },
+    {
+      name: 'Shipment-Management',
+      subItems: [
+        { name: 'Booking', path: '/admin-dashboard/booking' },
+        { name: 'Orders', path: '/admin-dashboard/orders' },
+      ]
+    },
     { name: 'Users', path: '/admin-dashboard/users' },
     { name: 'Our Services', path: '/admin-dashboard/services' },
     { name: 'Reports', path: '/admin-dashboard/reports' },
@@ -25,13 +30,23 @@ export const MENU_ITEMS = {
   ],
   [ROLES.SUPER_ADMIN]: [
     { name: 'Dashboard', path: '/admin-dashboard' },
-    { name: 'All Shipments', path: '/admin-dashboard/orders' },
-    { name: 'New Shipment', path: '/admin-dashboard/booking' },
+    {
+      name: 'Shipment-Management',
+      subItems: [
+        { name: 'Booking', path: '/admin-dashboard/booking' },
+        { name: 'Orders', path: '/admin-dashboard/orders' },
+      ]
+    },
     { name: 'Users', path: '/admin-dashboard/users' },
     { name: 'Our Services', path: '/admin-dashboard/services' },
-    { name: 'Manage Admins', path: '/admin-dashboard/admins' },
-    { name: 'Give Access', path: '/admin-dashboard/assign-access' },
-    { name: 'User Access', path: '/admin-dashboard/roles-permissions' },
+    {
+      name: 'Staff-Management',
+      subItems: [
+        { name: 'Admins', path: '/admin-dashboard/admins' },
+        { name: 'Assign-Access', path: '/admin-dashboard/assign-access' },
+        { name: 'Role-Permission', path: '/admin-dashboard/roles-permissions' },
+      ]
+    },
     { name: 'Departments', path: '/admin-dashboard/departments' },
     { name: 'Reports', path: '/admin-dashboard/reports' },
     { name: 'Payments', path: '/admin-dashboard/payment' },
