@@ -66,38 +66,24 @@ export default function Orders() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const MOCK_ORDERS = [
+    { id: "1", trackingId: "TRK-AF1023-2026", fullName: "Ambassador Michael Chen", email: "m.chen@embassy.gov", pickupCity: "Washington DC", destinationCity: "Beijing", status: "SHIPPED", createdAt: "2026-04-10T10:00:00Z" },
+    { id: "2", trackingId: "TRK-GL9928-2026", fullName: "Sophia Rodriguez", email: "sophia.rod@techcorp.com", pickupCity: "Berlin", destinationCity: "Tokyo", status: "WAITING_TO_BE_SHIPPED", createdAt: "2026-04-12T14:30:00Z" },
+    { id: "3", trackingId: "TRK-UK4412-2026", fullName: "James Wilson", email: "j.wilson@logistics.uk", pickupCity: "London", destinationCity: "New York", status: "DELIVERED", createdAt: "2026-04-05T09:15:00Z" },
+    { id: "4", trackingId: "TRK-CA5567-2026", fullName: "Emma Thompson", email: "emma.t@global.ca", pickupCity: "Toronto", destinationCity: "Paris", status: "ORDER_PLACED", createdAt: "2026-04-15T11:45:00Z" },
+    { id: "5", trackingId: "TRK-SG8821-2026", fullName: "Li Wei", email: "li.wei@asia.sg", pickupCity: "Singapore", destinationCity: "Sydney", status: "SHIPPED", createdAt: "2026-04-11T16:20:00Z" },
+  ];
+
   const fetchBookings = useCallback(async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("jwt");
-      const apiBase = import.meta.env.VITE_API_URL || "https://eaglenet-backend.onrender.com";
-
-      const params = new URLSearchParams({
-        page: currentPage,
-        limit: limit,
-      });
-
-      if (debouncedSearch) params.append("search", debouncedSearch);
-      if (filterStatus !== "all") params.append("status", filterStatus.toLowerCase());
-
-      const response = await fetch(`${apiBase}/api/shipments?${params.toString()}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      const result = await response.json();
-      if (result && result.status === "success") {
-        setOrders(result.data);
-        setTotalPages(result.meta?.totalPages || 1);
-        setTotal(result.meta?.total || 0);
-      } else {
-        setOrders([]);
-      }
-    } catch (err) {
-      console.error("Error fetching bookings:", err);
-      setOrders([]);
-    } finally {
+    setLoading(true);
+    // Simulating API delay
+    setTimeout(() => {
+      setOrders(MOCK_ORDERS);
+      setTotal(MOCK_ORDERS.length);
+      setTotalPages(1);
       setLoading(false);
-    }
-  }, [currentPage, limit, debouncedSearch, filterStatus]);
+    }, 800);
+  }, []);
 
   useEffect(() => {
     fetchBookings();
